@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +46,8 @@ import com.landawn.abacus.util.stream.Collector;
  */
 public final class CharList extends PrimitiveList<Character, char[], CharList> {
     private static final long serialVersionUID = 7293826835233022514L;
+
+    static final Random RAND = new SecureRandom();
 
     private char[] elementData = N.EMPTY_CHAR_ARRAY;
     private int size = 0;

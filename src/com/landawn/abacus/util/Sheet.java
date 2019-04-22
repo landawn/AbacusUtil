@@ -2238,11 +2238,11 @@ public final class Sheet<R, C, E> implements Cloneable {
 
         try {
             if (N.isNullOrEmpty(rowKeySet) && N.isNullOrEmpty(columnKeySet)) {
-                bw.write("---");
+                bw.write(" - ");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("| |");
                 bw.write(IOUtil.LINE_SEPARATOR);
-                bw.write("---");
+                bw.write(" - ");
             } else {
                 final int rowLen = rowKeySet.size();
                 final int columnLen = columnKeySet.size() + 1;
@@ -2302,17 +2302,17 @@ public final class Sheet<R, C, E> implements Cloneable {
                 final char hchDelta = 3;
                 for (int i = 0; i < columnLen; i++) {
                     if (i == 0) {
-                        bw.write(hch);
+                        bw.write(StringUtil.repeat(' ', maxColumnLens[i] + hchDelta) + "-");
+                    } else {
+                        bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                     }
-
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
                 for (int i = 0; i < columnLen; i++) {
                     if (i == 0) {
-                        bw.write("| ");
+                        bw.write("  ");
                     } else {
                         bw.write(" | ");
                     }

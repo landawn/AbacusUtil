@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import com.landawn.abacus.util.stream.ShortStream;
  */
 public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     private static final long serialVersionUID = 25682021483156507L;
+
+    static final Random RAND = new SecureRandom();
 
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
     private int size = 0;
@@ -151,10 +154,11 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     }
 
     public static ShortList random(final int len) {
+        final int bound = Short.MAX_VALUE - Short.MIN_VALUE + 1;
         final short[] a = new short[len];
 
         for (int i = 0; i < len; i++) {
-            a[i] = (short) RAND.nextInt();
+            a[i] = (short) (RAND.nextInt(bound) + Short.MIN_VALUE);
         }
 
         return of(a);

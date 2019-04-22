@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
@@ -72,6 +74,8 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @see Stream 
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntIterator, IntStream> {
+
+    static final Random RAND = new SecureRandom();
 
     IntStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);

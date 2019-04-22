@@ -4978,6 +4978,12 @@ public final class JdbcUtil {
             });
         }
 
+        /**
+         * Note: using {@code select 1 from ...}, not {@code select count(*) from ...}.
+         * 
+         * @return
+         * @throws SQLException
+         */
         public boolean exists() throws SQLException {
             assertNotClosed();
 
@@ -5064,6 +5070,14 @@ public final class JdbcUtil {
             }
         }
 
+        /**
+         * Note: using {@code select count(*) from ...}
+         * 
+         * @return
+         * @throws SQLException
+         * @deprecated
+         */
+        @Deprecated
         public int count() throws SQLException {
             assertNotClosed();
 

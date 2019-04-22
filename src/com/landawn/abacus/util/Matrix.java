@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.Nullable;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
@@ -1181,6 +1182,11 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
 
         return N.asList(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<T[], E> op) throws E {
+        f.flattOp(a, op);
     }
 
     /**

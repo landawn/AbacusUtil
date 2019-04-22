@@ -34,7 +34,7 @@ public interface CharSupplier extends Try.CharSupplier<RuntimeException> {
     static final CharSupplier RANDOM = new CharSupplier() {
         @Override
         public char getAsChar() {
-            return (char) Math.abs(Util.RAND.nextInt() % Util.CHAR_MOD);
+            return (char) Math.abs(Util.RAND_CHAR.nextInt() % Util.CHAR_MOD);
         }
     };
 

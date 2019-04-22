@@ -34,7 +34,7 @@ public interface ByteSupplier extends Try.ByteSupplier<RuntimeException> {
     static final ByteSupplier RANDOM = new ByteSupplier() {
         @Override
         public byte getAsByte() {
-            return (byte) Util.RAND.nextInt();
+            return (byte) Util.RAND_BYTE.nextInt();
         }
     };
 

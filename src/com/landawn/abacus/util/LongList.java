@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import com.landawn.abacus.util.stream.LongStream;
  */
 public final class LongList extends PrimitiveList<Long, long[], LongList> {
     private static final long serialVersionUID = -7764836427712181163L;
+
+    static final Random RAND = new SecureRandom();
 
     private long[] elementData = N.EMPTY_LONG_ARRAY;
     private int size = 0;

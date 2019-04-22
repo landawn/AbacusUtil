@@ -34,7 +34,7 @@ public interface DoubleSupplier extends java.util.function.DoubleSupplier, Try.D
     static final DoubleSupplier RANDOM = new DoubleSupplier() {
         @Override
         public double getAsDouble() {
-            return Util.RAND.nextDouble();
+            return Util.RAND_DOUBLE.nextDouble();
         }
     };
 

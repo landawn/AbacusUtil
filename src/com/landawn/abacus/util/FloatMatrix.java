@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.FloatIteratorEx;
@@ -876,6 +877,11 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
 
         return FloatList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<float[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

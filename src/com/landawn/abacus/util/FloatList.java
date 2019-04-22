@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +47,8 @@ import com.landawn.abacus.util.stream.FloatStream;
  */
 public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     private static final long serialVersionUID = 6459013170687883950L;
+
+    static final Random RAND = new SecureRandom();
 
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
     private int size = 0;

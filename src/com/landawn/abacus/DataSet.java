@@ -4787,6 +4787,12 @@ public interface DataSet {
     //     */
     //    <T> T removeProperty(String propName);
 
+    /**
+     * 
+     * @return key are column name, value is column - an immutable list.
+     */
+    Map<String, List<Object>> toColumnMap();
+
     <T> Sheet<Integer, String, T> toSheet();
 
     // DataSetBuilder builder();

@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
@@ -68,6 +70,8 @@ import com.landawn.abacus.util.function.ToCharFunction;
  */
 public abstract class CharStream
         extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharIterator, CharStream> {
+
+    static final Random RAND = new SecureRandom();
 
     CharStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -238,7 +242,8 @@ public abstract class CharStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends V> valueMapper,
+            Supplier<? extends M> mapFactory);
 
     /**
      * 

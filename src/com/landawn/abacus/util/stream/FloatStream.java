@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
@@ -69,6 +71,8 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 public abstract class FloatStream
         extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatIterator, FloatStream> {
+
+    static final Random RAND = new SecureRandom();
 
     FloatStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);

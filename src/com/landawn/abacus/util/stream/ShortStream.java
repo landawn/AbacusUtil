@@ -13,6 +13,7 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
@@ -66,6 +68,8 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public abstract class ShortStream
         extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortIterator, ShortStream> {
+
+    static final Random RAND = new SecureRandom();
 
     ShortStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -841,10 +845,12 @@ public abstract class ShortStream
     }
 
     public static ShortStream random() {
+        final int bound = Short.MAX_VALUE - Short.MIN_VALUE + 1;
+
         return generate(new ShortSupplier() {
             @Override
             public short getAsShort() {
-                return (short) RAND.nextInt();
+                return (short) (RAND.nextInt(bound) + Short.MIN_VALUE);
             }
         });
     }

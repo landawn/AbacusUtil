@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalChar;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.CharIteratorEx;
@@ -875,6 +876,11 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
 
         return CharList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<char[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

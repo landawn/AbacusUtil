@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalByte;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.ByteIteratorEx;
@@ -893,6 +894,11 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
 
         return ByteList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<byte[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

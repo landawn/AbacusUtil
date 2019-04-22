@@ -34,7 +34,7 @@ public interface FloatSupplier extends Try.FloatSupplier<RuntimeException> {
     static final FloatSupplier RANDOM = new FloatSupplier() {
         @Override
         public float getAsFloat() {
-            return Util.RAND.nextFloat();
+            return Util.RAND_FLOAT.nextFloat();
         }
     };
 

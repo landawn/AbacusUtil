@@ -8884,6 +8884,17 @@ public class RowDataSet implements DataSet, Cloneable {
         return (Sheet<Integer, String, T>) Sheet.columns(rowKeySet, this._columnNameList, this._columnList);
     }
 
+    @Override
+    public Map<String, List<Object>> toColumnMap() {
+        final Map<String, List<Object>> result = new LinkedHashMap<>();
+
+        for (String columnName : _columnNameList) {
+            result.put(columnName, getColumn(columnName));
+        }
+
+        return result;
+    };
+
     //    @Override
     //    public DataSetBuilder builder() {
     //        return Builder.of(this);
@@ -8917,11 +8928,11 @@ public class RowDataSet implements DataSet, Cloneable {
 
         try {
             if (columnLen == 0) {
-                bw.write("---");
+                bw.write(" - ");
                 bw.write(IOUtil.LINE_SEPARATOR);
                 bw.write("| |");
                 bw.write(IOUtil.LINE_SEPARATOR);
-                bw.write("---");
+                bw.write(" - ");
             } else {
                 final List<String> columnNameList = new ArrayList<>(columnNames);
                 final List<List<String>> strColumnList = new ArrayList<>(columnLen);

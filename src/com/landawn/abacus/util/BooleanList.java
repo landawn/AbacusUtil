@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,6 +45,8 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public final class BooleanList extends PrimitiveList<Boolean, boolean[], BooleanList> {
     private static final long serialVersionUID = -1194435277403867258L;
+
+    static final Random RAND = new SecureRandom();
 
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
     private int size = 0;

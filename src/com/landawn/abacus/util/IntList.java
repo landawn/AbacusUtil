@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +46,8 @@ import com.landawn.abacus.util.stream.IntStream;
  */
 public final class IntList extends PrimitiveList<Integer, int[], IntList> {
     private static final long serialVersionUID = 8661773953226671696L;
+
+    static final Random RAND = new SecureRandom();
 
     private int[] elementData = N.EMPTY_INT_ARRAY;
     private int size = 0;

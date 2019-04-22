@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
@@ -69,6 +71,8 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  */
 public abstract class DoubleStream
         extends StreamBase<Double, double[], DoublePredicate, DoubleConsumer, DoubleList, OptionalDouble, IndexedDouble, DoubleIterator, DoubleStream> {
+
+    static final Random RAND = new SecureRandom();
 
     DoubleStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);

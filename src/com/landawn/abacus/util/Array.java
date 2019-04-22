@@ -1135,6 +1135,312 @@ public final class Array {
         return a;
     }
 
+    public static boolean[][] concat(final boolean[][] a, final boolean[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new boolean[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final boolean[][] result = new boolean[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static boolean[][][] concat(final boolean[][][] a, final boolean[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new boolean[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final boolean[][][] result = new boolean[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static char[][] concat(final char[][] a, final char[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new char[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final char[][] result = new char[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static char[][][] concat(final char[][][] a, final char[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new char[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final char[][][] result = new char[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static byte[][] concat(final byte[][] a, final byte[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new byte[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final byte[][] result = new byte[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static byte[][][] concat(final byte[][][] a, final byte[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new byte[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final byte[][][] result = new byte[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static short[][] concat(final short[][] a, final short[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new short[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final short[][] result = new short[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static short[][][] concat(final short[][][] a, final short[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new short[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final short[][][] result = new short[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static int[][] concat(final int[][] a, final int[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new int[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final int[][] result = new int[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static int[][][] concat(final int[][][] a, final int[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new int[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final int[][][] result = new int[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static long[][] concat(final long[][] a, final long[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new long[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final long[][] result = new long[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static long[][][] concat(final long[][][] a, final long[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new long[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final long[][][] result = new long[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static float[][] concat(final float[][] a, final float[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new float[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final float[][] result = new float[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static float[][][] concat(final float[][][] a, final float[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new float[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final float[][][] result = new float[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static double[][] concat(final double[][] a, final double[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new double[0][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final double[][] result = new double[maxLen][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static double[][][] concat(final double[][][] a, final double[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new double[0][][] : N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final double[][][] result = new double[maxLen][][];
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static <T> T[][] concatt(final T[][] a, final T[][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final T[][] result = newInstance(a.getClass().getComponentType(), maxLen);
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = N.concat(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
+    public static <T> T[][][] concatt(final T[][][] a, final T[][][] b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.clone(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return N.clone(a);
+        }
+
+        final int maxLen = N.max(N.len(a), N.len(b));
+        final T[][][] result = newInstance(a.getClass().getComponentType(), maxLen);
+
+        for (int i = 0, aLen = N.len(a), bLen = N.len(b); i < maxLen; i++) {
+            result[i] = concatt(i < aLen ? a[i] : null, i < bLen ? b[i] : null);
+        }
+
+        return result;
+    }
+
     static void sort(final boolean[] a) {
         if (N.isNullOrEmpty(a)) {
             return;

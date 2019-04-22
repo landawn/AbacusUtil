@@ -28,7 +28,21 @@ class Util {
         // singleton.
     }
 
-    static final Random RAND = new SecureRandom();
+    static final Random RAND_BOOLEAN = new SecureRandom();
+
+    static final Random RAND_CHAR = new SecureRandom();
+
+    static final Random RAND_BYTE = new SecureRandom();
+
+    static final Random RAND_SHORT = new SecureRandom();
+
+    static final Random RAND_INT = new SecureRandom();
+
+    static final Random RAND_LONG = new SecureRandom();
+
+    static final Random RAND_FLOAT = new SecureRandom();
+
+    static final Random RAND_DOUBLE = new SecureRandom();
 
     static final int CHAR_MOD = Character.MAX_VALUE + 1;
 }

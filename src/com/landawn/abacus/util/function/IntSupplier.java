@@ -34,7 +34,7 @@ public interface IntSupplier extends java.util.function.IntSupplier, Try.IntSupp
     static final IntSupplier RANDOM = new IntSupplier() {
         @Override
         public int getAsInt() {
-            return Util.RAND.nextInt();
+            return Util.RAND_INT.nextInt();
         }
     };
 

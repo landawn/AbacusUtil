@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.util.ContinuableFuture;
@@ -71,6 +73,8 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @see Stream 
  */
 public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongIterator, LongStream> {
+
+    static final Random RAND = new SecureRandom();
 
     LongStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);

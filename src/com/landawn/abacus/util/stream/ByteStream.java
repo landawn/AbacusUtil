@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
@@ -65,6 +67,8 @@ import com.landawn.abacus.util.function.ToByteFunction;
  * @see Stream 
  */
 public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteIterator, ByteStream> {
+
+    static final Random RAND = new SecureRandom();
 
     ByteStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, null, closeHandlers);
@@ -187,7 +191,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper, Supplier<? extends M> mapFactory);
+    public abstract <K, V, M extends Map<K, V>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends V> valueMapper,
+            Supplier<? extends M> mapFactory);
 
     /**
      * 
@@ -865,10 +870,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream random() {
+        final int bound = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
+
         return generate(new ByteSupplier() {
             @Override
             public byte getAsByte() {
-                return (byte) RAND.nextInt();
+                return (byte) (RAND.nextInt(bound) + Byte.MIN_VALUE);
             }
         });
     }

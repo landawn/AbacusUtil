@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +46,8 @@ import com.landawn.abacus.util.stream.DoubleStream;
  */
 public final class DoubleList extends PrimitiveList<Double, double[], DoubleList> {
     private static final long serialVersionUID = 766157472430159621L;
+
+    static final Random RAND = new SecureRandom();
 
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
     private int size = 0;

@@ -34,7 +34,7 @@ public interface ShortSupplier extends Try.ShortSupplier<RuntimeException> {
     static final ShortSupplier RANDOM = new ShortSupplier() {
         @Override
         public short getAsShort() {
-            return (short) Util.RAND.nextInt();
+            return (short) Util.RAND_SHORT.nextInt();
         }
     };
 

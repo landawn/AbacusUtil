@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +46,8 @@ import com.landawn.abacus.util.stream.Collector;
  */
 public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     private static final long serialVersionUID = 6361439693114081075L;
+
+    static final Random RAND = new SecureRandom();
 
     private byte[] elementData = N.EMPTY_BYTE_ARRAY;
     private int size = 0;
@@ -150,12 +153,13 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     public static ByteList random(final int len) {
+        final int bound = Byte.MAX_VALUE - Byte.MIN_VALUE + 1;
         final byte[] a = new byte[len];
 
         // Keep consistent with ByteStream/ShortList/ShortStream/CharList/CharStream.
         // RAND.nextBytes(a);
         for (int i = 0; i < len; i++) {
-            a[i] = (byte) RAND.nextInt();
+            a[i] = (byte) (RAND.nextInt(bound) + Byte.MIN_VALUE);
         }
 
         return of(a);

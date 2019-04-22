@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +46,6 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
      * larger arrays may result in OutOfMemoryError: Requested array size exceeds VM limit
      */
     static final int MAX_ARRAY_SIZE = N.MAX_ARRAY_SIZE;
-
-    static final Random RAND = new SecureRandom();
 
     static int hugeCapacity(int minCapacity) {
         if (minCapacity < 0) {

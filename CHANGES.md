@@ -1,3 +1,14 @@
+### 1.6.3
+
+* Add `Matrix/IntMatrix/.../f.flatOp`.
+
+* Add `N.newDataSet(Map)`.
+
+* Add `DataSet.toColumnMap`.
+
+* Improvements and bug fix.
+
+
 ### 1.6.2
 
 * Add `Stream.applyIfNotEmpty/map/acceptIfNotEmpty`.

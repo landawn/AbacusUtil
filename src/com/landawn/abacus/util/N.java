@@ -1575,6 +1575,43 @@ public final class N {
     //    }
 
     /**
+     * 
+     * @param map keys are column names, values are columns
+     * @return
+     */
+    public static <C extends Collection<?>> DataSet newDataSet(final Map<String, C> map) {
+        if (N.isNullOrEmpty(map)) {
+            return N.newEmptyDataSet();
+        }
+
+        int maxColumnLen = 0;
+
+        for (C v : map.values()) {
+            maxColumnLen = N.max(maxColumnLen, size(v));
+        }
+
+        final List<String> columnNameList = new ArrayList<>(map.keySet());
+        final List<List<Object>> columnList = new ArrayList<>(columnNameList.size());
+        List<Object> column = null;
+
+        for (C v : map.values()) {
+            column = new ArrayList<>(maxColumnLen);
+
+            if (N.notNullOrEmpty(v)) {
+                column.addAll(v);
+            }
+
+            if (column.size() < maxColumnLen) {
+                N.fill(column, column.size(), maxColumnLen, null);
+            }
+
+            columnList.add(column);
+        }
+
+        return new RowDataSet(columnNameList, columnList);
+    }
+
+    /**
      * Returns an empty array if the specified collection is null or empty.
      * 
      * @param c

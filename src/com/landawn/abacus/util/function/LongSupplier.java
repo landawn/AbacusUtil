@@ -34,7 +34,7 @@ public interface LongSupplier extends java.util.function.LongSupplier, Try.LongS
     static final LongSupplier RANDOM = new LongSupplier() {
         @Override
         public long getAsLong() {
-            return Util.RAND.nextLong();
+            return Util.RAND_LONG.nextLong();
         }
     };
 

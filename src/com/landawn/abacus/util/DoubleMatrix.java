@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.DoubleIteratorEx;
@@ -910,6 +911,11 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         }
 
         return DoubleList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<double[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

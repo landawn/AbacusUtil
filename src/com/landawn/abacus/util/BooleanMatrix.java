@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalBoolean;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
@@ -859,6 +860,11 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         }
 
         return BooleanList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<boolean[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

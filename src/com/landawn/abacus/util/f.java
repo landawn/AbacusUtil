@@ -20,7 +20,7 @@ import com.landawn.abacus.annotation.Beta;
 @Beta
 public final class f {
 
-    private static final String ARRAY_PRINT_SEPERATOR = StringUtil.repeat('-', 80);
+    private static final String ARRAY_PRINT_SEPERATOR = IOUtil.LINE_SEPARATOR;
 
     static final char CHAR_0 = (char) 0;
     static final byte BYTE_0 = (byte) 0;
@@ -93,6 +93,46 @@ public final class f {
         }
     }
 
+    public static <T> T[][] reshappe(final T[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        //        if (N.isNullOrEmpty(a)) {
+        //            return new T[0][0];
+        //        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final T[][] c = N.newArray(a.getClass(), n);
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static <T> T[][][] reshappe(final T[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        //        if (N.isNullOrEmpty(a)) {
+        //            return new T[0][0][0];
+        //        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final T[][][] c = N.newArray(N.newArray(a.getClass(), 0).getClass(), n);
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = N.newArray(a.getClass(), N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING)));
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static <T> T[] flattenn(final T[][] a) {
         int count = 0;
 
@@ -155,44 +195,70 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] reshappe(final T[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
-        //        if (N.isNullOrEmpty(a)) {
-        //            return new T[0][0];
-        //        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final T[][] c = N.newArray(a.getClass(), n);
-
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flattOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <T, E extends Exception> void flattOp(final T[][] a, Try.Consumer<T[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
         }
 
-        return c;
-    }
+        final T[] tmp = flattenn(a);
 
-    public static <T> T[][][] reshappe(final T[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        op.accept(tmp);
 
-        //        if (N.isNullOrEmpty(a)) {
-        //            return new T[0][0][0];
-        //        }
+        int idx = 0;
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final T[][][] c = N.newArray(N.newArray(a.getClass(), 0).getClass(), n);
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = N.newArray(a.getClass(), N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING)));
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (T[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flattOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <T, E extends Exception> void flattOp(final T[][][] a, Try.Consumer<T[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final T[] tmp = flattenn(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (T[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (T[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static <T, E extends Exception> T[] mapp(final T[] a, final Try.UnaryOperator<T, E> func) throws E {
@@ -1308,43 +1374,130 @@ public final class f {
         return result;
     }
 
-    public static <T> void println(final T[] a) {
+    public static <T> String println(final T[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static <T> void println(final T[][] a) {
+    public static <T> String println(final T[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            final int len = N.len(a);
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static <T> void println(final T[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = N.len(a);
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final T[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static <T> String println(final T[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final T[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final T[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -1440,6 +1593,46 @@ public final class f {
         }
     }
 
+    public static boolean[][] reshape(final boolean[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new boolean[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final boolean[][] c = new boolean[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static boolean[][][] reshape(final boolean[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new boolean[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final boolean[][][] c = new boolean[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new boolean[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static boolean[] flatten(final boolean[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BOOLEAN_ARRAY;
@@ -1510,44 +1703,70 @@ public final class f {
         return c;
     }
 
-    public static boolean[][] reshape(final boolean[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final boolean[][] a, Try.Consumer<boolean[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new boolean[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final boolean[][] c = new boolean[n][];
+        final boolean[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static boolean[][][] reshape(final boolean[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new boolean[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final boolean[][][] c = new boolean[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new boolean[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (boolean[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final boolean[][][] a, Try.Consumer<boolean[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final boolean[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (boolean[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (boolean[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static <E extends Exception> boolean[] zip(final boolean[] a, final boolean[] b, final Try.BooleanBiFunction<Boolean, E> zipFunction) throws E {
@@ -1811,43 +2030,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final boolean[] a) {
+    public static String println(final boolean[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final boolean[][] a) {
+    public static String println(final boolean[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final boolean[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final boolean[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final boolean[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final boolean[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final boolean[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -2063,6 +2369,46 @@ public final class f {
         }
     }
 
+    public static char[][] reshape(final char[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new char[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final char[][] c = new char[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static char[][][] reshape(final char[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new char[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final char[][][] c = new char[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new char[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static char[] flatten(final char[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_CHAR_ARRAY;
@@ -2133,44 +2479,70 @@ public final class f {
         return c;
     }
 
-    public static char[][] reshape(final char[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final char[][] a, Try.Consumer<char[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new char[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final char[][] c = new char[n][];
+        final char[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static char[][][] reshape(final char[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new char[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final char[][][] c = new char[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new char[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (char[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final char[][][] a, Try.Consumer<char[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final char[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (char[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (char[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static <E extends Exception> char[] zip(final char[] a, final char[] b, final Try.CharBiFunction<Character, E> zipFunction) throws E {
@@ -2431,43 +2803,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final char[] a) {
+    public static String println(final char[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final char[][] a) {
+    public static String println(final char[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final char[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final char[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final char[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final char[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final char[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -2751,6 +3210,72 @@ public final class f {
         }
 
         return c;
+    }
+
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final byte[][] a, Try.Consumer<byte[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final byte[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (byte[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
+            }
+        }
+    }
+
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final byte[][][] a, Try.Consumer<byte[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final byte[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (byte[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (byte[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static byte[][] reshape(final byte[] a, final int m) {
@@ -4304,43 +4829,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final byte[] a) {
+    public static String println(final byte[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final byte[][] a) {
+    public static String println(final byte[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final byte[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final byte[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final byte[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final byte[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final byte[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -4556,6 +5168,46 @@ public final class f {
         }
     }
 
+    public static short[][] reshape(final short[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new short[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final short[][] c = new short[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static short[][][] reshape(final short[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new short[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final short[][][] c = new short[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new short[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static short[] flatten(final short[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_SHORT_ARRAY;
@@ -4626,44 +5278,70 @@ public final class f {
         return c;
     }
 
-    public static short[][] reshape(final short[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final short[][] a, Try.Consumer<short[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new short[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final short[][] c = new short[n][];
+        final short[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static short[][][] reshape(final short[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new short[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final short[][][] c = new short[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new short[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (short[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final short[][][] a, Try.Consumer<short[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final short[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (short[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (short[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static short[] add(final short[] a, final short[] b) {
@@ -6182,43 +6860,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final short[] a) {
+    public static String println(final short[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final short[][] a) {
+    public static String println(final short[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final short[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final short[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final short[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final short[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final short[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -6434,6 +7199,46 @@ public final class f {
         }
     }
 
+    public static int[][] reshape(final int[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new int[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final int[][] c = new int[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static int[][][] reshape(final int[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new int[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final int[][][] c = new int[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new int[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static int[] flatten(final int[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_INT_ARRAY;
@@ -6504,44 +7309,70 @@ public final class f {
         return c;
     }
 
-    public static int[][] reshape(final int[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final int[][] a, Try.Consumer<int[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new int[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final int[][] c = new int[n][];
+        final int[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static int[][][] reshape(final int[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new int[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final int[][][] c = new int[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new int[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (int[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final int[][][] a, Try.Consumer<int[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final int[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (int[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (int[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static int[] add(final int[] a, final int[] b) {
@@ -8049,43 +8880,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final int[] a) {
+    public static String println(final int[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final int[][] a) {
+    public static String println(final int[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final int[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final int[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final int[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final int[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final int[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -8301,6 +9219,46 @@ public final class f {
         }
     }
 
+    public static long[][] reshape(final long[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new long[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final long[][] c = new long[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static long[][][] reshape(final long[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new long[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final long[][][] c = new long[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new long[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static long[] flatten(final long[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_LONG_ARRAY;
@@ -8371,44 +9329,70 @@ public final class f {
         return c;
     }
 
-    public static long[][] reshape(final long[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final long[][] a, Try.Consumer<long[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new long[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final long[][] c = new long[n][];
+        final long[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static long[][][] reshape(final long[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new long[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final long[][][] c = new long[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new long[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (long[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final long[][][] a, Try.Consumer<long[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final long[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (long[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (long[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static long[] add(final long[] a, final long[] b) {
@@ -9922,43 +10906,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final long[] a) {
+    public static String println(final long[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final long[][] a) {
+    public static String println(final long[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final long[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final long[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final long[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final long[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final long[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -10174,6 +11245,46 @@ public final class f {
         }
     }
 
+    public static float[][] reshape(final float[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new float[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final float[][] c = new float[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static float[][][] reshape(final float[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new float[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final float[][][] c = new float[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new float[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static float[] flatten(final float[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_FLOAT_ARRAY;
@@ -10244,44 +11355,70 @@ public final class f {
         return c;
     }
 
-    public static float[][] reshape(final float[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final float[][] a, Try.Consumer<float[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new float[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final float[][] c = new float[n][];
+        final float[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static float[][][] reshape(final float[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new float[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final float[][][] c = new float[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new float[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (float[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final float[][][] a, Try.Consumer<float[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final float[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (float[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (float[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static float[] add(final float[] a, final float[] b) {
@@ -11800,43 +12937,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final float[] a) {
+    public static String println(final float[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final float[][] a) {
+    public static String println(final float[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final float[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final float[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final float[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final float[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final float[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 
@@ -12052,6 +13276,46 @@ public final class f {
         }
     }
 
+    public static double[][] reshape(final double[] a, final int m) {
+        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+        if (N.isNullOrEmpty(a)) {
+            return new double[0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m, RoundingMode.CEILING);
+        final double[][] c = new double[n][];
+
+        for (int i = 0, from = 0; i < n; i++, from += m) {
+            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+        }
+
+        return c;
+    }
+
+    public static double[][][] reshape(final double[] a, final int m, final int l) {
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+        if (N.isNullOrEmpty(a)) {
+            return new double[0][0][0];
+        }
+
+        final int len = a.length;
+        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+        final double[][][] c = new double[n][][];
+
+        for (int i = 0, from = 0; i < n; i++) {
+            c[i] = new double[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
+
+            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+            }
+        }
+
+        return c;
+    }
+
     public static double[] flatten(final double[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_DOUBLE_ARRAY;
@@ -12122,44 +13386,70 @@ public final class f {
         return c;
     }
 
-    public static double[][] reshape(final double[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final double[][] a, Try.Consumer<double[], E> op) throws E {
         if (N.isNullOrEmpty(a)) {
-            return new double[0][0];
+            return;
         }
 
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final double[][] c = new double[n][];
+        final double[] tmp = flatten(a);
 
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
+        op.accept(tmp);
 
-        return c;
-    }
+        int idx = 0;
 
-    public static double[][][] reshape(final double[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        if (N.isNullOrEmpty(a)) {
-            return new double[0][0][0];
-        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final double[][][] c = new double[n][][];
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new double[N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING))][];
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+        for (double[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                N.copy(tmp, idx, e, 0, e.length);
+                idx += e.length;
             }
         }
+    }
 
-        return c;
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * f.flatOp(a, t -> N.sort(t));
+     * </code>
+     * </pre>
+     * 
+     * @param a
+     * @param op
+     * @throws E
+     */
+    public static <E extends Exception> void flatOp(final double[][][] a, Try.Consumer<double[], E> op) throws E {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        final double[] tmp = flatten(a);
+
+        op.accept(tmp);
+
+        int idx = 0;
+
+        for (double[][] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                for (double[] ee : e) {
+                    if (N.notNullOrEmpty(e)) {
+                        N.copy(tmp, idx, ee, 0, e.length);
+                        idx += ee.length;
+                    }
+                }
+            }
+        }
     }
 
     public static double[] add(final double[] a, final double[] b) {
@@ -13681,43 +14971,130 @@ public final class f {
         return result;
     }
 
-    public static void println(final double[] a) {
+    public static String println(final double[] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
-            N.println(a);
+            return N.println(N.toString(a));
         }
     }
 
-    public static void println(final double[][] a) {
+    public static String println(final double[][] a) {
         if (a == null) {
-            N.println("null");
+            return N.println("null");
         } else if (a.length == 0) {
-            N.println("[]");
+            return N.println("[]");
         } else {
             final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                println(a[i]);
-            }
-        }
-    }
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
 
-    public static void println(final double[][][] a) {
-        if (a == null) {
-            N.println("null");
-        } else if (a.length == 0) {
-            N.println("[]");
-        } else {
-            final int len = a.length;
-            for (int i = 0; i < len; i++) {
-                if (i > 0) {
-                    N.println(ARRAY_PRINT_SEPERATOR);
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final double[] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(", ");
+                            }
+
+                            sb.append(ai[j]);
+                        }
+
+                        sb.append(']');
+                    }
                 }
 
-                println(a[i]);
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
             }
+
+            N.println(str);
+
+            return str;
+        }
+    }
+
+    public static String println(final double[][][] a) {
+        if (a == null) {
+            return N.println("null");
+        } else if (a.length == 0) {
+            return N.println("[]");
+        } else {
+            final int len = a.length;
+            final StringBuilder sb = Objectory.createStringBuilder();
+            String str = null;
+
+            try {
+                sb.append('[');
+
+                for (int i = 0; i < len; i++) {
+                    if (i > 0) {
+                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                    }
+
+                    if (a[i] == null) {
+                        sb.append("null");
+                    } else if (a[i].length == 0) {
+                        sb.append("[]");
+                    } else {
+                        final double[][] ai = a[i];
+                        sb.append('[');
+
+                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                            if (j > 0) {
+                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                            }
+
+                            if (ai[j] == null) {
+                                sb.append("null");
+                            } else if (ai[j].length == 0) {
+                                sb.append("[]");
+                            } else {
+                                final double[] aij = ai[j];
+                                sb.append('[');
+
+                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                    if (k > 0) {
+                                        sb.append(", ");
+                                    }
+
+                                    sb.append(aij[k]);
+                                }
+
+                                sb.append(']');
+                            }
+                        }
+
+                        sb.append(']');
+                    }
+                }
+
+                sb.append(']');
+                str = sb.toString();
+            } finally {
+                Objectory.recycle(sb);
+            }
+
+            N.println(str);
+
+            return str;
         }
     }
 

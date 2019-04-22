@@ -14,9 +14,6 @@
 
 package com.landawn.abacus.util;
 
-import java.security.SecureRandom;
-import java.util.Random;
-
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -37,7 +34,6 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, PL, ES, RS, X>> {
-    static final Random RAND = new SecureRandom();
 
     static final boolean isParallelStreamSupported;
     static {
@@ -182,6 +178,19 @@ public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, 
     public abstract X repmat(int rowRepeats, int colRepeats);
 
     public abstract PL flatten();
+
+    /**
+     * flatten -> execute {@code op} -> set values back.
+     * <pre>
+     * <code>
+     * matrix.flatOp(a -> N.sort(a));
+     * </code>
+     * </pre>
+     * 
+     * @param op
+     * @throws E
+     */
+    public abstract <E extends Exception> void flatOp(Try.Consumer<A, E> op) throws E;
 
     /**
      * <pre>

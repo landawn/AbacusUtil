@@ -41,7 +41,7 @@ public interface BooleanSupplier extends java.util.function.BooleanSupplier, Try
     static final BooleanSupplier RANDOM = new BooleanSupplier() {
         @Override
         public boolean getAsBoolean() {
-            return Util.RAND.nextInt() / 2 == 0 ? false : true;
+            return Util.RAND_BOOLEAN.nextInt() / 2 == 0 ? false : true;
         }
     };
 

@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Try.Consumer;
 import com.landawn.abacus.util.u.OptionalLong;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.IntStream;
@@ -892,6 +893,11 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         }
 
         return LongList.of(c);
+    }
+
+    @Override
+    public <E extends Exception> void flatOp(Consumer<long[], E> op) throws E {
+        f.flatOp(a, op);
     }
 
     /**

@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -132,6 +134,8 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  */
 public abstract class Stream<T>
         extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Optional<T>, Indexed<T>, ObjIterator<T>, Stream<T>> {
+
+    static final Random RAND = new SecureRandom();
 
     Stream(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
         super(sorted, cmp, closeHandlers);
