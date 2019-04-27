@@ -6,6 +6,8 @@
 
 * Add `DataSet.toColumnMap`.
 
+* Add `Array.concat`.
+
 * Improvements and bug fix.
 
 

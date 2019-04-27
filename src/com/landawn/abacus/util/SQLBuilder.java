@@ -239,7 +239,7 @@ public abstract class SQLBuilder {
                             columnName = field.getAnnotation(javax.persistence.Column.class).name();
                         }
                     } catch (Throwable e) {
-                        // ignore
+                        logger.warn("To support javax.persistence.Table/Column, please add dependence javax.persistence:persistence-api");
                     }
                 }
 
@@ -295,7 +295,7 @@ public abstract class SQLBuilder {
                         entityTableName = entityClass.getAnnotation(javax.persistence.Table.class).name();
                     }
                 } catch (Throwable e) {
-                    // ignore.
+                    logger.warn("To support javax.persistence.Table/Column, please add dependence javax.persistence:persistence-api");
                 }
             }
 

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -80,6 +81,7 @@ import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.SliceSelector;
 import com.landawn.abacus.Transaction;
 import com.landawn.abacus.Transaction.Status;
+import com.landawn.abacus.annotation.Column;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.dataSource.DataSourceConfiguration;
 import com.landawn.abacus.dataSource.DataSourceManagerConfiguration;
@@ -1754,9 +1756,7 @@ public final class JdbcUtil {
                     return (T) m;
                 }
             };
-        } else if (N.isEntity(targetClass))
-
-        {
+        } else if (N.isEntity(targetClass)) {
             return new BiRecordGetter<T, RuntimeException>() {
                 private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
                 private volatile String[] columnLabels = null;
@@ -1778,12 +1778,25 @@ public final class JdbcUtil {
 
                     if (columnTypes == null || propSetters == null) {
                         final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
+                        final Map<String, String> column2FieldNameMap = getField2ColumnNameMap(targetClass);
 
                         propSetters = new Method[columnCount];
                         columnTypes = new Type[columnCount];
 
                         for (int i = 0; i < columnCount; i++) {
                             propSetters[i] = ClassUtil.getPropSetMethod(targetClass, columnLabels[i]);
+
+                            if (propSetters[i] == null) {
+                                String fieldName = column2FieldNameMap.get(columnLabels[i]);
+
+                                if (N.isNullOrEmpty(fieldName)) {
+                                    fieldName = column2FieldNameMap.get(columnLabels[i].toLowerCase());
+                                }
+
+                                if (N.notNullOrEmpty(fieldName)) {
+                                    propSetters[i] = ClassUtil.getPropSetMethod(targetClass, fieldName);
+                                }
+                            }
 
                             if (propSetters[i] == null) {
                                 columnLabels[i] = null;
@@ -3193,6 +3206,54 @@ public final class JdbcUtil {
         }
 
         return false;
+    }
+
+    private static final Map<Class<?>, Map<String, String>> column2FieldNameMapPool = new ConcurrentHashMap<>();
+
+    static Map<String, String> getField2ColumnNameMap(Class<?> entityClass) {
+        Map<String, String> result = column2FieldNameMapPool.get(entityClass);
+
+        if (result == null) {
+            result = N.newBiMap(LinkedHashMap.class, LinkedHashMap.class);
+
+            final Set<Field> allFields = new HashSet<>();
+
+            for (Class<?> superClass : ClassUtil.getAllSuperclasses(entityClass)) {
+                allFields.addAll(Array.asList(superClass.getDeclaredFields()));
+            }
+
+            allFields.addAll(Array.asList(entityClass.getDeclaredFields()));
+
+            for (Field field : allFields) {
+                if (ClassUtil.getPropGetMethod(entityClass, field.getName()) != null) {
+                    String columnName = null;
+
+                    if (field.isAnnotationPresent(Column.class)) {
+                        columnName = field.getAnnotation(Column.class).value();
+                    } else {
+                        try {
+                            if (field.isAnnotationPresent(javax.persistence.Column.class)) {
+                                columnName = field.getAnnotation(javax.persistence.Column.class).name();
+                            }
+                        } catch (Throwable e) {
+                            logger.warn("To support javax.persistence.Table/Column, please add dependence javax.persistence:persistence-api");
+                        }
+                    }
+
+                    if (N.notNullOrEmpty(columnName)) {
+                        result.put(columnName, field.getName());
+                        result.put(columnName.toLowerCase(), field.getName());
+                        result.put(columnName.toUpperCase(), field.getName());
+                    }
+                }
+            }
+
+            result = ImmutableMap.of(result);
+
+            column2FieldNameMapPool.put(entityClass, result);
+        }
+
+        return result;
     }
 
     /**
