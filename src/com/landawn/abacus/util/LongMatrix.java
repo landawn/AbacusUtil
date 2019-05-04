@@ -1741,6 +1741,11 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
     }
 
     @Override
+    public void println() {
+        f.println(a);
+    }
+
+    @Override
     public int hashCode() {
         return N.deepHashCode(a);
     }

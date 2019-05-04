@@ -348,7 +348,7 @@ public class u {
         @Override
         public String toString() {
             if (isPresent()) {
-                return String.format("Optional[%s]", value);
+                return String.format("Optional[%s]", N.toString(value));
             }
 
             return "Optional.empty";
@@ -2784,7 +2784,7 @@ public class u {
             if (value == null) {
                 return isPresent ? "Nullable[null]" : "Nullable.empty";
             } else {
-                return String.format("Nullable[%s]", value);
+                return String.format("Nullable[%s]", N.toString(value));
             }
         }
     }
@@ -3041,7 +3041,11 @@ public class u {
 
         @Override
         public String toString() {
-            return N.toString(value);
+            if (value == null) {
+                return "Reference[null]";
+            } else {
+                return String.format("Reference[%s]", N.toString(value));
+            }
         }
     }
 

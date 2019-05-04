@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableArray;
 import com.landawn.abacus.util.Tuple.Tuple1;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
@@ -1856,24 +1857,24 @@ public abstract class Fn extends Comparators {
         };
     }
 
-    public static <K, V, KK> Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapKey(final Function<? super K, KK> func) {
+    public static <K, V, KK> Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapKey(final Function<? super K, ? extends KK> func) {
         N.checkArgNotNull(func);
 
         return new Function<Map.Entry<K, V>, Map.Entry<KK, V>>() {
             @Override
             public Map.Entry<KK, V> apply(Entry<K, V> entry) {
-                return new SimpleImmutableEntry<>(func.apply(entry.getKey()), entry.getValue());
+                return new SimpleImmutableEntry<KK, V>(func.apply(entry.getKey()), entry.getValue());
             }
         };
     }
 
-    public static <K, V, VV> Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapValue(final Function<? super V, VV> func) {
+    public static <K, V, VV> Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapValue(final Function<? super V, ? extends VV> func) {
         N.checkArgNotNull(func);
 
         return new Function<Map.Entry<K, V>, Map.Entry<K, VV>>() {
             @Override
             public Map.Entry<K, VV> apply(Entry<K, V> entry) {
-                return new SimpleImmutableEntry<>(entry.getKey(), func.apply(entry.getValue()));
+                return new SimpleImmutableEntry<K, VV>(entry.getKey(), func.apply(entry.getValue()));
             }
         };
     }
@@ -6289,6 +6290,48 @@ public abstract class Fn extends Comparators {
         @SuppressWarnings("rawtypes")
         public static <T> Function<Triple<T, T, T>, Set<T>> toSet() {
             return (Function) TRIPLE_TO_SET;
+        }
+    }
+
+    public static final class Disposables {
+        @SuppressWarnings("rawtypes")
+        private static final Function<DisposableArray, Object[]> CLONE = new Function<DisposableArray, Object[]>() {
+            @Override
+            public Object[] apply(DisposableArray t) {
+                return t.clone();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Function<DisposableArray, String> TO_STRING = new Function<DisposableArray, String>() {
+            @Override
+            public String apply(DisposableArray t) {
+                return t.toString();
+            }
+        };
+
+        private Disposables() {
+            // singleton.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T, A extends DisposableArray<T>> Function<A, T[]> cloneArray() {
+            return (Function) CLONE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <A extends DisposableArray> Function<A, String> toStr() {
+            return (Function) TO_STRING;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <A extends DisposableArray> Function<A, String> join(final String delimiter) {
+            return new Function<A, String>() {
+                @Override
+                public String apply(A t) {
+                    return t.join(delimiter);
+                }
+            };
         }
     }
 

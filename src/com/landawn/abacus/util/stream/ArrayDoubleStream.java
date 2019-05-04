@@ -232,8 +232,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
 
@@ -839,8 +837,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -876,8 +872,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -1007,8 +1001,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n >= count()) {
                     cursor = toIndex;
                 } else {
@@ -1057,8 +1049,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n >= count()) {
                     cursor = toIndex;
                 } else {
@@ -1117,8 +1107,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -1363,8 +1351,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper,
-            BinaryOperator<V> mergeFunction, Supplier<? extends M> mapFactory) {
+    public <K, V, M extends Map<K, V>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends V> valueMapper, BinaryOperator<V> mergeFunction,
+            Supplier<? extends M> mapFactory) {
         assertNotClosed();
 
         try {
@@ -1604,8 +1592,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
 
@@ -1665,8 +1651,6 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }
 

@@ -40,8 +40,8 @@ import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
+import com.landawn.abacus.util.function.CharTernaryOperator;
 import com.landawn.abacus.util.function.CharToIntFunction;
-import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -886,23 +886,23 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharBiFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharBinaryOperator zipFunction) {
         return new ParallelIteratorCharStream(CharStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharStream c, CharTriFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharStream c, CharTernaryOperator zipFunction) {
         return new ParallelIteratorCharStream(CharStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBinaryOperator zipFunction) {
         return new ParallelIteratorCharStream(CharStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTernaryOperator zipFunction) {
         return new ParallelIteratorCharStream(CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

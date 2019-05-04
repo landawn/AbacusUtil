@@ -39,6 +39,8 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NoCachingNoUpdating;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableEntry;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
@@ -71,14 +73,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
         }
     };
 
-    private final Map<K, V> m;
-    private final Stream<Map.Entry<K, V>> s;
+    final Map<K, V> m;
+    final Stream<Map.Entry<K, V>> s;
 
-    EntryStream(final Stream<? extends Map.Entry<K, V>> s) {
+    EntryStream(final Stream<? extends Map.Entry<? extends K, ? extends V>> s) {
         this(null, s);
     }
 
-    EntryStream(final Map<K, V> m, final Stream<? extends Map.Entry<K, V>> s) {
+    EntryStream(final Map<K, V> m, final Stream<? extends Map.Entry<? extends K, ? extends V>> s) {
         this.m = m;
         this.s = (Stream<Map.Entry<K, V>>) s;
     }
@@ -159,7 +161,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<K, V> filter(final Predicate<Map.Entry<K, V>> predicate) {
+    public <KK> EntryStream<K, V> filter(final Predicate<? super Map.Entry<K, V>> predicate) {
         return of(s.filter(predicate));
     }
 
@@ -184,7 +186,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<K, V> removeIf(final Predicate<Map.Entry<K, V>> predicate) {
+    public <KK> EntryStream<K, V> removeIf(final Predicate<? super Map.Entry<K, V>> predicate) {
         return of(s.removeIf(predicate));
     }
 
@@ -194,7 +196,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<K, V> takeWhile(final Predicate<Map.Entry<K, V>> predicate) {
+    public <KK> EntryStream<K, V> takeWhile(final Predicate<? super Map.Entry<K, V>> predicate) {
         return of(s.takeWhile(predicate));
     }
 
@@ -204,7 +206,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<K, V> dropWhile(final Predicate<Map.Entry<K, V>> predicate) {
+    public <KK> EntryStream<K, V> dropWhile(final Predicate<? super Map.Entry<K, V>> predicate) {
         return of(s.dropWhile(predicate));
     }
 
@@ -214,26 +216,28 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, Map.Entry<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, ? extends Map.Entry<? extends KK, ? extends VV>> mapper) {
         return s.mapToEntry(mapper);
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, KK> keyMapper, final Function<? super Map.Entry<K, V>, VV> valueMapper) {
+    public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper) {
         return s.mapToEntry(keyMapper, valueMapper);
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, Map.Entry<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, ? extends Map.Entry<? extends KK, ? extends VV>> mapper) {
         return map(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, KK> keyMapper, final BiFunction<? super K, ? super V, VV> valueMapper) {
+    public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, ? extends KK> keyMapper,
+            final BiFunction<? super K, ? super V, ? extends VV> valueMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
             @Override
             public Entry<KK, VV> apply(Entry<K, V> t) {
-                return new SimpleImmutableEntry<>(keyMapper.apply(t.getKey(), t.getValue()), valueMapper.apply(t.getKey(), t.getValue()));
+                return new SimpleImmutableEntry<KK, VV>(keyMapper.apply(t.getKey(), t.getValue()), valueMapper.apply(t.getKey(), t.getValue()));
             }
         };
 
@@ -241,18 +245,18 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> mapKey(final Function<? super K, KK> keyMapper) {
+    public <KK> EntryStream<KK, V> mapKey(final Function<? super K, ? extends KK> keyMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapper = Fn.mapKey(keyMapper);
 
         return map(mapper);
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> mapKey(final BiFunction<? super K, ? super V, KK> keyMapper) {
+    public <KK> EntryStream<KK, V> mapKey(final BiFunction<? super K, ? super V, ? extends KK> keyMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, V>>() {
             @Override
             public Entry<KK, V> apply(Entry<K, V> entry) {
-                return new SimpleImmutableEntry<>(keyMapper.apply(entry.getKey(), entry.getValue()), entry.getValue());
+                return new SimpleImmutableEntry<KK, V>(keyMapper.apply(entry.getKey(), entry.getValue()), entry.getValue());
             }
         };
 
@@ -260,18 +264,18 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> mapValue(final Function<? super V, VV> valueMapper) {
+    public <VV> EntryStream<K, VV> mapValue(final Function<? super V, ? extends VV> valueMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapper = Fn.mapValue(valueMapper);
 
         return map(mapper);
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> mapValue(final BiFunction<? super K, ? super V, VV> keyMapper) {
+    public <VV> EntryStream<K, VV> mapValue(final BiFunction<? super K, ? super V, ? extends VV> keyMapper) {
         final Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<K, VV>>() {
             @Override
             public Entry<K, VV> apply(Entry<K, V> entry) {
-                return new SimpleImmutableEntry<>(entry.getKey(), keyMapper.apply(entry.getKey(), entry.getValue()));
+                return new SimpleImmutableEntry<K, VV>(entry.getKey(), keyMapper.apply(entry.getKey(), entry.getValue()));
             }
         };
 
@@ -279,37 +283,39 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, ? extends EntryStream<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, ? extends EntryStream<? extends KK, ? extends VV>> mapper) {
         return s.flatMappToEntry(mapper);
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flatMap(final BiFunction<? super K, ? super V, ? extends EntryStream<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flatMap(final BiFunction<? super K, ? super V, ? extends EntryStream<? extends KK, ? extends VV>> mapper) {
         return flatMap(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flattMap(final Function<? super Map.Entry<K, V>, ? extends Stream<? extends Map.Entry<KK, VV>>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flattMap(
+            final Function<? super Map.Entry<K, V>, ? extends Stream<? extends Map.Entry<? extends KK, ? extends VV>>> mapper) {
         return s.flatMapToEntry(mapper);
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flattMap(final BiFunction<? super K, ? super V, ? extends Stream<? extends Map.Entry<KK, VV>>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flattMap(
+            final BiFunction<? super K, ? super V, ? extends Stream<? extends Map.Entry<? extends KK, ? extends VV>>> mapper) {
         return flattMap(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flatMapp(final Function<? super Map.Entry<K, V>, ? extends Map<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flatMapp(final Function<? super Map.Entry<K, V>, ? extends Map<? extends KK, ? extends VV>> mapper) {
         return s.flattMapToEntry(mapper);
     }
 
     @ParallelSupported
-    public <KK, VV> EntryStream<KK, VV> flatMapp(final BiFunction<? super K, ? super V, ? extends Map<KK, VV>> mapper) {
+    public <KK, VV> EntryStream<KK, VV> flatMapp(final BiFunction<? super K, ? super V, ? extends Map<? extends KK, ? extends VV>> mapper) {
         return flatMapp(Fn.Entries.f(mapper));
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, ? extends Stream<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, ? extends Stream<? extends KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -326,7 +332,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> flatMapKey(final BiFunction<? super K, ? super V, ? extends Stream<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flatMapKey(final BiFunction<? super K, ? super V, ? extends Stream<? extends KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -343,7 +349,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> flattMapKey(final Function<? super K, ? extends Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKey(final Function<? super K, ? extends Collection<? extends KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -360,7 +366,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <KK> EntryStream<KK, V> flattMapKey(final BiFunction<? super K, ? super V, ? extends Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKey(final BiFunction<? super K, ? super V, ? extends Collection<? extends KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
@@ -377,7 +383,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, ? extends Stream<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, ? extends Stream<? extends VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -394,7 +400,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> flatMapValue(final BiFunction<? super K, ? super V, ? extends Stream<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flatMapValue(final BiFunction<? super K, ? super V, ? extends Stream<? extends VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -411,7 +417,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> flattMapValue(final Function<? super V, ? extends Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValue(final Function<? super V, ? extends Collection<? extends VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -428,7 +434,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <VV> EntryStream<K, VV> flattMapValue(final BiFunction<? super K, ? super V, ? extends Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValue(final BiFunction<? super K, ? super V, ? extends Collection<? extends VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
@@ -787,7 +793,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @SuppressWarnings("rawtypes")
     @SequentialOnly
-    public EntryStream<K, V> prepend(Map<? extends K, ? extends V> map) {
+    public <M extends Map<? extends K, ? extends V>> EntryStream<K, V> prepend(M map) {
         if (N.isNullOrEmpty(map)) {
             return of(s);
         }
@@ -799,7 +805,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     @SuppressWarnings("rawtypes")
     @SequentialOnly
-    public EntryStream<K, V> append(Map<? extends K, ? extends V> map) {
+    public <M extends Map<? extends K, ? extends V>> EntryStream<K, V> append(M map) {
         if (N.isNullOrEmpty(map)) {
             return of(s);
         }
@@ -809,7 +815,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.append(set));
     }
 
-    public EntryStream<K, V> appendIfEmpty(final Supplier<EntryStream<K, V>> supplier) {
+    public EntryStream<K, V> appendIfEmpty(final Supplier<? extends EntryStream<K, V>> supplier) {
         return EntryStream.of(s.appendIfEmpty(new Supplier<Stream<Map.Entry<K, V>>>() {
             @Override
             public Stream<Map.Entry<K, V>> get() {
@@ -1324,8 +1330,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     @ParallelSupported
-    public <R> R collect(final Supplier<R> supplier, final BiConsumer<? super R, ? super Map.Entry<K, V>> accumulator,
-            final BiConsumer<R, R> combiner) {
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<? super R, ? super Map.Entry<K, V>> accumulator, final BiConsumer<R, R> combiner) {
         return s.collect(supplier, accumulator, combiner);
     }
 
@@ -1440,20 +1445,20 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     /**
      * @return
-     * @see #mapER(Function, Function)
+     * @see Stream#mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public EntryStream<V, K> inversedER() {
+    public EntryStream<V, K> inversedToDisposableEntry() {
         checkState(s.isParallel() == false, "inversedER can't be applied to parallel stream");
 
-        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
+        final Function<Map.Entry<K, V>, DisposableEntry<V, K>> mapper = new Function<Map.Entry<K, V>, DisposableEntry<V, K>>() {
             private final ReusableEntry<V, K> entry = new ReusableEntry<>();
 
             @Override
-            public Entry<V, K> apply(Entry<K, V> e) {
+            public DisposableEntry<V, K> apply(Entry<K, V> e) {
                 entry.set(e.getValue(), e.getKey());
 
                 return entry;
@@ -1464,26 +1469,27 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     /**
-     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
+     * To reduce the memory footprint, Only one instance of <code>DisposableEntry</code> is created, 
      * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
      * The elements only can be retrieved one by one, can't be modified or saved.
      * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
      * , and can't be parallel stream.
-     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
-     * 
-     * <br />
-     * <code>ER</code> = <code>Entry Reusable</code>
-     * 
+     * Operations: filter/map/toMap/groupBy/groupTo/... are supported. 
      * 
      * @param keyMapper
      * @param valueMapper
      * @return
+     * 
+     * @see DisposableEntry
+     * @see NoCachingNoUpdating
+     * 
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <KK, VV> EntryStream<KK, VV> mapER(final Function<? super Map.Entry<K, V>, KK> keyMapper, final Function<? super Map.Entry<K, V>, VV> valueMapper) {
+    public <KK, VV> EntryStream<KK, VV> mapToDisposableEntry(final Function<? super Map.Entry<K, V>, ? extends KK> keyMapper,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper) {
         checkState(s.isParallel() == false, "mapER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
@@ -1505,13 +1511,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @param keyMapper
      * @param valueMapper
      * @return
-     * @see #mapER(Function, Function)
+     * @see #mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <KK, VV> EntryStream<KK, VV> mapER(final BiFunction<? super K, ? super V, KK> keyMapper, final BiFunction<? super K, ? super V, VV> valueMapper) {
+    public <KK, VV> EntryStream<KK, VV> mapToDisposableEntry(final BiFunction<? super K, ? super V, ? extends KK> keyMapper,
+            final BiFunction<? super K, ? super V, ? extends VV> valueMapper) {
         checkState(s.isParallel() == false, "mapER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
@@ -1533,13 +1540,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * 
      * @param keyMapper
      * @return
-     * @see #mapER(Function, Function)
+     * @see #mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, ? extends Stream<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flatMapKeyToDisposableEntry(final Function<? super K, ? extends Stream<? extends KK>> keyMapper) {
         checkState(s.isParallel() == false, "flatMapKeyER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
@@ -1564,13 +1571,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * 
      * @param keyMapper
      * @return
-     * @see #mapER(Function, Function)
+     * @see #mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <KK> EntryStream<KK, V> flattMapKeyER(final Function<? super K, ? extends Collection<KK>> keyMapper) {
+    public <KK> EntryStream<KK, V> flattMapKeyToDisposableEntry(final Function<? super K, ? extends Collection<? extends KK>> keyMapper) {
         checkState(s.isParallel() == false, "flatMapKeyER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
@@ -1595,13 +1602,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * 
      * @param valueMapper
      * @return
-     * @see #mapER(Function, Function)
+     * @see #mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, ? extends Stream<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flatMapValueToDisposableEntry(final Function<? super V, ? extends Stream<? extends VV>> valueMapper) {
         checkState(s.isParallel() == false, "flatMapValueER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
@@ -1626,13 +1633,13 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * 
      * @param valueMapper
      * @return
-     * @see #mapER(Function, Function)
+     * @see #mapToDisposableEntry(Function, Function)
      * @deprecated
      */
     @Deprecated
     @Beta
     @SequentialOnly
-    public <VV> EntryStream<K, VV> flattMapValueER(final Function<? super V, ? extends Collection<VV>> valueMapper) {
+    public <VV> EntryStream<K, VV> flattMapValueToDisposableEntry(final Function<? super V, ? extends Collection<? extends VV>> valueMapper) {
         checkState(s.isParallel() == false, "flatMapValueER can't be applied to parallel stream");
 
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
@@ -1716,7 +1723,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 new SimpleImmutableEntry<>(k7, v7)));
     }
 
-    static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
+    static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<? extends K, ? extends V>> s) {
         return new EntryStream<K, V>(s);
     }
 
@@ -1724,11 +1731,11 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return new EntryStream<K, V>(map, Stream.of(map));
     }
 
-    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
+    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<? extends K, ? extends V>> iterator) {
         return new EntryStream<K, V>(Stream.of(iterator));
     }
 
-    public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {
+    public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<? extends K, ? extends V>> entries) {
         return new EntryStream<K, V>(Stream.of(entries));
     }
 
@@ -1879,7 +1886,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
     }
 
-    static class ReusableEntry<K, V> implements Map.Entry<K, V> {
+    static class ReusableEntry<K, V> extends DisposableEntry<K, V> {
         private K key = null;
         private V value = null;
         private boolean flag = false; //check if it's used/read.

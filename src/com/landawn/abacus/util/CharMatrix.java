@@ -1764,6 +1764,11 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     @Override
+    public void println() {
+        f.println(a);
+    }
+
+    @Override
     public int hashCode() {
         return N.deepHashCode(a);
     }

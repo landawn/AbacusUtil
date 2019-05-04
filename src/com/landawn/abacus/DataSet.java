@@ -24,12 +24,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.BiIterator;
+import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableObjArray;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
@@ -39,6 +39,7 @@ import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.function.Function;
 // import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.Collector;
@@ -56,7 +57,9 @@ import com.landawn.abacus.util.stream.Stream;
  * @see com.landawn.abacus.util.function.IntFunction
  * @see com.landawn.abacus.util.Fn.Factory
  * @see com.landawn.abacus.util.Clazz
- * 
+ * @see com.landawn.abacus.util.N#newDataSet(Map)
+ * @see com.landawn.abacus.util.N#newDataSet(Collection)
+ * @see com.landawn.abacus.util.N#newDataSet(Collection, Collection)
  */
 public interface DataSet {
 
@@ -77,7 +80,7 @@ public interface DataSet {
     /**
      * Return the column name list in this DataSet.
      */
-    List<String> columnNameList();
+    ImmutableList<String> columnNameList();
 
     /**
      * Method getColumnName.
@@ -429,7 +432,7 @@ public interface DataSet {
      * @param columnIndex
      * @return
      */
-    <T> List<T> getColumn(int columnIndex);
+    <T> ImmutableList<T> getColumn(int columnIndex);
 
     /**
      * Must NOT modify the returned list.
@@ -437,7 +440,7 @@ public interface DataSet {
      * @param columnName
      * @return
      */
-    <T> List<T> getColumn(String columnName);
+    <T> ImmutableList<T> getColumn(String columnName);
 
     /**
      * Method addColumn.
@@ -478,9 +481,10 @@ public interface DataSet {
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
      * @param newColumnName
      * @param fromColumnNames
-     * @param func
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func) throws E;
+    <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super DisposableObjArray, ?, E> func)
+            throws E;
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
@@ -488,10 +492,10 @@ public interface DataSet {
      * @param columnIndex
      * @param newColumnName
      * @param fromColumnNames
-     * @param func
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func)
-            throws E;
+    <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
+            Try.Function<? super DisposableObjArray, ?, E> func) throws E;
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
@@ -536,7 +540,7 @@ public interface DataSet {
      *
      * @param columnName
      */
-    void removeColumn(String columnName);
+    <T> List<T> removeColumn(String columnName);
 
     /**
      * Remove the column(s) with the specified columnNames from this DataSet.
@@ -600,7 +604,15 @@ public interface DataSet {
      */
     void combineColumns(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
 
-    <E extends Exception> void combineColumns(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc) throws E;
+    /**
+     * 
+     * @param columnNames
+     * @param newColumnName
+     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @throws E
+     */
+    <E extends Exception> void combineColumns(Collection<String> columnNames, String newColumnName, Try.Function<? super DisposableObjArray, ?, E> combineFunc)
+            throws E;
 
     <E extends Exception> void combineColumns(Tuple2<String, String> columnNames, String newColumnName, Try.BiFunction<?, ?, ?, E> combineFunc) throws E;
 
@@ -609,8 +621,16 @@ public interface DataSet {
 
     <E extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
 
+    /**
+     * 
+     * @param columnNameFilter
+     * @param newColumnName
+     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @throws E
+     * @throws E2
+     */
     <E extends Exception, E2 extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName,
-            Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2;
+            Try.Function<? super DisposableObjArray, ?, E2> combineFunc) throws E, E2;
 
     <T, E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<T, ? extends List<?>, E> divideFunc) throws E;
 
@@ -813,44 +833,14 @@ public interface DataSet {
      */
     <T> Optional<T> lastRow(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
 
-    //    /**
-    //     * It's for faster iteration without creating new row object for each row.
-    //     *
-    //     * @param output
-    //     *            which can be an instance of object array/list/set/map/entity.
-    //     * @param rowNum
-    //     */
-    //    void row(Object output, int rowNum);
-    //
-    //    /**
-    //     * It's for faster iteration without creating new row object for each row.
-    //     *
-    //     * @param output
-    //     *            which can be an instance of object array/list/set/map/entity.
-    //     * @param columnIndexes
-    //     * @param rowNum
-    //     */
-    //    void row(Object output, int[] columnIndexes, int rowNum);
-
     /**
      * Performs the given action for each row of the {@code DataSet}
      * until all rows have been processed or the action throws an
      * exception.
      * 
-     * @param action
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void forEach(Try.Consumer<? super Object[], E> action) throws E;
-
-    /**
-     * Performs the given action for each row of the {@code DataSet}
-     * until all rows have been processed or the action throws an
-     * exception.
-     * @param action
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
-     */
-    <E extends Exception> void forEach(Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
+    <E extends Exception> void forEach(Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -858,22 +848,9 @@ public interface DataSet {
      * exception.
      * 
      * @param columnNames
-     * @param action
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super Object[], E> action) throws E;
-
-    /**
-     * Performs the given action for each row of the {@code DataSet}
-     * until all rows have been processed or the action throws an
-     * exception.
-     * 
-     * @param columnNames
-     * @param action
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
-     */
-    <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
+    <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -882,23 +859,9 @@ public interface DataSet {
      * 
      * @param fromRowIndex
      * @param toRowIndex
-     * @param action
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action) throws E;
-
-    /**
-     * Performs the given action for each row of the {@code DataSet}
-     * until all rows have been processed or the action throws an
-     * exception.
-     * 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param action
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
-     */
-    <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
+    <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -908,25 +871,10 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param action
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
      */
-    <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action) throws E;
-
-    /**
-     * Performs the given action for each row of the {@code DataSet}
-     * until all rows have been processed or the action throws an
-     * exception.
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param action
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
-     */
-    <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action,
-            boolean shareRowArray) throws E;
+    <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super DisposableObjArray, E> action)
+            throws E;
 
     <E extends Exception> void forEach(Tuple2<String, String> columnNames, Try.BiConsumer<?, ?, E> action) throws E;
 
@@ -936,92 +884,6 @@ public interface DataSet {
 
     <E extends Exception> void forEach(Tuple3<String, String, String> columnNames, int fromRowIndex, int toRowIndex, Try.TriConsumer<?, ?, ?, E> action)
             throws E;
-
-    //    /**
-    //     *
-    //     * @return
-    //     */
-    //    Object[][] toArray();
-    //
-    //    /**
-    //     *
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    Object[][] toArray(int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @return
-    //     */
-    //    <T> T[] toArray(Class<? extends T> rowClass);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> T[] toArray(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //    *
-    //    * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //    * @param columnNames
-    //    * @param fromRowIndex
-    //    * @param toRowIndex
-    //    * @return
-    //    */
-    //    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //     * @return
-    //     */
-    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier);
-    //
-    //    /**
-    //     *
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //    *
-    //    * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //    * @param columnNames
-    //    * @param fromRowIndex
-    //    * @param toRowIndex
-    //    * @return
-    //    */
-    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
-    //
-    //    /**
-    //     *
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
     /**
      *
@@ -1297,92 +1159,6 @@ public interface DataSet {
      */
     <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
             Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<? extends M> supplier);
-
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(String columnName);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex, IntFunction<Multiset<T>> supplier);
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames);
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-    //            IntFunction<Multiset<T>> supplier);
-    //
-    //    /**
-    //     * 
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
-    //
-    //    /**
-    //     * 
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
-    //     * @return
-    //     */
-    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-    //            IntFunction<Multiset<T>> supplier);
 
     /**
      *
@@ -1793,6 +1569,462 @@ public interface DataSet {
 
     /**
      *
+     * @param columnName specifying the column to group by.
+     * @return
+     */
+    DataSet groupBy(String columnName);
+
+    /**
+     * 
+     * @param columnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T> DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     * @throws E
+     */
+    <T, E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E> func) throws E;
+
+    /**
+     * 
+     * @param columnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnName
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <U, E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E> rowMapper, Collector<? super U, ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnName
+     * @param keyMapper
+     * @return
+     * @throws E
+     */
+    <K, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper) throws E;
+
+    /**
+     * 
+     * @param columnName
+     * @param keyMapper
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <K, T, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
+            String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnName
+     * @param keyMapper
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
+            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func) throws E, E2;
+
+    /**
+     * 
+     * @param columnName
+     * @param keyMapper
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <K, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnName
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    <K, U, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Try.Function<? super DisposableObjArray, U, E2> rowMapper, Collector<? super U, ?, ?> collector)
+            throws E, E2;
+
+    /**
+     * 
+     * @param columnNames
+     * @return
+     */
+    DataSet groupBy(Collection<String> columnNames);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     * @throws E
+     */
+    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E> func) throws E;
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <U, E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E> rowMapper, Collector<? super U, ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper) throws E;
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func) throws E, E2;
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     * @throws E
+     * @throws E2
+     */
+    <U, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Try.Function<? super DisposableObjArray, U, E2> rowMapper,
+            Collector<? super U, ?, ?> collector) throws E, E2;
+
+    /**
+     * 
+     * @param columnNames
+     * @return
+     */
+    Stream<DataSet> rollup(Collection<String> columnNames);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     */
+    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E> func);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     */
+    <U, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E> rowMapper, Collector<? super U, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @return
+     */
+    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     */
+    <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames,
+            Try.Function<? super DisposableObjArray, ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E2> func);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     */
+    <U, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames,
+            Try.Function<? super DisposableObjArray, ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E2> rowMapper, Collector<? super U, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @return
+     */
+    Stream<DataSet> cube(Collection<String> columnNames);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     */
+    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E> func);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     */
+    <U, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E> rowMapper, Collector<? super U, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @return
+     */
+    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param collector
+     * @return
+     */
+    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnName
+     * @param func
+     * @return
+     */
+    <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames,
+            Try.Function<? super DisposableObjArray, ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
+            Try.Function<Stream<T>, ?, E2> func);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param collector
+     * @return
+     */
+    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+
+    /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param aggregateResultColumnName
+     * @param aggregateOnColumnNames
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param collector
+     * @return
+     */
+    <U, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames,
+            Try.Function<? super DisposableObjArray, ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+            Try.Function<? super DisposableObjArray, U, E2> rowMapper, Collector<? super U, ?, ?> collector);
+
+    /**
+     *
      * @param columnName
      */
     void sortBy(String columnName);
@@ -1816,6 +2048,14 @@ public interface DataSet {
      * @param cmp
      */
     void sortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp);
+
+    /**
+     *
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     */
+    @SuppressWarnings("rawtypes")
+    void sortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper);
 
     /**
      *
@@ -1844,12 +2084,20 @@ public interface DataSet {
     void parallelSortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp);
 
     /**
+     * 
+     * @param columnNames
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     */
+    @SuppressWarnings("rawtypes")
+    void parallelSortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper);
+
+    /**
      *
      * @param columnName
      * @param n
      * @return
      */
-    DataSet top(String columnName, int n);
+    DataSet topBy(String columnName, int n);
 
     /**
      *
@@ -1858,18 +2106,7 @@ public interface DataSet {
      * @param cmp
      * @return
      */
-    <T> DataSet top(String columnName, int n, Comparator<T> cmp);
-
-    /**
-     *
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param n
-     * @param cmp
-     * @return
-     */
-    <T> DataSet top(String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
+    <T> DataSet topBy(String columnName, int n, Comparator<T> cmp);
 
     /**
     *
@@ -1877,7 +2114,7 @@ public interface DataSet {
     * @param n
     * @return
     */
-    DataSet top(Collection<String> columnNames, int n);
+    DataSet topBy(Collection<String> columnNames, int n);
 
     /**
      *
@@ -1886,80 +2123,17 @@ public interface DataSet {
      * @param cmp
      * @return
      */
-    DataSet top(Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
+    DataSet topBy(Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
 
     /**
-     *
+     * 
      * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
      * @param n
-     * @param cmp
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    DataSet top(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
-
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param n
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int n);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int n, Comparator<T> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param n
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
+    @SuppressWarnings("rawtypes")
+    DataSet topBy(Collection<String> columnNames, int n, Function<? super DisposableObjArray, ? extends Comparable> keyMapper);
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in all columns
@@ -1974,35 +2148,7 @@ public interface DataSet {
      * @param columnName
      * @return a new DataSet
      */
-    DataSet distinct(String columnName);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     *
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return a new DataSet
-     */
-    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
-     *
-     * @param columnNames
-     * @return a new DataSet
-     */
-    DataSet distinct(Collection<String> columnNames);
-
-    /**
-     *Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     *
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+    DataSet distinctBy(String columnName);
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2014,15 +2160,12 @@ public interface DataSet {
     <K, E extends Exception> DataSet distinctBy(String columnName, Try.Function<K, ?, E> keyMapper) throws E;
 
     /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
+     *
+     * @param columnNames
+     * @return a new DataSet
      */
-    <K, E extends Exception> DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper) throws E;
+    DataSet distinctBy(Collection<String> columnNames);
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2030,1254 +2173,44 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper) throws E;
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper)
-            throws E;
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper) throws E;
 
     /**
      *
-     * @param columnName specifying the column to group by.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    DataSet groupBy(String columnName);
+    <E extends Exception> DataSet filter(Try.Predicate<? super DisposableObjArray, E> filter) throws E;
 
     /**
      * 
-     * @param columnName specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <K, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper) throws E;
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnName specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <K, T, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
-            String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <K, E extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(String columnName, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
-            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func) throws E, E2;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <K, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, Try.Function<K, ?, E> keyMapper, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2;
-
-    /**
-     *
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <K, E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper) throws E;
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <K, T, E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
-
-    /**
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <K, E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by. 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <K, T, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func) throws E, E2;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnName, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnName specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <K, E extends Exception, E2 extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2;
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @return
-     */
-    DataSet groupBy(Collection<String> columnNames);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper) throws E;
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName,
-            String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func) throws E, E2;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2;
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper)
-            throws E;
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector) throws E;
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E> func) throws E;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func)
-            throws E, E2;
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.groupBy(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E2> func) throws E, E2;
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @return
-     */
-    Stream<DataSet> rollup(Collection<String> columnNames);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E2> func);
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E2> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.rollup(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E2> func);
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @return
-     */
-    Stream<DataSet> cube(Collection<String> columnNames);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, String aggregateOnColumnName, Try.Function<Stream<T>, ?, E2> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E2> func);
-
-    /**
-     *
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName, Collector<T, ?, ?> collector);
-
-    /**
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
-     * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyMapper,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector/Function.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            String aggregateOnColumnName, Try.Function<Stream<T>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Try.Function<Stream<Object[]>, ?, E> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnName, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by. 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnName specifying the column to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <T, E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
-            Try.Function<Stream<T>, ?, E2> func);
-
-    /**
-     * 
-     * This method is equal to:
-     * <pre>
-     * <code>
-     * dataSet.cube(columnNames, keyMapper, aggregateResultColumnName, aggregateOnColumnNames, Collectors.collectingAndThen(Collectors.toArray(), a -> func.apply(Stream.of(a))));
-     * </code>
-     * </pre>
-     * 
-     * @param columnNames specifying the column to group by.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
-     * @param aggregateResultColumnName
-     * @param aggregateOnColumnNames specifying the columns to apply the collector.
-     * @param func the {@code Stream} of the parameter in the {@code Try.Function.apply(Stream s)} is reusable.
-     * @return
-     */
-    <E extends Exception, E2 extends Exception> Stream<DataSet> cube(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Try.Function<Stream<Object[]>, ?, E2> func);
-
-    /**
-     *
-     * @param filter
-     * @return
-     */
-    <E extends Exception> DataSet filter(Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-     * 
-     * @param filter
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @param max
      * @return
      */
-    <E extends Exception> DataSet filter(Try.Predicate<? super Object[], E> filter, int max) throws E;
+    <E extends Exception> DataSet filter(Try.Predicate<? super DisposableObjArray, E> filter, int max) throws E;
 
     /**
      *
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
+    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter) throws E;
 
     /**
      * 
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @param max
      * @return
      */
-    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max) throws E;
+    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter, int max) throws E;
 
     /**
      *
@@ -3388,624 +2321,163 @@ public interface DataSet {
      */
     <T, E extends Exception> DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter, int max) throws E;
 
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param offset
-    //     * @param count
-    //     * @return
-    //     */
-    //    <C> DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Predicate<C> filter, int offset, int count);
-
     /**
      *
      * @param columnNames
-     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
+    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super DisposableObjArray, E> filter) throws E;
 
     /**
      * 
      * @param columnNames
-     * @param filter
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @param max
      * @return
      */
-    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter, int max) throws E;
+    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super DisposableObjArray, E> filter, int max) throws E;
 
     /**
      *
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param filter don't update or save the {@code Object[]} parameter passed to filter.
-     * @param max
-     * @return
-     */
-    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max)
+    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter)
             throws E;
 
-    //    /**
-    //     * Filter the result by the specified columns {@code columnNames} with the specified {@code filter}.
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param offset
-    //     * @param count
-    //     * @return
-    //     */
-    //    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int offset, int count);
+    /**
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param max
+     * @return
+     */
+    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter,
+            int max) throws E;
 
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Try.Predicate<? super Object[], E> filter, int max);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, Try.Predicate<T, E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, Try.Predicate<T, E> filter, int max);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter, int max);
+    /**
+     * 
+     * @param fromColumnName
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnName
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet map(String fromColumnName, Try.Function<?, ?, E> func, String newColumnName, String copyingColumnName) throws E;
 
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param offset
-    //     * @param count
-    //     * @return
-    //     */
-    //    <T, C> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Predicate<C> filter, int offset, int count);
+    /**
+     * 
+     * @param fromColumnName
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet map(String fromColumnName, Try.Function<?, ?, E> func, String newColumnName, Collection<String> copyingColumnNames) throws E;
 
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Try.Predicate<? super Object[], E> filter, int max);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param max
-    //     * @return
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max);
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet map(Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ?, E> func, String newColumnName,
+            Collection<String> copyingColumnNames) throws E;
 
-    //    /**
-    //     * Filter the result by the specified columns {@code columnNames} with the specified {@code filter}.
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     *            which can be list/set/map/entity with getter/setter methods
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @param offset
-    //     * @param count
-    //     * @return the a list of row
-    //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int offset, int count);
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet map(Tuple3<String, String, String> fromColumnNames, Try.TriFunction<?, ?, ?, ?, E> func, String newColumnName,
+            Collection<String> copyingColumnNames) throws E;
 
-    //    /**
-    //     *
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <E extends Exception> int count(Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     *
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <E extends Exception> int count(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //    *
-    //    * @param columnName
-    //    * @param filter
-    //    * @return
-    //    */
-    //    <T, E extends Exception> int count(String columnName, Try.Predicate<T, E> filter) throws E;
-    //
-    //    /**
-    //    * count the result by the specified columns {@code columnName} with the specified {@code filter}.
-    //    *
-    //    * @param columnName
-    //    * @param fromRowIndex
-    //    * @param toRowIndex
-    //    * @param filter
-    //    * @return
-    //    */
-    //    <T, E extends Exception> int count(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter) throws E;
-    //
-    //    /**
-    //     *
-    //     * @param columnNames
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <E extends Exception> int count(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * count the result by the specified columns {@code columnNames} with the specified {@code filter}.
-    //     *
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param filter
-    //     * @return
-    //     */
-    //    <E extends Exception> int count(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> min(String columnName);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> min(String columnName, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> max(String columnName);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> max(String columnName, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> median(String columnName);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> median(String columnName, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * @param columnName
-    //     * @param k
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int k);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param k
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> kthLargest(String columnName, int k, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param k
-    //     * @return
-    //     */
-    //    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param k
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    int sumInt(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    int sumInt(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> int sumInt(String columnName, Try.ToIntFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    long sumLong(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    long sumLong(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> long sumLong(String columnName, Try.ToLongFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    double sumDouble(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    OptionalDouble averageInt(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    OptionalDouble averageLong(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    OptionalDouble averageDouble(String columnName);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return
-    //     */
-    //    OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex);
-    //
-    //    //    /**
-    //    //     *
-    //    //     * @param columnName
-    //    //     * @param mapper
-    //    //     * @return
-    //    //     */
-    //    //    OptionalDouble average(String columnName, Try.ToLongFunction<?> mapper) throws E;
-    //    //
-    //    //    /**
-    //    //     * 
-    //    //     * @param columnName
-    //    //     * @param fromRowIndex
-    //    //     * @param toRowIndex
-    //    //     * @param mapper
-    //    //     * @return
-    //    //     */
-    //    //    OptionalDouble average(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?> mapper) throws E;
-    //
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<? super T, E> mapper) throws E;
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<? super T, E> mapper) throws E;
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet map(Collection<String> fromColumnNames, Try.Function<DisposableObjArray, ?, E> func, String newColumnName,
+            Collection<String> copyingColumnNames) throws E;
+
+    /**
+     * 
+     * @param fromColumnName
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnName
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet flatMap(String fromColumnName, Try.Function<?, ? extends Collection<?>, E> func, String newColumnName,
+            String copyingColumnName) throws E;
+
+    /**
+     * 
+     * @param fromColumnName
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet flatMap(String fromColumnName, Try.Function<?, ? extends Collection<?>, E> func, String newColumnName,
+            Collection<String> copyingColumnNames) throws E;
+
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet flatMap(Tuple2<String, String> fromColumnNames, Try.BiFunction<?, ?, ? extends Collection<?>, E> func, String newColumnName,
+            Collection<String> copyingColumnNames) throws E;
+
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet flatMap(Tuple3<String, String, String> fromColumnNames, Try.TriFunction<?, ?, ?, ? extends Collection<?>, E> func,
+            String newColumnName, Collection<String> copyingColumnNames) throws E;
+
+    /**
+     * 
+     * @param fromColumnNames
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param newColumnName
+     * @param copyingColumnNames
+     * @return
+     * @throws E
+     */
+    <E extends Exception> DataSet flatMap(Collection<String> fromColumnNames, Try.Function<DisposableObjArray, ? extends Collection<?>, E> func,
+            String newColumnName, Collection<String> copyingColumnNames) throws E;
 
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.
@@ -4279,164 +2751,45 @@ public interface DataSet {
     DataSet merge(DataSet from, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
     /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param size
+     * @param b
      * @return
      */
-    Stream<DataSet> split(int size);
+    DataSet cartesianProduct(DataSet b);
 
     /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param chunkSize
+     * @return
+     */
+    Stream<DataSet> split(int chunkSize);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param chunkSize
+     * @param columnNames
+     * @return
+     */
+    Stream<DataSet> split(Collection<String> columnNames, int chunkSize);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param chunkSize
+     * @return
+     */
+    List<DataSet> splitt(int chunkSize);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
      * 
      * @param size
      * @param columnNames
      * @return
      */
-    Stream<DataSet> split(Collection<String> columnNames, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    Stream<DataSet> split(int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    Stream<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param size
-     * @return
-     */
-    List<DataSet> splitt(int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param size
-     * @param columnNames
-     * @return
-     */
-    List<DataSet> splitt(Collection<String> columnNames, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    List<DataSet> splitt(int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    List<DataSet> splitt(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
-
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(Class<? extends T> rowClass, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param size
-    //     * @param columnNames
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param size
-    //     * @param columnNames
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size);
-    //
-    //    /**
-    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-    //     * 
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param size
-    //     * @return
-    //     */
-    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    List<DataSet> splitt(Collection<String> columnNames, int chunkSize);
 
     /**
      * Returns a frozen {@code DataSet}
@@ -4520,10 +2873,6 @@ public interface DataSet {
      */
     DataSet clone(boolean freeze);
 
-    ObjIterator<Object[]> iterator();
-
-    ObjIterator<Object[]> iterator(int fromRowIndex, int toRowIndex);
-
     <A, B> BiIterator<A, B> iterator(String columnNameA, String columnNameB);
 
     <A, B> BiIterator<A, B> iterator(String columnNameA, String columnNameB, int fromRowIndex, int toRowIndex);
@@ -4539,24 +2888,6 @@ public interface DataSet {
      * @return
      */
     PaginatedDataSet paginate(int pageSize);
-
-    //    /**
-    //     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified column after it's sorted.
-    //     * The the value of column must implements the <code>Comparable</code> interface.
-    //     * 
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T extends Comparable<T>> Map<String, T> percentiles(String columnName);
-    //
-    //    /**
-    //     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified column after it's sorted.
-    //     * 
-    //     * @param columnName
-    //     * @param comparator
-    //     * @return
-    //     */
-    //    <T> Map<String, T> percentiles(String columnName, Comparator<? super T> comparator);
 
     /**
      * 
@@ -4575,80 +2906,38 @@ public interface DataSet {
     <T> Stream<T> stream(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      *
      * @return
      */
-    Stream<Object[]> stream();
-
-    /**
-     *
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    Stream<Object[]> stream(int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnNames
-     * @return
-     */
-    Stream<Object[]> stream(Collection<String> columnNames);
-
-    /**
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    Stream<Object[]> stream(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
-     * @return
-     */
-    @Beta
-    Stream<Object[]> stream(boolean shareRowArray);
+    <T> Stream<T> stream(Function<? super DisposableObjArray, T> rowMapper);
 
     /**
      *
      * @param fromRowIndex
      * @param toRowIndex
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    @Beta
-    Stream<Object[]> stream(int fromRowIndex, int toRowIndex, boolean shareRowArray);
+    <T> Stream<T> stream(int fromRowIndex, int toRowIndex, Function<? super DisposableObjArray, T> rowMapper);
 
     /**
      * 
      * @param columnNames
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    @Beta
-    Stream<Object[]> stream(Collection<String> columnNames, boolean shareRowArray);
+    <T> Stream<T> stream(Collection<String> columnNames, Function<? super DisposableObjArray, T> rowMapper);
 
     /**
      * 
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param shareRowArray the same object array will be reset for each row during the iteration if it's <code>true</code>. 
-     * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
-     * The default value is false.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
      * @return
      */
-    @Beta
-    Stream<Object[]> stream(Collection<String> columnNames, int fromRowIndex, int toRowIndex, boolean shareRowArray);
+    <T> Stream<T> stream(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super DisposableObjArray, T> rowMapper);
 
     /**
      *
@@ -4763,35 +3052,13 @@ public interface DataSet {
      */
     Properties<String, Object> properties();
 
-    //    /**
-    //     *
-    //     * @param propName
-    //     * @return
-    //     */
-    //    <T> T getProperty(String propName);
-    //
-    //    /**
-    //     * Returns the old value associated with the property by the {@code propName}, {@code null} if it doesn't exist.
-    //     *
-    //     * @param propName
-    //     * @param propValue
-    //     * @return
-    //     */
-    //    <T> T setProperty(String propName, Object propValue);
-    //
-    //    /**
-    //     * Returns value of the property which is to be removed, {@code null} if it doesn't exist.
-    //     *
-    //     * @param propName
-    //     * @return
-    //     */
-    //    <T> T removeProperty(String propName);
+    Stream<ImmutableList<Object>> columns();
 
     /**
      * 
      * @return key are column name, value is column - an immutable list, backed by the column in this {@code DataSet}.
      */
-    Map<String, List<Object>> toColumnMap();
+    Map<String, ImmutableList<Object>> columnMap();
 
     <T> Sheet<Integer, String, T> toSheet();
 

@@ -47,10 +47,11 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
+import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
-import com.landawn.abacus.util.function.IntTriFunction;
+import com.landawn.abacus.util.function.IntTernaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -105,6 +106,133 @@ abstract class AbstractIntStream extends IntStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public IntStream rangeMap(final IntBiPredicate sameRange, final IntBinaryOperator mapper) {
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new IntIteratorEx() {
+            private int left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                left = hasNext ? next : iter.nextInt();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextInt();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsInt(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final IntBiPredicate sameRange, final IntBiFunction<T> mapper) {
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private int left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextInt();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextInt();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<IntList> collapse(final IntBiPredicate collapsible) {
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<IntList>() {
+            private boolean hasNext = false;
+            private int next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public IntList next() {
+                final IntList result = new IntList(9);
+                result.add(hasNext ? next : (next = iter.nextInt()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextInt()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public IntStream collapse(final IntBiPredicate collapsible, final IntBinaryOperator mergeFunction) {
+        final IntIteratorEx iter = iteratorEx();
+
+        return newStream(new IntIteratorEx() {
+            private boolean hasNext = false;
+            private int next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                int res = hasNext ? next : (next = iter.nextInt());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextInt()))) {
+                        res = mergeFunction.applyAsInt(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -304,8 +432,6 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -342,37 +468,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
-        final IntIteratorEx iter = iteratorEx();
-
-        return newStream(new IntIteratorEx() {
-            private boolean hasNext = false;
-            private int next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public int nextInt() {
-                int res = hasNext ? next : (next = iter.nextInt());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextInt()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public IntStream scan(final IntBiFunction<Integer> accumulator) {
+    public IntStream scan(final IntBinaryOperator accumulator) {
         final IntIteratorEx iter = iteratorEx();
 
         return newStream(new IntIteratorEx() {
@@ -390,14 +486,14 @@ abstract class AbstractIntStream extends IntStream {
                     isFirst = false;
                     return (res = iter.nextInt());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextInt()));
+                    return (res = accumulator.applyAsInt(res, iter.nextInt()));
                 }
             }
         }, false);
     }
 
     @Override
-    public IntStream scan(final int init, final IntBiFunction<Integer> accumulator) {
+    public IntStream scan(final int init, final IntBinaryOperator accumulator) {
         final IntIteratorEx iter = iteratorEx();
 
         return newStream(new IntIteratorEx() {
@@ -410,13 +506,13 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public int nextInt() {
-                return (res = accumulator.apply(res, iter.nextInt()));
+                return (res = accumulator.applyAsInt(res, iter.nextInt()));
             }
         }, false);
     }
 
     @Override
-    public IntStream scan(final int init, final IntBiFunction<Integer> accumulator, final boolean initIncluded) {
+    public IntStream scan(final int init, final IntBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -439,7 +535,7 @@ abstract class AbstractIntStream extends IntStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextInt()));
+                return (res = accumulator.applyAsInt(res, iter.nextInt()));
             }
         }, false);
     }
@@ -530,8 +626,6 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -613,8 +707,6 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -717,8 +809,6 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -798,8 +888,6 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -860,22 +948,22 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntBiFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntBinaryOperator zipFunction) {
         return IntStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntStream c, IntTriFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntStream c, IntTernaryOperator zipFunction) {
         return IntStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBiFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBinaryOperator zipFunction) {
         return IntStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTernaryOperator zipFunction) {
         return IntStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 

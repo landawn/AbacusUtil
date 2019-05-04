@@ -1735,6 +1735,11 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     }
 
     @Override
+    public void println() {
+        f.println(a);
+    }
+
+    @Override
     public int hashCode() {
         return N.deepHashCode(a);
     }

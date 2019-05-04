@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.stream;
 
+import java.lang.reflect.Array;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,7 @@ import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.u.OptionalInt;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
@@ -56,13 +58,13 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntNFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntSupplier;
+import com.landawn.abacus.util.function.IntTernaryOperator;
 import com.landawn.abacus.util.function.IntToByteFunction;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
 import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntToShortFunction;
-import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -120,6 +122,68 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     public abstract <T> Stream<T> flatMappToObj(IntFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(IntBiPredicate, IntBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract IntStream rangeMap(final IntBiPredicate sameRange, final IntBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final IntBiPredicate sameRange, final IntBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<IntList> collapse(final IntBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -131,7 +195,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     @SequentialOnly
-    public abstract IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction);
+    public abstract IntStream collapse(final IntBiPredicate collapsible, final IntBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -155,7 +219,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract IntStream scan(final IntBiFunction<Integer> accumulator);
+    public abstract IntStream scan(final IntBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -183,7 +247,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract IntStream scan(final int init, final IntBiFunction<Integer> accumulator);
+    public abstract IntStream scan(final int init, final IntBinaryOperator accumulator);
 
     /**
      * 
@@ -193,7 +257,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     @SequentialOnly
-    public abstract IntStream scan(final int init, final IntBiFunction<Integer> accumulator, final boolean initIncluded);
+    public abstract IntStream scan(final int init, final IntBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * 
@@ -342,13 +406,13 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream merge(final IntStream b, final IntBiFunction<Nth> nextSelector);
 
-    public abstract IntStream zipWith(IntStream b, IntBiFunction<Integer> zipFunction);
+    public abstract IntStream zipWith(IntStream b, IntBinaryOperator zipFunction);
 
-    public abstract IntStream zipWith(IntStream b, IntStream c, IntTriFunction<Integer> zipFunction);
+    public abstract IntStream zipWith(IntStream b, IntStream c, IntTernaryOperator zipFunction);
 
-    public abstract IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBiFunction<Integer> zipFunction);
+    public abstract IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBinaryOperator zipFunction);
 
-    public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction);
+    public abstract IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTernaryOperator zipFunction);
 
     public abstract LongStream asLongStream();
 
@@ -667,6 +731,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
         } else {
             iter = new IntIteratorEx() {
+
                 private int rowNum = 0;
                 private int colNum = 0;
                 private long cnt = 0;
@@ -694,6 +759,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
                         return a[rowNum][colNum++];
                     }
                 }
+
             };
         }
 
@@ -1164,10 +1230,12 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             });
         } else {
             return generate(new IntSupplier() {
+
                 @Override
                 public int getAsInt() {
                     return (int) (Math.abs(RAND.nextLong() % mod) + startInclusive);
                 }
+
             });
         }
     }
@@ -1329,6 +1397,91 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    /**
+     * 
+     * @param source
+     * @param indexFunc
+     * @return
+     * @see #ofIndices(Object, int, int, BiFunction)
+     */
+    public static <AC> IntStream ofIndices(final AC source, final BiFunction<? super AC, Integer, Integer> indexFunc) {
+        return ofIndices(source, 0, indexFunc);
+    };
+
+    /**
+     * 
+     * @param source
+     * @param fromIndex
+     * @param indexFunc
+     * @return
+     * @see #ofIndices(Object, int, int, BiFunction)
+     */
+    public static <AC> IntStream ofIndices(final AC source, final int fromIndex, final BiFunction<? super AC, Integer, Integer> indexFunc) {
+        return ofIndices(source, fromIndex, 1, indexFunc);
+    };
+
+    /**
+     * <pre>
+     * <code>
+     * // Forwards:
+     * int[] a = {1, 2, 3, 2, 5, 1};
+     * IntStream.ofIndices(a, N::indexOf).println(); // [0, 5]
+     * IntStream.ofIndices(a, 1, N::indexOf).println(); // [5]
+     * 
+     * // Backwards
+     * IntStream.ofIndices(a, 5, -1, N::lastIndexOf).println(); // [5, 0]
+     * IntStream.ofIndices(a, 4, -1, N::lastIndexOf).println(); // [0]
+     * 
+     * // OR
+     * // Forwards:  
+     * int[] source = { 1, 2, 3, 1, 2, 1 };
+     * int[] targetSubArray = { 1, 2 }; 
+     * IntStream.ofIndices(source, (a, fromIndex) -> Index.ofSubArray(a, fromIndex, targetSubArray, 0, targetSubArray.length).orElse(-1)).println(); // [0, 3] 
+     * 
+     * // Backwards
+     * IntStream.ofIndices(source, 5, -2, (a, fromIndex) -> Index.ofSubArray(a, fromIndex, targetSubArray, 0, targetSubArray.length).orElse(-1))
+                    .println(); // [3, 0]
+     * </code>
+     * </pre>
+     * 
+     * @param source
+     * @param fromIndex
+     * @param increment
+     * @param indexFunc
+     * @return
+     * @see #ofIndices(Object, int, int, BiFunction)
+     */
+    public static <AC> IntStream ofIndices(final AC source, final int fromIndex, final int increment,
+            final BiFunction<? super AC, Integer, Integer> indexFunc) {
+        @SuppressWarnings("rawtypes")
+        final int sourceLen = source.getClass().isArray() ? Array.getLength(source)
+                : (source instanceof Collection ? ((Collection) source).size()
+                        : (source instanceof CharSequence ? ((CharSequence) source).length() : Integer.MAX_VALUE));
+
+        return ofIndices(source, fromIndex, increment, sourceLen, indexFunc);
+    };
+
+    public static <AC> IntStream ofIndices(final AC source, final int fromIndex, final int increment, final int sourceLen,
+            final BiFunction<? super AC, Integer, Integer> indexFunc) {
+        N.checkArgNotNegative(fromIndex, "fromIndex");
+        N.checkArgument(increment != 0, "'increment' can't be zero");
+        N.checkArgNotNull(indexFunc, "indexFunc");
+
+        if (source == null) {
+            return IntStream.empty();
+        }
+
+        final IntUnaryOperator f = new IntUnaryOperator() {
+            @Override
+            public int applyAsInt(int idx) {
+                return ((increment > 0 && idx >= sourceLen - increment) || (increment < 0 && idx + increment < 0)) ? N.INDEX_NOT_FOUND
+                        : indexFunc.apply(source, idx + increment);
+            }
+        };
+
+        return iterate(indexFunc.apply(source, fromIndex), IntPredicate.NOT_NEGATIVE, f);
+    };
+
     @SafeVarargs
     public static IntStream concat(final int[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new IntIteratorEx() {
@@ -1425,8 +1578,29 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param b
      * @return
      */
-    public static IntStream zip(final int[] a, final int[] b, final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final int[] a, final int[] b, final IntBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new IntIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsInt(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1435,10 +1609,32 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final int[] a, final int[] b, final int[] c, final IntTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new IntIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsInt(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1449,8 +1645,18 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param b
      * @return
      */
-    public static IntStream zip(final IntIterator a, final IntIterator b, final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntBinaryOperator zipFunction) {
+        return new IteratorIntStream(new IntIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                return zipFunction.applyAsInt(a.nextInt(), b.nextInt());
+            }
+        });
     }
 
     /**
@@ -1461,8 +1667,18 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param b
      * @return
      */
-    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTernaryOperator zipFunction) {
+        return new IteratorIntStream(new IntIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                return zipFunction.applyAsInt(a.nextInt(), b.nextInt(), c.nextInt());
+            }
+        });
     }
 
     /**
@@ -1473,8 +1689,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param b
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final IntStream a, final IntStream b, final IntBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1485,8 +1701,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param b
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final IntTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1512,8 +1728,32 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final IntBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new IntIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private int ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsInt(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1530,8 +1770,33 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream zip(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
-            final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
+            final IntTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorIntStream(new IntIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private int ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsInt(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1546,8 +1811,22 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
-            final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
+            final IntBinaryOperator zipFunction) {
+        return new IteratorIntStream(new IntIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsInt(a.nextInt(), b.hasNext() ? b.nextInt() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsInt(valueForNoneA, b.nextInt());
+                }
+            }
+        });
     }
 
     /**
@@ -1564,8 +1843,24 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
+            final int valueForNoneC, final IntTernaryOperator zipFunction) {
+        return new IteratorIntStream(new IntIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsInt(a.nextInt(), b.hasNext() ? b.nextInt() : valueForNoneB, c.hasNext() ? c.nextInt() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsInt(valueForNoneA, b.nextInt(), c.hasNext() ? c.nextInt() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsInt(valueForNoneA, valueForNoneB, c.nextInt());
+                }
+            }
+        });
     }
 
     /**
@@ -1579,9 +1874,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @param zipFunction
      * @return
      */
-    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
-            final IntBiFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToInt(ToIntFunction.UNBOX);
+    public static IntStream zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB, final IntBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1598,8 +1892,9 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
-            final int valueForNoneC, final IntTriFunction<Integer> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToInt(ToIntFunction.UNBOX);
+            final int valueForNoneC, final IntTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

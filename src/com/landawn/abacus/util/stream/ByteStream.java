@@ -43,6 +43,8 @@ import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalByte;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.ByteBiFunction;
@@ -53,8 +55,8 @@ import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.ByteNFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteSupplier;
+import com.landawn.abacus.util.function.ByteTernaryOperator;
 import com.landawn.abacus.util.function.ByteToIntFunction;
-import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
@@ -93,6 +95,68 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract <T> Stream<T> flatMappToObj(ByteFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(ByteBiPredicate, ByteBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract ByteStream rangeMap(final ByteBiPredicate sameRange, final ByteBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final ByteBiPredicate sameRange, final ByteBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<ByteList> collapse(final ByteBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -104,7 +168,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     @SequentialOnly
-    public abstract ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction);
+    public abstract ByteStream collapse(final ByteBiPredicate collapsible, final ByteBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -128,7 +192,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract ByteStream scan(final ByteBiFunction<Byte> accumulator);
+    public abstract ByteStream scan(final ByteBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -156,7 +220,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator);
+    public abstract ByteStream scan(final byte init, final ByteBinaryOperator accumulator);
 
     /**
      * 
@@ -166,7 +230,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     @SequentialOnly
-    public abstract ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator, final boolean initIncluded);
+    public abstract ByteStream scan(final byte init, final ByteBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * 
@@ -326,14 +390,13 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract ByteStream merge(final ByteStream b, final ByteBiFunction<Nth> nextSelector);
 
-    public abstract ByteStream zipWith(ByteStream b, ByteBiFunction<Byte> zipFunction);
+    public abstract ByteStream zipWith(ByteStream b, ByteBinaryOperator zipFunction);
 
-    public abstract ByteStream zipWith(ByteStream b, ByteStream c, ByteTriFunction<Byte> zipFunction);
+    public abstract ByteStream zipWith(ByteStream b, ByteStream c, ByteTernaryOperator zipFunction);
 
-    public abstract ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBiFunction<Byte> zipFunction);
+    public abstract ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBinaryOperator zipFunction);
 
-    public abstract ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC,
-            ByteTriFunction<Byte> zipFunction);
+    public abstract ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTernaryOperator zipFunction);
 
     public abstract IntStream asIntStream();
 
@@ -1133,8 +1196,29 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param b
      * @return
      */
-    public static ByteStream zip(final byte[] a, final byte[] b, final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final byte[] a, final byte[] b, final ByteBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ByteIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsByte(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1143,10 +1227,32 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final ByteTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ByteIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsByte(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1157,8 +1263,18 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param b
      * @return
      */
-    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteBinaryOperator zipFunction) {
+        return new IteratorByteStream(new ByteIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                return zipFunction.applyAsByte(a.nextByte(), b.nextByte());
+            }
+        });
     }
 
     /**
@@ -1169,8 +1285,18 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param b
      * @return
      */
-    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTernaryOperator zipFunction) {
+        return new IteratorByteStream(new ByteIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                return zipFunction.applyAsByte(a.nextByte(), b.nextByte(), c.nextByte());
+            }
+        });
     }
 
     /**
@@ -1181,8 +1307,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param b
      * @return
      */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1193,8 +1319,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param b
      * @return
      */
-    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1220,8 +1346,32 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @param zipFunction
      * @return
      */
-    public static ByteStream zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
+    public static ByteStream zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final ByteBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ByteIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private byte ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsByte(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1238,8 +1388,33 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream zip(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB, final byte valueForNoneC,
-            final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
+            final ByteTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorByteStream(new ByteIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private byte ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsByte(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1254,8 +1429,22 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final byte valueForNoneA, final byte valueForNoneB,
-            final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
+            final ByteBinaryOperator zipFunction) {
+        return new IteratorByteStream(new ByteIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsByte(a.nextByte(), b.hasNext() ? b.nextByte() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsByte(valueForNoneA, b.nextByte());
+                }
+            }
+        });
     }
 
     /**
@@ -1272,8 +1461,24 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA, final byte valueForNoneB,
-            final byte valueForNoneC, final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
+            final byte valueForNoneC, final ByteTernaryOperator zipFunction) {
+        return new IteratorByteStream(new ByteIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsByte(a.nextByte(), b.hasNext() ? b.nextByte() : valueForNoneB, c.hasNext() ? c.nextByte() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsByte(valueForNoneA, b.nextByte(), c.hasNext() ? c.nextByte() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsByte(valueForNoneA, valueForNoneB, c.nextByte());
+                }
+            }
+        });
     }
 
     /**
@@ -1288,8 +1493,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
-            final ByteBiFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToByte(ToByteFunction.UNBOX);
+            final ByteBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1306,8 +1511,9 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
-            final byte valueForNoneC, final ByteTriFunction<Byte> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToByte(ToByteFunction.UNBOX);
+            final byte valueForNoneC, final ByteTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

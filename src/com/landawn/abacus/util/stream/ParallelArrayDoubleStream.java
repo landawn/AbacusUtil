@@ -42,10 +42,10 @@ import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.DoubleTernaryOperator;
 import com.landawn.abacus.util.function.DoubleToFloatFunction;
 import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
-import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
@@ -1565,24 +1565,24 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, DoubleBiFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, DoubleBinaryOperator zipFunction) {
         return new ParallelIteratorDoubleStream(DoubleStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTriFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTernaryOperator zipFunction) {
         return new ParallelIteratorDoubleStream(DoubleStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBiFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBinaryOperator zipFunction) {
         return new ParallelIteratorDoubleStream(DoubleStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor,
                 asyncExecutor, closeHandlers);
     }
 
     @Override
     public DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
-            DoubleTriFunction<Double> zipFunction) {
+            DoubleTernaryOperator zipFunction) {
         return new ParallelIteratorDoubleStream(DoubleStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

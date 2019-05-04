@@ -46,10 +46,11 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBiPredicate;
+import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
-import com.landawn.abacus.util.function.LongTriFunction;
+import com.landawn.abacus.util.function.LongTernaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -104,6 +105,133 @@ abstract class AbstractLongStream extends LongStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public LongStream rangeMap(final LongBiPredicate sameRange, final LongBinaryOperator mapper) {
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new LongIteratorEx() {
+            private long left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                left = hasNext ? next : iter.nextLong();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextLong();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsLong(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final LongBiPredicate sameRange, final LongBiFunction<T> mapper) {
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private long left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextLong();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextLong();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<LongList> collapse(final LongBiPredicate collapsible) {
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<LongList>() {
+            private boolean hasNext = false;
+            private long next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public LongList next() {
+                final LongList result = new LongList(9);
+                result.add(hasNext ? next : (next = iter.nextLong()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextLong()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public LongStream collapse(final LongBiPredicate collapsible, final LongBinaryOperator mergeFunction) {
+        final LongIteratorEx iter = iteratorEx();
+
+        return newStream(new LongIteratorEx() {
+            private boolean hasNext = false;
+            private long next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                long res = hasNext ? next : (next = iter.nextLong());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextLong()))) {
+                        res = mergeFunction.applyAsLong(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -303,8 +431,6 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -341,37 +467,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
-        final LongIteratorEx iter = iteratorEx();
-
-        return newStream(new LongIteratorEx() {
-            private boolean hasNext = false;
-            private long next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public long nextLong() {
-                long res = hasNext ? next : (next = iter.nextLong());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextLong()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public LongStream scan(final LongBiFunction<Long> accumulator) {
+    public LongStream scan(final LongBinaryOperator accumulator) {
         final LongIteratorEx iter = iteratorEx();
 
         return newStream(new LongIteratorEx() {
@@ -389,14 +485,14 @@ abstract class AbstractLongStream extends LongStream {
                     isFirst = false;
                     return (res = iter.nextLong());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextLong()));
+                    return (res = accumulator.applyAsLong(res, iter.nextLong()));
                 }
             }
         }, false);
     }
 
     @Override
-    public LongStream scan(final long init, final LongBiFunction<Long> accumulator) {
+    public LongStream scan(final long init, final LongBinaryOperator accumulator) {
         final LongIteratorEx iter = iteratorEx();
 
         return newStream(new LongIteratorEx() {
@@ -409,13 +505,13 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public long nextLong() {
-                return (res = accumulator.apply(res, iter.nextLong()));
+                return (res = accumulator.applyAsLong(res, iter.nextLong()));
             }
         }, false);
     }
 
     @Override
-    public LongStream scan(final long init, final LongBiFunction<Long> accumulator, final boolean initIncluded) {
+    public LongStream scan(final long init, final LongBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -438,7 +534,7 @@ abstract class AbstractLongStream extends LongStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextLong()));
+                return (res = accumulator.applyAsLong(res, iter.nextLong()));
             }
         }, false);
     }
@@ -529,8 +625,6 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -612,8 +706,6 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -716,8 +808,6 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -797,8 +887,6 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -859,22 +947,22 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongBinaryOperator zipFunction) {
         return LongStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongStream c, LongTernaryOperator zipFunction) {
         return LongStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBinaryOperator zipFunction) {
         return LongStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTriFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTernaryOperator zipFunction) {
         return LongStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 

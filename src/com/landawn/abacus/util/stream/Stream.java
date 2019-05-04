@@ -68,6 +68,8 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NoCachingNoUpdating;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableEntry;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Pair;
@@ -292,10 +294,10 @@ public abstract class Stream<T>
     // public abstract <K, V> EntryStream<K, V> mapToEntry();
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, ? extends Map.Entry<K, V>> mapper);
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, ? extends Map.Entry<? extends K, ? extends V>> mapper);
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper);
 
     // public abstract <U> Stream<U> mapp(Function<? super T, ? extends Optional<? extends U>> mapper);
 
@@ -351,13 +353,13 @@ public abstract class Stream<T>
     public abstract DoubleStream flattMapToDouble(Function<? super T, double[]> mapper);
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
+    public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<? extends K, ? extends V>>> mapper);
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> flattMapToEntry(Function<? super T, ? extends Map<K, V>> mapper);
+    public abstract <K, V> EntryStream<K, V> flattMapToEntry(Function<? super T, ? extends Map<? extends K, ? extends V>> mapper);
 
     @ParallelSupported
-    public abstract <K, V> EntryStream<K, V> flatMappToEntry(Function<? super T, ? extends EntryStream<K, V>> mapper);
+    public abstract <K, V> EntryStream<K, V> flatMappToEntry(Function<? super T, ? extends EntryStream<? extends K, ? extends V>> mapper);
 
     @ParallelSupported
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> keyMapper);
@@ -2434,60 +2436,28 @@ public abstract class Stream<T>
     }
 
     /**
-     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
+     * To reduce the memory footprint, Only one instance of <code>DisposableEntry</code> is created, 
      * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
      * The elements only can be retrieved one by one, can't be modified or saved.
      * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
      * , and can't be parallel stream.
-     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
-     * 
-     * <br />
-     * <code>ER</code> = <code>Entry Reusable</code>
+     * Operations: filter/map/toMap/groupBy/groupTo/... are supported. 
      * 
      * 
      * @param keyMapper
      * @param valueMapper
      * @return
-     * @deprecated
-     */
-    @Deprecated
-    @SequentialOnly
-    @Beta
-    public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
-
-    /**
-     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
-     * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
-     * The elements only can be retrieved one by one, can't be modified or saved.
-     * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
-     * , and can't be parallel stream.
-     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
      * 
-     * @param flatValueMapper
-     * @return
-     * @deprecated
-     */
-    @Deprecated
-    @SequentialOnly
-    @Beta
-    public abstract <V> EntryStream<T, V> flatMapToEntryER(Function<? super T, ? extends Stream<? extends V>> flatValueMapper);
-
-    /**
-     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
-     * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
-     * The elements only can be retrieved one by one, can't be modified or saved.
-     * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
-     * , and can't be parallel stream.
-     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
+     * @see DisposableEntry
+     * @see NoCachingNoUpdating
      * 
-     * @param flatValueMapper
-     * @return
      * @deprecated
      */
     @Deprecated
     @SequentialOnly
     @Beta
-    public abstract <V> EntryStream<T, V> flattMapToEntryER(Function<? super T, ? extends Collection<? extends V>> flatValueMapper);
+    public abstract <K, V> Stream<DisposableEntry<K, V>> mapToDisposableEntry(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends V> valueMapper);
 
     public static <T> Stream<T> empty() {
         return new ArrayStream<>((T[]) N.EMPTY_OBJECT_ARRAY, true, NATURAL_COMPARATOR, null);
@@ -3170,7 +3140,7 @@ public abstract class Stream<T>
         return of(iter);
     }
 
-    public static <T> Stream<T> ofKeys(Map<T, ?> map) {
+    public static <K> Stream<K> ofKeys(Map<K, ?> map) {
         if (map == null || map.size() == 0) {
             return Stream.empty();
         }
@@ -3178,7 +3148,7 @@ public abstract class Stream<T>
         return of(map.keySet());
     }
 
-    public static <T, V> Stream<T> ofKeys(Map<T, V> map, Predicate<? super V> valueFilter) {
+    public static <K, V> Stream<K> ofKeys(Map<K, V> map, Predicate<? super V> valueFilter) {
         if (map == null || map.size() == 0) {
             return StreamEx.empty();
         }
@@ -3186,7 +3156,7 @@ public abstract class Stream<T>
         return EntryStream.of(map).filterByValue(valueFilter).keys();
     }
 
-    public static <T> Stream<T> ofValues(Map<?, T> map) {
+    public static <V> Stream<V> ofValues(Map<?, V> map) {
         if (map == null || map.size() == 0) {
             return Stream.empty();
         }
@@ -3194,7 +3164,7 @@ public abstract class Stream<T>
         return of(map.values());
     }
 
-    public static <K, T> Stream<T> ofValues(Map<K, T> map, Predicate<? super K> keyFilter) {
+    public static <K, V> Stream<V> ofValues(Map<K, V> map, Predicate<? super K> keyFilter) {
         if (map == null || map.size() == 0) {
             return Stream.empty();
         }
@@ -4281,6 +4251,7 @@ public abstract class Stream<T>
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
+        final MutableBoolean disposableChecked = MutableBoolean.of(false);
 
         final Iterator<? extends Stream<? extends T>> iterators = c.iterator();
         final int threadNum = Math.min(c.size(), readThreadNum);
@@ -4310,6 +4281,12 @@ public abstract class Stream<T>
 
                                 if (next == null) {
                                     next = (T) NONE;
+                                } else if (disposableChecked.isFalse()) {
+                                    disposableChecked.setTrue();
+
+                                    if (next instanceof NoCachingNoUpdating) {
+                                        throw new RuntimeException("Can't run NoCachingNoUpdating Objects in parallel Stream or Queue");
+                                    }
                                 }
 
                                 if (queue.offer(next) == false) {
@@ -4434,6 +4411,7 @@ public abstract class Stream<T>
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
+        final MutableBoolean disposableChecked = MutableBoolean.of(false);
 
         final Iterator<? extends Iterator<? extends T>> iterators = c.iterator();
         final int threadNum = Math.min(c.size(), readThreadNum);
@@ -4461,6 +4439,12 @@ public abstract class Stream<T>
 
                                 if (next == null) {
                                     next = (T) NONE;
+                                } else if (disposableChecked.isFalse()) {
+                                    disposableChecked.setTrue();
+
+                                    if (next instanceof NoCachingNoUpdating) {
+                                        throw new RuntimeException("Can't run NoCachingNoUpdating Objects in parallel Stream or Queue");
+                                    }
                                 }
 
                                 if (queue.offer(next) == false) {

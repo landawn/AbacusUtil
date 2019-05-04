@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableObjArray;
 import com.landawn.abacus.util.Try.Predicate;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
@@ -1117,14 +1118,14 @@ public class Builder<T> {
         }
 
         public <E extends Exception> DataSetBuilder addColumn(String newColumnName, Collection<String> fromColumnNames,
-                Try.Function<? super Object[], ?, E> func) throws E {
+                Try.Function<? super DisposableObjArray, ?, E> func) throws E {
             val.addColumn(newColumnName, fromColumnNames, func);
 
             return this;
         }
 
         public <E extends Exception> DataSetBuilder addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
-                Try.Function<? super Object[], ?, E> func) throws E {
+                Try.Function<? super DisposableObjArray, ?, E> func) throws E {
             val.addColumn(columnIndex, newColumnName, fromColumnNames, func);
 
             return this;
@@ -1207,7 +1208,7 @@ public class Builder<T> {
         }
 
         public <E extends Exception> DataSetBuilder combineColumns(Collection<String> columnNames, String newColumnName,
-                Try.Function<? super Object[], ?, E> combineFunc) throws E {
+                Try.Function<? super DisposableObjArray, ?, E> combineFunc) throws E {
             val.combineColumns(columnNames, newColumnName, combineFunc);
 
             return this;
@@ -1235,7 +1236,7 @@ public class Builder<T> {
         }
 
         public <E extends Exception, E2 extends Exception> DataSetBuilder combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName,
-                Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2 {
+                Try.Function<? super DisposableObjArray, ?, E2> combineFunc) throws E, E2 {
             val.combineColumns(columnNameFilter, newColumnName, combineFunc);
 
             return this;

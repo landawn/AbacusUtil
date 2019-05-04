@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ToIntFunction;
 
 /**
@@ -43,12 +44,20 @@ public final class Wrapper<T> {
     private final T value;
     private final ToIntFunction<? super T> hashFunction;
     private final BiPredicate<? super T, ? super T> equalsFunction;
+    private final Function<? super T, String> toStringFunction;
     private int hashCode;
 
     private Wrapper(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction) {
+        this(value, hashFunction, equalsFunction, null);
+    }
+
+    private Wrapper(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction,
+            Function<? super T, String> toStringFunction) {
         this.value = value;
         this.hashFunction = hashFunction;
         this.equalsFunction = equalsFunction;
+        this.toStringFunction = toStringFunction;
+
     }
 
     public static <T> Wrapper<T> of(T array) {
@@ -57,7 +66,19 @@ public final class Wrapper<T> {
     }
 
     public static <T> Wrapper<T> of(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction) {
+        N.checkArgNotNull(hashFunction, "hashFunction");
+        N.checkArgNotNull(equalsFunction, "equalsFunction");
+
         return new Wrapper<T>(value, hashFunction, equalsFunction);
+    }
+
+    public static <T> Wrapper<T> of(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction,
+            Function<? super T, String> toStringFunction) {
+        N.checkArgNotNull(hashFunction, "hashFunction");
+        N.checkArgNotNull(equalsFunction, "equalsFunction");
+        N.checkArgNotNull(toStringFunction, "toStringFunction");
+
+        return new Wrapper<T>(value, hashFunction, equalsFunction, toStringFunction);
     }
 
     public T value() {
@@ -88,6 +109,14 @@ public final class Wrapper<T> {
 
     @Override
     public String toString() {
-        return "Wrapper of Object: " + N.toString(value);
+        if (toStringFunction == null) {
+            if (value == null) {
+                return "Wrapper[null]";
+            } else {
+                return String.format("Wrapper[%s]", N.toString(value));
+            }
+        } else {
+            return toStringFunction.apply(value);
+        }
     }
 }

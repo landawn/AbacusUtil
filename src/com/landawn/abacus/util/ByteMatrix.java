@@ -312,9 +312,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.applyAsByte(a[i][j]);
                     }
@@ -358,9 +356,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.apply(i, j);
                     }
@@ -399,9 +395,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                     }
@@ -446,9 +440,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
                     }
@@ -489,9 +481,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.applyAsByte(a[i][j]);
                     }
@@ -538,9 +528,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
@@ -971,9 +959,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (byte) (a[i][j] + b.a[i][j]);
                     }
@@ -1018,9 +1004,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (byte) (a[i][j] - b.a[i][j]);
                     }
@@ -1295,9 +1279,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
@@ -1345,9 +1327,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
@@ -1794,6 +1774,11 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 action.accept(a[i][j]);
             }
         }
+    }
+
+    @Override
+    public void println() {
+        f.println(a);
     }
 
     @Override

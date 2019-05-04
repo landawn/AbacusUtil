@@ -771,6 +771,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         //    }
 
         isClosed = true;
+
+        logger.info("closing Stream");
+
         close(closeHandlers);
     }
 
@@ -920,16 +923,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         }
 
         return obj;
-    }
-
-    void checkArgument(boolean b) {
-        if (!b) {
-            try {
-                N.checkArgument(b);
-            } finally {
-                close();
-            }
-        }
     }
 
     void checkArgument(boolean b, String errorMessage) {

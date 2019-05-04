@@ -46,10 +46,11 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBiPredicate;
+import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.function.CharTriFunction;
+import com.landawn.abacus.util.function.CharTernaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -105,6 +106,133 @@ abstract class AbstractCharStream extends CharStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public CharStream rangeMap(final CharBiPredicate sameRange, final CharBinaryOperator mapper) {
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new CharIteratorEx() {
+            private char left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                left = hasNext ? next : iter.nextChar();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextChar();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsChar(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final CharBiPredicate sameRange, final CharBiFunction<T> mapper) {
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private char left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextChar();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextChar();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<CharList> collapse(final CharBiPredicate collapsible) {
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<CharList>() {
+            private boolean hasNext = false;
+            private char next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public CharList next() {
+                final CharList result = new CharList(9);
+                result.add(hasNext ? next : (next = iter.nextChar()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextChar()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public CharStream collapse(final CharBiPredicate collapsible, final CharBinaryOperator mergeFunction) {
+        final CharIteratorEx iter = iteratorEx();
+
+        return newStream(new CharIteratorEx() {
+            private boolean hasNext = false;
+            private char next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                char res = hasNext ? next : (next = iter.nextChar());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextChar()))) {
+                        res = mergeFunction.applyAsChar(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -304,8 +432,6 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -342,37 +468,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction) {
-        final CharIteratorEx iter = iteratorEx();
-
-        return newStream(new CharIteratorEx() {
-            private boolean hasNext = false;
-            private char next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public char nextChar() {
-                char res = hasNext ? next : (next = iter.nextChar());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextChar()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public CharStream scan(final CharBiFunction<Character> accumulator) {
+    public CharStream scan(final CharBinaryOperator accumulator) {
         final CharIteratorEx iter = iteratorEx();
 
         return newStream(new CharIteratorEx() {
@@ -390,14 +486,14 @@ abstract class AbstractCharStream extends CharStream {
                     isFirst = false;
                     return (res = iter.nextChar());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextChar()));
+                    return (res = accumulator.applyAsChar(res, iter.nextChar()));
                 }
             }
         }, false);
     }
 
     @Override
-    public CharStream scan(final char init, final CharBiFunction<Character> accumulator) {
+    public CharStream scan(final char init, final CharBinaryOperator accumulator) {
         final CharIteratorEx iter = iteratorEx();
 
         return newStream(new CharIteratorEx() {
@@ -410,13 +506,13 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public char nextChar() {
-                return (res = accumulator.apply(res, iter.nextChar()));
+                return (res = accumulator.applyAsChar(res, iter.nextChar()));
             }
         }, false);
     }
 
     @Override
-    public CharStream scan(final char init, final CharBiFunction<Character> accumulator, final boolean initIncluded) {
+    public CharStream scan(final char init, final CharBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -439,7 +535,7 @@ abstract class AbstractCharStream extends CharStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextChar()));
+                return (res = accumulator.applyAsChar(res, iter.nextChar()));
             }
         }, false);
     }
@@ -525,8 +621,6 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -608,8 +702,6 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -712,8 +804,6 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -793,8 +883,6 @@ abstract class AbstractCharStream extends CharStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -855,22 +943,22 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharBiFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharBinaryOperator zipFunction) {
         return CharStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharStream c, CharTriFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharStream c, CharTernaryOperator zipFunction) {
         return CharStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBinaryOperator zipFunction) {
         return CharStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
-    public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
+    public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTernaryOperator zipFunction) {
         return CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 

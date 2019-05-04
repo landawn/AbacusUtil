@@ -54,10 +54,10 @@ import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatNFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatSupplier;
+import com.landawn.abacus.util.function.FloatTernaryOperator;
 import com.landawn.abacus.util.function.FloatToDoubleFunction;
 import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
-import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
@@ -105,6 +105,68 @@ public abstract class FloatStream
     public abstract <T> Stream<T> flatMappToObj(FloatFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(FloatBiPredicate, FloatBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract FloatStream rangeMap(final FloatBiPredicate sameRange, final FloatBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final FloatBiPredicate sameRange, final FloatBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<FloatList> collapse(final FloatBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -116,7 +178,7 @@ public abstract class FloatStream
      * @return
      */
     @SequentialOnly
-    public abstract FloatStream collapse(final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction);
+    public abstract FloatStream collapse(final FloatBiPredicate collapsible, final FloatBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -140,7 +202,7 @@ public abstract class FloatStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract FloatStream scan(final FloatBiFunction<Float> accumulator);
+    public abstract FloatStream scan(final FloatBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -168,7 +230,7 @@ public abstract class FloatStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract FloatStream scan(final float init, final FloatBiFunction<Float> accumulator);
+    public abstract FloatStream scan(final float init, final FloatBinaryOperator accumulator);
 
     /**
      * 
@@ -178,7 +240,7 @@ public abstract class FloatStream
      * @return
      */
     @SequentialOnly
-    public abstract FloatStream scan(final float init, final FloatBiFunction<Float> accumulator, final boolean initIncluded);
+    public abstract FloatStream scan(final float init, final FloatBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -318,14 +380,14 @@ public abstract class FloatStream
      */
     public abstract FloatStream merge(final FloatStream b, final FloatBiFunction<Nth> nextSelector);
 
-    public abstract FloatStream zipWith(FloatStream b, FloatBiFunction<Float> zipFunction);
+    public abstract FloatStream zipWith(FloatStream b, FloatBinaryOperator zipFunction);
 
-    public abstract FloatStream zipWith(FloatStream b, FloatStream c, FloatTriFunction<Float> zipFunction);
+    public abstract FloatStream zipWith(FloatStream b, FloatStream c, FloatTernaryOperator zipFunction);
 
-    public abstract FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBiFunction<Float> zipFunction);
+    public abstract FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBinaryOperator zipFunction);
 
     public abstract FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
-            FloatTriFunction<Float> zipFunction);
+            FloatTernaryOperator zipFunction);
 
     public abstract DoubleStream asDoubleStream();
 
@@ -903,8 +965,29 @@ public abstract class FloatStream
      * @param b
      * @return
      */
-    public static FloatStream zip(final float[] a, final float[] b, final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final float[] a, final float[] b, final FloatBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsFloat(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -913,10 +996,32 @@ public abstract class FloatStream
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static FloatStream zip(final float[] a, final float[] b, final float[] c, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final float[] a, final float[] b, final float[] c, final FloatTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsFloat(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -927,8 +1032,18 @@ public abstract class FloatStream
      * @param b
      * @return
      */
-    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatBinaryOperator zipFunction) {
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                return zipFunction.applyAsFloat(a.nextFloat(), b.nextFloat());
+            }
+        });
     }
 
     /**
@@ -939,8 +1054,18 @@ public abstract class FloatStream
      * @param b
      * @return
      */
-    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatTernaryOperator zipFunction) {
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                return zipFunction.applyAsFloat(a.nextFloat(), b.nextFloat(), c.nextFloat());
+            }
+        });
     }
 
     /**
@@ -951,8 +1076,8 @@ public abstract class FloatStream
      * @param b
      * @return
      */
-    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -963,8 +1088,8 @@ public abstract class FloatStream
      * @param b
      * @return
      */
-    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+    public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -991,8 +1116,32 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
-            final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final FloatBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private float ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsFloat(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1009,8 +1158,33 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
-            final float valueForNoneC, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final float valueForNoneC, final FloatTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private float ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsFloat(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1025,8 +1199,22 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final FloatIterator a, final FloatIterator b, final float valueForNoneA, final float valueForNoneB,
-            final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final FloatBinaryOperator zipFunction) {
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsFloat(a.nextFloat(), b.hasNext() ? b.nextFloat() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsFloat(valueForNoneA, b.nextFloat());
+                }
+            }
+        });
     }
 
     /**
@@ -1043,8 +1231,24 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final float valueForNoneA, final float valueForNoneB,
-            final float valueForNoneC, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final float valueForNoneC, final FloatTernaryOperator zipFunction) {
+        return new IteratorFloatStream(new FloatIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsFloat(a.nextFloat(), b.hasNext() ? b.nextFloat() : valueForNoneB, c.hasNext() ? c.nextFloat() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsFloat(valueForNoneA, b.nextFloat(), c.hasNext() ? c.nextFloat() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsFloat(valueForNoneA, valueForNoneB, c.nextFloat());
+                }
+            }
+        });
     }
 
     /**
@@ -1059,8 +1263,8 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
-            final FloatBiFunction<Float> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final FloatBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1077,8 +1281,9 @@ public abstract class FloatStream
      * @return
      */
     public static FloatStream zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
-            final float valueForNoneC, final FloatTriFunction<Float> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToFloat(ToFloatFunction.UNBOX);
+            final float valueForNoneC, final FloatTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

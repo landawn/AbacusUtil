@@ -1018,6 +1018,18 @@ public abstract class SQLBuilder {
         return join(getTableName(entityClass));
     }
 
+    public SQLBuilder innerJoin(final String expr) {
+        sb.append(_SPACE_INNER_JOIN_SPACE);
+    
+        sb.append(formalizeName(expr));
+    
+        return this;
+    }
+
+    public SQLBuilder innerJoin(final Class<?> entityClass) {
+        return innerJoin(getTableName(entityClass));
+    }
+
     public SQLBuilder leftJoin(final String expr) {
         sb.append(_SPACE_LEFT_JOIN_SPACE);
 
@@ -1064,18 +1076,6 @@ public abstract class SQLBuilder {
 
     public SQLBuilder crossJoin(final Class<?> entityClass) {
         return crossJoin(getTableName(entityClass));
-    }
-
-    public SQLBuilder innerJoin(final String expr) {
-        sb.append(_SPACE_INNER_JOIN_SPACE);
-
-        sb.append(formalizeName(expr));
-
-        return this;
-    }
-
-    public SQLBuilder innerJoin(final Class<?> entityClass) {
-        return innerJoin(getTableName(entityClass));
     }
 
     public SQLBuilder naturalJoin(final String expr) {

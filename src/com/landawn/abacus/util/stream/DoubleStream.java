@@ -54,10 +54,10 @@ import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoubleNFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleSupplier;
+import com.landawn.abacus.util.function.DoubleTernaryOperator;
 import com.landawn.abacus.util.function.DoubleToFloatFunction;
 import com.landawn.abacus.util.function.DoubleToIntFunction;
 import com.landawn.abacus.util.function.DoubleToLongFunction;
-import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
@@ -105,6 +105,68 @@ public abstract class DoubleStream
     public abstract <T> Stream<T> flatMappToObj(DoubleFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(DoubleBiPredicate, DoubleBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract DoubleStream rangeMap(final DoubleBiPredicate sameRange, final DoubleBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final DoubleBiPredicate sameRange, final DoubleBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<DoubleList> collapse(final DoubleBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -116,7 +178,7 @@ public abstract class DoubleStream
      * @return
      */
     @SequentialOnly
-    public abstract DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction);
+    public abstract DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -140,7 +202,7 @@ public abstract class DoubleStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract DoubleStream scan(final DoubleBiFunction<Double> accumulator);
+    public abstract DoubleStream scan(final DoubleBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -168,7 +230,7 @@ public abstract class DoubleStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator);
+    public abstract DoubleStream scan(final double init, final DoubleBinaryOperator accumulator);
 
     /**
      * 
@@ -178,7 +240,7 @@ public abstract class DoubleStream
      * @return
      */
     @SequentialOnly
-    public abstract DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator, final boolean initIncluded);
+    public abstract DoubleStream scan(final double init, final DoubleBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -319,14 +381,14 @@ public abstract class DoubleStream
      */
     public abstract DoubleStream merge(final DoubleStream b, final DoubleBiFunction<Nth> nextSelector);
 
-    public abstract DoubleStream zipWith(DoubleStream b, DoubleBiFunction<Double> zipFunction);
+    public abstract DoubleStream zipWith(DoubleStream b, DoubleBinaryOperator zipFunction);
 
-    public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTriFunction<Double> zipFunction);
+    public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTernaryOperator zipFunction);
 
-    public abstract DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBiFunction<Double> zipFunction);
+    public abstract DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBinaryOperator zipFunction);
 
     public abstract DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
-            DoubleTriFunction<Double> zipFunction);
+            DoubleTernaryOperator zipFunction);
 
     public abstract java.util.stream.DoubleStream toJdkStream();
 
@@ -1005,8 +1067,29 @@ public abstract class DoubleStream
      * @param b
      * @return
      */
-    public static DoubleStream zip(final double[] a, final double[] b, final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final double[] a, final double[] b, final DoubleBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsDouble(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1015,10 +1098,32 @@ public abstract class DoubleStream
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final DoubleTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsDouble(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1029,8 +1134,18 @@ public abstract class DoubleStream
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleBinaryOperator zipFunction) {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                return zipFunction.applyAsDouble(a.nextDouble(), b.nextDouble());
+            }
+        });
     }
 
     /**
@@ -1041,8 +1156,18 @@ public abstract class DoubleStream
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTernaryOperator zipFunction) {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                return zipFunction.applyAsDouble(a.nextDouble(), b.nextDouble(), c.nextDouble());
+            }
+        });
     }
 
     /**
@@ -1053,8 +1178,8 @@ public abstract class DoubleStream
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1065,8 +1190,8 @@ public abstract class DoubleStream
      * @param b
      * @return
      */
-    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+    public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1093,8 +1218,32 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
-            final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final DoubleBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private double ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsDouble(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1111,8 +1260,33 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
-            final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final double valueForNoneC, final DoubleTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private double ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public double nextDouble() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsDouble(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1127,8 +1301,22 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final double valueForNoneA, final double valueForNoneB,
-            final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final DoubleBinaryOperator zipFunction) {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsDouble(a.nextDouble(), b.hasNext() ? b.nextDouble() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsDouble(valueForNoneA, b.nextDouble());
+                }
+            }
+        });
     }
 
     /**
@@ -1145,8 +1333,25 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final double valueForNoneA,
-            final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final double valueForNoneB, final double valueForNoneC, final DoubleTernaryOperator zipFunction) {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsDouble(a.nextDouble(), b.hasNext() ? b.nextDouble() : valueForNoneB,
+                            c.hasNext() ? c.nextDouble() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsDouble(valueForNoneA, b.nextDouble(), c.hasNext() ? c.nextDouble() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsDouble(valueForNoneA, valueForNoneB, c.nextDouble());
+                }
+            }
+        });
     }
 
     /**
@@ -1161,8 +1366,8 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
-            final DoubleBiFunction<Double> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final DoubleBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1179,8 +1384,9 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
-            final double valueForNoneC, final DoubleTriFunction<Double> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToDouble(ToDoubleFunction.UNBOX);
+            final double valueForNoneC, final DoubleTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

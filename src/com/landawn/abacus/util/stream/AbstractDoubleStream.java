@@ -47,10 +47,11 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBiPredicate;
+import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
-import com.landawn.abacus.util.function.DoubleTriFunction;
+import com.landawn.abacus.util.function.DoubleTernaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjDoubleConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -106,6 +107,133 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public DoubleStream rangeMap(final DoubleBiPredicate sameRange, final DoubleBinaryOperator mapper) {
+        final DoubleIteratorEx iter = iteratorEx();
+
+        return newStream(new DoubleIteratorEx() {
+            private double left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                left = hasNext ? next : iter.nextDouble();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextDouble();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsDouble(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final DoubleBiPredicate sameRange, final DoubleBiFunction<T> mapper) {
+        final DoubleIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private double left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextDouble();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextDouble();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<DoubleList> collapse(final DoubleBiPredicate collapsible) {
+        final DoubleIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<DoubleList>() {
+            private boolean hasNext = false;
+            private double next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public DoubleList next() {
+                final DoubleList result = new DoubleList(9);
+                result.add(hasNext ? next : (next = iter.nextDouble()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextDouble()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBinaryOperator mergeFunction) {
+        final DoubleIteratorEx iter = iteratorEx();
+
+        return newStream(new DoubleIteratorEx() {
+            private boolean hasNext = false;
+            private double next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                double res = hasNext ? next : (next = iter.nextDouble());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextDouble()))) {
+                        res = mergeFunction.applyAsDouble(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -305,8 +433,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -343,37 +469,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
-        final DoubleIteratorEx iter = iteratorEx();
-
-        return newStream(new DoubleIteratorEx() {
-            private boolean hasNext = false;
-            private double next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public double nextDouble() {
-                double res = hasNext ? next : (next = iter.nextDouble());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextDouble()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public DoubleStream scan(final DoubleBiFunction<Double> accumulator) {
+    public DoubleStream scan(final DoubleBinaryOperator accumulator) {
         final DoubleIteratorEx iter = iteratorEx();
 
         return newStream(new DoubleIteratorEx() {
@@ -391,14 +487,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
                     isFirst = false;
                     return (res = iter.nextDouble());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextDouble()));
+                    return (res = accumulator.applyAsDouble(res, iter.nextDouble()));
                 }
             }
         }, false);
     }
 
     @Override
-    public DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator) {
+    public DoubleStream scan(final double init, final DoubleBinaryOperator accumulator) {
         final DoubleIteratorEx iter = iteratorEx();
 
         return newStream(new DoubleIteratorEx() {
@@ -411,13 +507,13 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public double nextDouble() {
-                return (res = accumulator.apply(res, iter.nextDouble()));
+                return (res = accumulator.applyAsDouble(res, iter.nextDouble()));
             }
         }, false);
     }
 
     @Override
-    public DoubleStream scan(final double init, final DoubleBiFunction<Double> accumulator, final boolean initIncluded) {
+    public DoubleStream scan(final double init, final DoubleBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -440,7 +536,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextDouble()));
+                return (res = accumulator.applyAsDouble(res, iter.nextDouble()));
             }
         }, false);
     }
@@ -526,8 +622,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -609,8 +703,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -713,8 +805,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -794,8 +884,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -856,23 +944,23 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, DoubleBiFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, DoubleBinaryOperator zipFunction) {
         return DoubleStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTriFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, DoubleStream c, DoubleTernaryOperator zipFunction) {
         return DoubleStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBiFunction<Double> zipFunction) {
+    public DoubleStream zipWith(DoubleStream b, double valueForNoneA, double valueForNoneB, DoubleBinaryOperator zipFunction) {
         return DoubleStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
     public DoubleStream zipWith(DoubleStream b, DoubleStream c, double valueForNoneA, double valueForNoneB, double valueForNoneC,
-            DoubleTriFunction<Double> zipFunction) {
+            DoubleTernaryOperator zipFunction) {
         return DoubleStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 

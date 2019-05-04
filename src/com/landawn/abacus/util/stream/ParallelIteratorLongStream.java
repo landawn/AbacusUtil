@@ -42,10 +42,10 @@ import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
+import com.landawn.abacus.util.function.LongTernaryOperator;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
 import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
-import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -962,23 +962,23 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongBinaryOperator zipFunction) {
         return new ParallelIteratorLongStream(LongStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongStream c, LongTernaryOperator zipFunction) {
         return new ParallelIteratorLongStream(LongStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBinaryOperator zipFunction) {
         return new ParallelIteratorLongStream(LongStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTriFunction<Long> zipFunction) {
+    public LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTernaryOperator zipFunction) {
         return new ParallelIteratorLongStream(LongStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

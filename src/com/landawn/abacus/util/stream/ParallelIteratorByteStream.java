@@ -40,8 +40,8 @@ import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.ByteTernaryOperator;
 import com.landawn.abacus.util.function.ByteToIntFunction;
-import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -887,23 +887,23 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteBiFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteBinaryOperator zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteStream c, ByteTriFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteStream c, ByteTernaryOperator zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBiFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBinaryOperator zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTernaryOperator zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

@@ -1705,6 +1705,11 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
     }
 
     @Override
+    public void println() {
+        f.println(a);
+    }
+
+    @Override
     public int hashCode() {
         return N.deepHashCode(a);
     }

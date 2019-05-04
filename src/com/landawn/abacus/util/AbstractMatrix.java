@@ -85,11 +85,7 @@ public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, 
         return a;
     }
 
-    public void println() {
-        for (A e : a) {
-            N.println(e);
-        }
-    }
+    public abstract void println();
 
     public boolean isEmpty() {
         return count == 0;

@@ -794,36 +794,7 @@ public final class Try<T extends AutoCloseable> {
     public static interface BinaryOperator<T, E extends Exception> extends BiFunction<T, T, T, E> {
     }
 
-    public static interface BooleanBinaryOperator<E extends Exception> {
-        boolean applyAsBoolean(boolean left, boolean right) throws E;
-    }
-
-    public static interface CharBinaryOperator<E extends Exception> {
-        char applyAsChar(char left, char right) throws E;
-    }
-
-    public static interface ByteBinaryOperator<E extends Exception> {
-        byte applyAsByte(byte left, byte right) throws E;
-    }
-
-    public static interface ShortBinaryOperator<E extends Exception> {
-        short applyAsShort(short left, short right) throws E;
-    }
-
-    public static interface IntBinaryOperator<E extends Exception> {
-        int applyAsInt(int left, int right) throws E;
-    }
-
-    public static interface LongBinaryOperator<E extends Exception> {
-        long applyAsLong(long left, long right) throws E;
-    }
-
-    public static interface FloatBinaryOperator<E extends Exception> {
-        float applyAsFloat(float left, float right) throws E;
-    }
-
-    public static interface DoubleBinaryOperator<E extends Exception> {
-        double applyAsDouble(double left, double right) throws E;
+    public static interface TernaryOperator<T, E extends Exception> extends BiFunction<T, T, T, E> {
     }
 
     public static interface BooleanUnaryOperator<E extends Exception> {
@@ -856,6 +827,70 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface DoubleUnaryOperator<E extends Exception> {
         double applyAsDouble(double operand) throws E;
+    }
+
+    public static interface BooleanBinaryOperator<E extends Exception> {
+        boolean applyAsBoolean(boolean left, boolean right) throws E;
+    }
+
+    public static interface CharBinaryOperator<E extends Exception> {
+        char applyAsChar(char left, char right) throws E;
+    }
+
+    public static interface ByteBinaryOperator<E extends Exception> {
+        byte applyAsByte(byte left, byte right) throws E;
+    }
+
+    public static interface ShortBinaryOperator<E extends Exception> {
+        short applyAsShort(short left, short right) throws E;
+    }
+
+    public static interface IntBinaryOperator<E extends Exception> {
+        int applyAsInt(int left, int right) throws E;
+    }
+
+    public static interface LongBinaryOperator<E extends Exception> {
+        long applyAsLong(long left, long right) throws E;
+    }
+
+    public static interface FloatBinaryOperator<E extends Exception> {
+        float applyAsFloat(float left, float right) throws E;
+    }
+
+    public static interface DoubleBinaryOperator<E extends Exception> {
+        double applyAsDouble(double left, double right) throws E;
+    }
+
+    public static interface BooleanTernaryOperator<E extends Exception> {
+        boolean applyAsBoolean(boolean a, boolean b, boolean c) throws E;
+    }
+
+    public static interface CharTernaryOperator<E extends Exception> {
+        char applyAsChar(char a, char b, char c) throws E;
+    }
+
+    public static interface ByteTernaryOperator<E extends Exception> {
+        byte applyAsByte(byte a, byte b, byte c) throws E;
+    }
+
+    public static interface ShortTernaryOperator<E extends Exception> {
+        short applyAsShort(short a, short b, short c) throws E;
+    }
+
+    public static interface IntTernaryOperator<E extends Exception> {
+        int applyAsInt(int a, int b, int c) throws E;
+    }
+
+    public static interface LongTernaryOperator<E extends Exception> {
+        long applyAsLong(long a, long b, long c) throws E;
+    }
+
+    public static interface FloatTernaryOperator<E extends Exception> {
+        float applyAsFloat(float a, float b, float c) throws E;
+    }
+
+    public static interface DoubleTernaryOperator<E extends Exception> {
+        double applyAsDouble(double a, double b, double c) throws E;
     }
 
     public static interface BooleanBiPredicate<E extends Exception> {

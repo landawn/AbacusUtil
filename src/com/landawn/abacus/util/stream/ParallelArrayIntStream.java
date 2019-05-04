@@ -42,13 +42,13 @@ import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntTernaryOperator;
 import com.landawn.abacus.util.function.IntToByteFunction;
 import com.landawn.abacus.util.function.IntToCharFunction;
 import com.landawn.abacus.util.function.IntToDoubleFunction;
 import com.landawn.abacus.util.function.IntToFloatFunction;
 import com.landawn.abacus.util.function.IntToLongFunction;
 import com.landawn.abacus.util.function.IntToShortFunction;
-import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -1651,23 +1651,23 @@ final class ParallelArrayIntStream extends ArrayIntStream {
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntBiFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntBinaryOperator zipFunction) {
         return new ParallelIteratorIntStream(IntStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntStream c, IntTriFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntStream c, IntTernaryOperator zipFunction) {
         return new ParallelIteratorIntStream(IntStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBiFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, int valueForNoneA, int valueForNoneB, IntBinaryOperator zipFunction) {
         return new ParallelIteratorIntStream(IntStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTriFunction<Integer> zipFunction) {
+    public IntStream zipWith(IntStream b, IntStream c, int valueForNoneA, int valueForNoneB, int valueForNoneC, IntTernaryOperator zipFunction) {
         return new ParallelIteratorIntStream(IntStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum, splitor,
                 asyncExecutor, closeHandlers);
     }

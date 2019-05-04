@@ -312,9 +312,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.applyAsShort(a[i][j]);
                     }
@@ -480,9 +478,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.applyAsShort(a[i][j]);
                     }
@@ -529,9 +525,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
@@ -962,9 +956,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (short) (a[i][j] + b.a[i][j]);
                     }
@@ -1009,9 +1001,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (short) (a[i][j] - b.a[i][j]);
                     }
@@ -1286,9 +1276,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
@@ -1336,9 +1324,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
@@ -1786,6 +1772,11 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 action.accept(a[i][j]);
             }
         }
+    }
+
+    @Override
+    public void println() {
+        f.println(a);
     }
 
     @Override

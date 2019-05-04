@@ -1,3 +1,18 @@
+### 1.7.0
+
+* Add `DataSet.map/flatMap`.
+
+* Add `Index.ofSubArray/ofSubList/lastOfSubArray/lastOfSubList`.
+
+* Add `IntStream.ofIndices`.
+
+* Refactoring `DataSet`.
+
+* Refactoring `IntStream/ByteStream/.../DoubleStream.zip`.
+
+* Improvements and bug fix.
+
+
 ### 1.6.3
 
 * Add `Matrix/IntMatrix/.../f.flatOp`.

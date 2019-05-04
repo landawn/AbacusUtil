@@ -722,8 +722,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null);
@@ -820,8 +818,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -917,8 +913,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 }
@@ -1002,8 +996,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -1111,8 +1103,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);
@@ -1666,8 +1656,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);
@@ -1693,8 +1681,6 @@ class IteratorLongStream extends AbstractLongStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);

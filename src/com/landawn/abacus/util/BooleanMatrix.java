@@ -293,9 +293,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.applyAsBoolean(a[i][j]);
                     }
@@ -958,9 +956,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
@@ -1008,9 +1004,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (rows <= cols) {
-                for (
-
-                        int i = 0; i < rows; i++) {
+                for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
@@ -1464,6 +1458,11 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                 action.accept(a[i][j]);
             }
         }
+    }
+
+    @Override
+    public void println() {
+        f.println(a);
     }
 
     @Override

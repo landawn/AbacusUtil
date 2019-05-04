@@ -49,10 +49,11 @@ import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBiPredicate;
+import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.function.ShortTriFunction;
+import com.landawn.abacus.util.function.ShortTernaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToShortFunction;
 
@@ -105,6 +106,133 @@ abstract class AbstractShortStream extends ShortStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public ShortStream rangeMap(final ShortBiPredicate sameRange, final ShortBinaryOperator mapper) {
+        final ShortIteratorEx iter = iteratorEx();
+
+        return newStream(new ShortIteratorEx() {
+            private short left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                left = hasNext ? next : iter.nextShort();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextShort();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsShort(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final ShortBiPredicate sameRange, final ShortBiFunction<T> mapper) {
+        final ShortIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private short left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextShort();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextShort();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<ShortList> collapse(final ShortBiPredicate collapsible) {
+        final ShortIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<ShortList>() {
+            private boolean hasNext = false;
+            private short next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public ShortList next() {
+                final ShortList result = new ShortList(9);
+                result.add(hasNext ? next : (next = iter.nextShort()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextShort()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public ShortStream collapse(final ShortBiPredicate collapsible, final ShortBinaryOperator mergeFunction) {
+        final ShortIteratorEx iter = iteratorEx();
+
+        return newStream(new ShortIteratorEx() {
+            private boolean hasNext = false;
+            private short next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                short res = hasNext ? next : (next = iter.nextShort());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextShort()))) {
+                        res = mergeFunction.applyAsShort(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -304,8 +432,6 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -342,37 +468,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
-        final ShortIteratorEx iter = iteratorEx();
-
-        return newStream(new ShortIteratorEx() {
-            private boolean hasNext = false;
-            private short next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public short nextShort() {
-                short res = hasNext ? next : (next = iter.nextShort());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextShort()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public ShortStream scan(final ShortBiFunction<Short> accumulator) {
+    public ShortStream scan(final ShortBinaryOperator accumulator) {
         final ShortIteratorEx iter = iteratorEx();
 
         return newStream(new ShortIteratorEx() {
@@ -390,14 +486,14 @@ abstract class AbstractShortStream extends ShortStream {
                     isFirst = false;
                     return (res = iter.nextShort());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextShort()));
+                    return (res = accumulator.applyAsShort(res, iter.nextShort()));
                 }
             }
         }, false);
     }
 
     @Override
-    public ShortStream scan(final short init, final ShortBiFunction<Short> accumulator) {
+    public ShortStream scan(final short init, final ShortBinaryOperator accumulator) {
         final ShortIteratorEx iter = iteratorEx();
 
         return newStream(new ShortIteratorEx() {
@@ -410,13 +506,13 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public short nextShort() {
-                return (res = accumulator.apply(res, iter.nextShort()));
+                return (res = accumulator.applyAsShort(res, iter.nextShort()));
             }
         }, false);
     }
 
     @Override
-    public ShortStream scan(final short init, final ShortBiFunction<Short> accumulator, final boolean initIncluded) {
+    public ShortStream scan(final short init, final ShortBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -439,7 +535,7 @@ abstract class AbstractShortStream extends ShortStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextShort()));
+                return (res = accumulator.applyAsShort(res, iter.nextShort()));
             }
         }, false);
     }
@@ -530,8 +626,6 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -613,8 +707,6 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -717,8 +809,6 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -798,8 +888,6 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -860,23 +948,22 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortBinaryOperator zipFunction) {
         return ShortStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTernaryOperator zipFunction) {
         return ShortStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBinaryOperator zipFunction) {
         return ShortStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
-            ShortTriFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC, ShortTernaryOperator zipFunction) {
         return ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 

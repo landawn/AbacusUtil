@@ -41,10 +41,10 @@ import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
+import com.landawn.abacus.util.function.FloatTernaryOperator;
 import com.landawn.abacus.util.function.FloatToDoubleFunction;
 import com.landawn.abacus.util.function.FloatToIntFunction;
 import com.landawn.abacus.util.function.FloatToLongFunction;
-import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjFloatConsumer;
@@ -962,24 +962,23 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public FloatStream zipWith(FloatStream b, FloatBiFunction<Float> zipFunction) {
+    public FloatStream zipWith(FloatStream b, FloatBinaryOperator zipFunction) {
         return new ParallelIteratorFloatStream(FloatStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public FloatStream zipWith(FloatStream b, FloatStream c, FloatTriFunction<Float> zipFunction) {
+    public FloatStream zipWith(FloatStream b, FloatStream c, FloatTernaryOperator zipFunction) {
         return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBiFunction<Float> zipFunction) {
+    public FloatStream zipWith(FloatStream b, float valueForNoneA, float valueForNoneB, FloatBinaryOperator zipFunction) {
         return new ParallelIteratorFloatStream(FloatStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC,
-            FloatTriFunction<Float> zipFunction) {
+    public FloatStream zipWith(FloatStream b, FloatStream c, float valueForNoneA, float valueForNoneB, float valueForNoneC, FloatTernaryOperator zipFunction) {
         return new ParallelIteratorFloatStream(FloatStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

@@ -1514,7 +1514,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return concat(this, s);
     }
 
-    public ExceptionalStream<T, E> appendIfEmpty(Supplier<ExceptionalStream<T, E>> supplier) throws E {
+    public ExceptionalStream<T, E> appendIfEmpty(Supplier<? extends ExceptionalStream<T, E>> supplier) throws E {
         if (elements.hasNext() == false) {
             return append(supplier.get());
         } else {

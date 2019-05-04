@@ -44,8 +44,8 @@ import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
+import com.landawn.abacus.util.function.ShortTernaryOperator;
 import com.landawn.abacus.util.function.ShortToIntFunction;
-import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToIntFunction;
@@ -886,24 +886,23 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortBinaryOperator zipFunction) {
         return new ParallelIteratorShortStream(ShortStream.zip(this, b, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortStream c, ShortTernaryOperator zipFunction) {
         return new ParallelIteratorShortStream(ShortStream.zip(this, b, c, zipFunction), false, maxThreadNum, splitor, asyncExecutor, closeHandlers);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBinaryOperator zipFunction) {
         return new ParallelIteratorShortStream(ShortStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, maxThreadNum, splitor, asyncExecutor,
                 closeHandlers);
     }
 
     @Override
-    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
-            ShortTriFunction<Short> zipFunction) {
+    public ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC, ShortTernaryOperator zipFunction) {
         return new ParallelIteratorShortStream(ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, maxThreadNum,
                 splitor, asyncExecutor, closeHandlers);
     }

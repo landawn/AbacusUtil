@@ -64,6 +64,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NoCachingNoUpdating.DisposableEntry;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Objectory;
@@ -251,51 +252,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper) {
-        final Iterator<T> iter = iterator();
-
-        return newStream(new ObjIteratorEx<U>() {
-            private final T NULL = (T) StreamBase.NONE;
-            private T left = NULL;
-            private T right = null;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return left != NULL || iter.hasNext();
-            }
-
-            @Override
-            public U next() {
-                if (left == NULL) {
-                    left = iter.next();
-                }
-
-                right = left;
-                boolean hasNext = false;
-
-                while (iter.hasNext()) {
-                    next = iter.next();
-
-                    if (sameRange.test(left, next)) {
-                        right = next;
-                    } else {
-                        hasNext = true;
-                        break;
-                    }
-                }
-
-                final U res = mapper.apply(left, right);
-
-                left = hasNext ? next : NULL;
-
-                return res;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, ? extends Map.Entry<K, V>> mapper) {
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, ? extends Map.Entry<? extends K, ? extends V>> mapper) {
         final Function<T, T> mapper2 = Fn.identity();
 
         if (mapper == mapper2) {
@@ -306,11 +263,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends V> valueMapper) {
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(T t) {
-                return new SimpleImmutableEntry<>(keyMapper.apply(t), valueMapper.apply(t));
+                return new SimpleImmutableEntry<K, V>(keyMapper.apply(t), valueMapper.apply(t));
             }
         };
 
@@ -429,17 +386,17 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper) {
+    public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<? extends Map.Entry<? extends K, ? extends V>>> mapper) {
         return EntryStream.of(flatMap(mapper));
     }
 
     @Override
     @ParallelSupported
-    public <K, V> EntryStream<K, V> flattMapToEntry(final Function<? super T, ? extends Map<K, V>> mapper) {
-        final Function<? super T, ? extends Stream<? extends Entry<K, V>>> mapper2 = new Function<T, Stream<? extends Entry<K, V>>>() {
+    public <K, V> EntryStream<K, V> flattMapToEntry(final Function<? super T, ? extends Map<? extends K, ? extends V>> mapper) {
+        final Function<? super T, ? extends Stream<Entry<K, V>>> mapper2 = new Function<T, Stream<Entry<K, V>>>() {
             @Override
-            public Stream<? extends Entry<K, V>> apply(T t) {
-                return Stream.of(mapper.apply(t));
+            public Stream<Entry<K, V>> apply(T t) {
+                return Stream.of((Map<K, V>) mapper.apply(t));
             }
         };
 
@@ -448,10 +405,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     @ParallelSupported
-    public <K, V> EntryStream<K, V> flatMappToEntry(final Function<? super T, ? extends EntryStream<K, V>> mapper) {
-        final Function<? super T, ? extends Stream<? extends Entry<K, V>>> mapper2 = new Function<T, Stream<? extends Entry<K, V>>>() {
+    public <K, V> EntryStream<K, V> flatMappToEntry(final Function<? super T, ? extends EntryStream<? extends K, ? extends V>> mapper) {
+        final Function<? super T, ? extends Stream<? extends Entry<? extends K, ? extends V>>> mapper2 = new Function<T, Stream<? extends Entry<? extends K, ? extends V>>>() {
             @Override
-            public Stream<? extends Entry<K, V>> apply(T t) {
+            public Stream<? extends Entry<? extends K, ? extends V>> apply(T t) {
                 return mapper.apply(t).entries();
             }
         };
@@ -477,6 +434,277 @@ abstract class AbstractStream<T> extends Stream<T> {
     //
     //        return flatMapToEntry(flatEntryMapper);
     //    }
+
+    @Override
+    public <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<U>() {
+            private T left = null, right = null, next = null;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public U next() {
+                left = hasNext ? next : iter.next();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.next();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<Stream<T>> collapse(final BiPredicate<? super T, ? super T> collapsible) {
+        return collapse(collapsible, Suppliers.<T> ofList()).map(listToStreamMapper());
+    }
+
+    @Override
+    public <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<? extends C> supplier) {
+        return newStream(new ObjIteratorEx<C>() {
+            private final ObjIteratorEx<T> iter = iteratorEx();
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public C next() {
+                if (hasNext == false) {
+                    next = iter.next();
+                }
+
+                final C c = supplier.get();
+                c.add(next);
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        c.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return c;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                T res = hasNext ? next : (next = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        res = mergeFunction.apply(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final R init, final BiFunction<R, ? super T, R> op) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                R res = op.apply(init, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        res = op.apply(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
+            final BiConsumer<? super R, ? super T> accumulator) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                final R res = supplier.get();
+                accumulator.accept(res, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector) {
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean hasNext = false;
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                final A c = supplier.get();
+                accumulator.accept(c, hasNext ? next : (next = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(c, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return finisher.apply(c);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private T res = null;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator) {
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private R res = init;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return (res = accumulator.apply(res, iter.next()));
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator, boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
+        }
+
+        final ObjIteratorEx<T> iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<R>() {
+            private boolean isFirst = true;
+            private R res = init;
+
+            @Override
+            public boolean hasNext() {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return init;
+                }
+
+                return (res = accumulator.apply(res, iter.next()));
+            }
+        }, false, null);
+    }
 
     @Override
     @SuppressWarnings("rawtypes")
@@ -626,8 +854,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -717,8 +943,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -1372,244 +1596,6 @@ abstract class AbstractStream<T> extends Stream<T> {
                     fromTime = startTime.getAsLong() - maxDurationInMillis;
                     endTime = fromTime + maxDurationInMillis;
                 }
-            }
-        }, false, null);
-    }
-
-    @Override
-    public Stream<Stream<T>> collapse(final BiPredicate<? super T, ? super T> collapsible) {
-        return collapse(collapsible, Suppliers.<T> ofList()).map(listToStreamMapper());
-    }
-
-    @Override
-    public <C extends Collection<T>> Stream<C> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<? extends C> supplier) {
-        return newStream(new ObjIteratorEx<C>() {
-            private final ObjIteratorEx<T> iter = iteratorEx();
-            private boolean hasNext = false;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public C next() {
-                if (hasNext == false) {
-                    next = iter.next();
-                }
-
-                final C c = supplier.get();
-                c.add(next);
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.next()))) {
-                        c.add(next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return c;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<T>() {
-            private boolean hasNext = false;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public T next() {
-                T res = hasNext ? next : (next = iter.next());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.next()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final R init, final BiFunction<R, ? super T, R> op) {
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<R>() {
-            private boolean hasNext = false;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                R res = op.apply(init, hasNext ? next : (next = iter.next()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.next()))) {
-                        res = op.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
-            final BiConsumer<? super R, ? super T> accumulator) {
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<R>() {
-            private boolean hasNext = false;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                final R res = supplier.get();
-                accumulator.accept(res, hasNext ? next : (next = iter.next()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.next()))) {
-                        accumulator.accept(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector) {
-        final Supplier<A> supplier = collector.supplier();
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-        final Function<A, R> finisher = collector.finisher();
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<R>() {
-            private boolean hasNext = false;
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                final A c = supplier.get();
-                accumulator.accept(c, hasNext ? next : (next = iter.next()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.next()))) {
-                        accumulator.accept(c, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return finisher.apply(c);
-            }
-        }, false, null);
-    }
-
-    @Override
-    public Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<T>() {
-            private T res = null;
-            private boolean isFirst = true;
-
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if (isFirst) {
-                    isFirst = false;
-                    return (res = iter.next());
-                } else {
-                    return (res = accumulator.apply(res, iter.next()));
-                }
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator) {
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<R>() {
-            private R res = init;
-
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                return (res = accumulator.apply(res, iter.next()));
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator, boolean initIncluded) {
-        if (initIncluded == false) {
-            return scan(init, accumulator);
-        }
-
-        final ObjIteratorEx<T> iter = iteratorEx();
-
-        return newStream(new ObjIteratorEx<R>() {
-            private boolean isFirst = true;
-            private R res = init;
-
-            @Override
-            public boolean hasNext() {
-                return isFirst || iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                if (isFirst) {
-                    isFirst = false;
-                    return init;
-                }
-
-                return (res = accumulator.apply(res, iter.next()));
             }
         }, false, null);
     }
@@ -2925,8 +2911,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -3008,8 +2992,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -3124,8 +3106,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -3371,8 +3351,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                 @Override
                 public void skip(long n) {
-                    checkArgNotNegative(n, "n");
-
                     if (initialized == false) {
                         init();
                     }
@@ -3449,8 +3427,6 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -3796,71 +3772,29 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
     }
 
+    /**
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     @Override
-    public <K, V> EntryStream<K, V> mapToEntryER(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
-        checkState(isParallel() == false, "mapToEntryER can't be applied to parallel stream");
+    public <K, V> Stream<DisposableEntry<K, V>> mapToDisposableEntry(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper) {
+        checkState(isParallel() == false, "mapToDisposableEntry can't be applied to parallel stream");
 
-        final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
+        final Function<T, DisposableEntry<K, V>> mapper = new Function<T, DisposableEntry<K, V>>() {
             private final EntryStream.ReusableEntry<K, V> entry = new EntryStream.ReusableEntry<>();
 
             @Override
-            public Entry<K, V> apply(T t) {
+            public DisposableEntry<K, V> apply(T t) {
                 entry.set(keyMapper.apply(t), valueMapper.apply(t));
 
                 return entry;
             }
         };
 
-        return mapToEntry(mapper);
-    }
-
-    @Override
-    public <V> EntryStream<T, V> flatMapToEntryER(final Function<? super T, ? extends Stream<? extends V>> flatValueMapper) {
-        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
-
-        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
-            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
-
-            @Override
-            public Stream<Map.Entry<T, V>> apply(final T t) {
-                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
-                    @Override
-                    public Entry<T, V> apply(V v) {
-                        entry.set(t, v);
-
-                        return entry;
-                    }
-                };
-
-                return flatValueMapper.apply(t).map(entryMapper);
-            }
-        };
-
-        return flatMapToEntry(flatEntryMapper);
-    }
-
-    @Override
-    public <V> EntryStream<T, V> flattMapToEntryER(final Function<? super T, ? extends Collection<? extends V>> flatValueMapper) {
-        checkState(isParallel() == false, "flatMapToEntryER can't be applied to parallel stream");
-
-        final Function<T, Stream<Map.Entry<T, V>>> flatEntryMapper = new Function<T, Stream<Map.Entry<T, V>>>() {
-            private final EntryStream.ReusableEntry<T, V> entry = new EntryStream.ReusableEntry<>();
-
-            @Override
-            public Stream<Map.Entry<T, V>> apply(final T t) {
-                final Function<V, Map.Entry<T, V>> entryMapper = new Function<V, Map.Entry<T, V>>() {
-                    @Override
-                    public Entry<T, V> apply(V v) {
-                        entry.set(t, v);
-
-                        return entry;
-                    }
-                };
-
-                return Stream.of(flatValueMapper.apply(t)).map(entryMapper);
-            }
-        };
-
-        return flatMapToEntry(flatEntryMapper);
+        return map(mapper);
     }
 }

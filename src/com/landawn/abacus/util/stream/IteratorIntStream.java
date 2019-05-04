@@ -1011,8 +1011,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
             }
         }, false, null);
@@ -1109,8 +1107,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -1206,8 +1202,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 }
@@ -1291,8 +1285,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -1400,8 +1392,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);
@@ -1955,8 +1945,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);
@@ -1982,8 +1970,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);
@@ -2009,8 +1995,6 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 elements.skip(n);
             }
         }, sorted);

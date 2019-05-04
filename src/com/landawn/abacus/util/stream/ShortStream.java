@@ -55,8 +55,8 @@ import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortNFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortSupplier;
+import com.landawn.abacus.util.function.ShortTernaryOperator;
 import com.landawn.abacus.util.function.ShortToIntFunction;
-import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToShortFunction;
@@ -93,7 +93,69 @@ public abstract class ShortStream
 
     public abstract <T> Stream<T> flatMappToObj(ShortFunction<T[]> mapper);
 
-    public abstract ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction);
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(ShortBiPredicate, ShortBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract ShortStream rangeMap(final ShortBiPredicate sameRange, final ShortBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final ShortBiPredicate sameRange, final ShortBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<ShortList> collapse(final ShortBiPredicate collapsible);
+
+    public abstract ShortStream collapse(final ShortBiPredicate collapsible, final ShortBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -117,7 +179,7 @@ public abstract class ShortStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract ShortStream scan(final ShortBiFunction<Short> accumulator);
+    public abstract ShortStream scan(final ShortBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -145,7 +207,7 @@ public abstract class ShortStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract ShortStream scan(final short init, final ShortBiFunction<Short> accumulator);
+    public abstract ShortStream scan(final short init, final ShortBinaryOperator accumulator);
 
     /**
      * 
@@ -155,7 +217,7 @@ public abstract class ShortStream
      * @return
      */
     @SequentialOnly
-    public abstract ShortStream scan(final short init, final ShortBiFunction<Short> accumulator, final boolean initIncluded);
+    public abstract ShortStream scan(final short init, final ShortBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -301,14 +363,14 @@ public abstract class ShortStream
      */
     public abstract ShortStream merge(final ShortStream b, final ShortBiFunction<Nth> nextSelector);
 
-    public abstract ShortStream zipWith(ShortStream b, ShortBiFunction<Short> zipFunction);
+    public abstract ShortStream zipWith(ShortStream b, ShortBinaryOperator zipFunction);
 
-    public abstract ShortStream zipWith(ShortStream b, ShortStream c, ShortTriFunction<Short> zipFunction);
+    public abstract ShortStream zipWith(ShortStream b, ShortStream c, ShortTernaryOperator zipFunction);
 
-    public abstract ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBiFunction<Short> zipFunction);
+    public abstract ShortStream zipWith(ShortStream b, short valueForNoneA, short valueForNoneB, ShortBinaryOperator zipFunction);
 
     public abstract ShortStream zipWith(ShortStream b, ShortStream c, short valueForNoneA, short valueForNoneB, short valueForNoneC,
-            ShortTriFunction<Short> zipFunction);
+            ShortTernaryOperator zipFunction);
 
     public abstract IntStream asIntStream();
 
@@ -1108,8 +1170,29 @@ public abstract class ShortStream
      * @param b
      * @return
      */
-    public static ShortStream zip(final short[] a, final short[] b, final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final short[] a, final short[] b, final ShortBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ShortIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsShort(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1118,10 +1201,32 @@ public abstract class ShortStream
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static ShortStream zip(final short[] a, final short[] b, final short[] c, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final short[] a, final short[] b, final short[] c, final ShortTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ShortIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsShort(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1132,8 +1237,18 @@ public abstract class ShortStream
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortBinaryOperator zipFunction) {
+        return new IteratorShortStream(new ShortIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                return zipFunction.applyAsShort(a.nextShort(), b.nextShort());
+            }
+        });
     }
 
     /**
@@ -1144,8 +1259,18 @@ public abstract class ShortStream
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTernaryOperator zipFunction) {
+        return new IteratorShortStream(new ShortIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                return zipFunction.applyAsShort(a.nextShort(), b.nextShort(), c.nextShort());
+            }
+        });
     }
 
     /**
@@ -1156,8 +1281,8 @@ public abstract class ShortStream
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1168,8 +1293,8 @@ public abstract class ShortStream
      * @param b
      * @return
      */
-    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToShort(ToShortFunction.UNBOX);
+    public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1196,8 +1321,32 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
-            final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final ShortBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ShortIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private short ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsShort(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1214,8 +1363,33 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
-            final short valueForNoneC, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final short valueForNoneC, final ShortTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorShortStream(new ShortIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private short ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public short nextShort() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsShort(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1230,8 +1404,22 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final ShortIterator a, final ShortIterator b, final short valueForNoneA, final short valueForNoneB,
-            final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final ShortBinaryOperator zipFunction) {
+        return new IteratorShortStream(new ShortIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsShort(a.nextShort(), b.hasNext() ? b.nextShort() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsShort(valueForNoneA, b.nextShort());
+                }
+            }
+        });
     }
 
     /**
@@ -1248,8 +1436,24 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final short valueForNoneA, final short valueForNoneB,
-            final short valueForNoneC, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final short valueForNoneC, final ShortTernaryOperator zipFunction) {
+        return new IteratorShortStream(new ShortIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsShort(a.nextShort(), b.hasNext() ? b.nextShort() : valueForNoneB, c.hasNext() ? c.nextShort() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsShort(valueForNoneA, b.nextShort(), c.hasNext() ? c.nextShort() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsShort(valueForNoneA, valueForNoneB, c.nextShort());
+                }
+            }
+        });
     }
 
     /**
@@ -1264,8 +1468,8 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
-            final ShortBiFunction<Short> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final ShortBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1282,8 +1486,9 @@ public abstract class ShortStream
      * @return
      */
     public static ShortStream zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
-            final short valueForNoneC, final ShortTriFunction<Short> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToShort(ToShortFunction.UNBOX);
+            final short valueForNoneC, final ShortTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

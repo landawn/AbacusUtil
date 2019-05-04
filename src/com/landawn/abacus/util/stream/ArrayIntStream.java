@@ -239,8 +239,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n <= (toIndex - cursor) / stepp ? cursor + (int) (n * stepp) : toIndex;
             }
 
@@ -1182,8 +1180,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -1219,8 +1215,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 final long len = toIndex - cursor;
                 cursor = n <= len / size ? cursor + (int) n * size : toIndex;
             }
@@ -1349,8 +1343,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n >= count()) {
                     cursor = toIndex;
                 } else {
@@ -1399,8 +1391,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n >= count()) {
                     cursor = toIndex;
                 } else {
@@ -1460,8 +1450,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -1973,8 +1961,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n < cursor - fromIndex ? cursor - (int) n : fromIndex;
             }
 
@@ -2034,8 +2020,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cnt = n < len - cnt ? cnt + (int) n : len;
             }
 
@@ -2180,8 +2164,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2224,8 +2206,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 
@@ -2268,8 +2248,6 @@ class ArrayIntStream extends AbstractIntStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
             }
 

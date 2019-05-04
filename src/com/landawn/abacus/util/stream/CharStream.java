@@ -54,8 +54,8 @@ import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharNFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharSupplier;
+import com.landawn.abacus.util.function.CharTernaryOperator;
 import com.landawn.abacus.util.function.CharToIntFunction;
-import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjCharConsumer;
@@ -148,6 +148,68 @@ public abstract class CharStream
     public abstract <T> Stream<T> flatMappToObj(CharFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(CharBiPredicate, CharBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract CharStream rangeMap(final CharBiPredicate sameRange, final CharBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final CharBiPredicate sameRange, final CharBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<CharList> collapse(final CharBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -159,7 +221,7 @@ public abstract class CharStream
      * @return
      */
     @SequentialOnly
-    public abstract CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction);
+    public abstract CharStream collapse(final CharBiPredicate collapsible, final CharBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -183,7 +245,7 @@ public abstract class CharStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract CharStream scan(final CharBiFunction<Character> accumulator);
+    public abstract CharStream scan(final CharBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -211,7 +273,7 @@ public abstract class CharStream
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract CharStream scan(final char init, final CharBiFunction<Character> accumulator);
+    public abstract CharStream scan(final char init, final CharBinaryOperator accumulator);
 
     /**
      * 
@@ -221,7 +283,7 @@ public abstract class CharStream
      * @return
      */
     @SequentialOnly
-    public abstract CharStream scan(final char init, final CharBiFunction<Character> accumulator, final boolean initIncluded);
+    public abstract CharStream scan(final char init, final CharBinaryOperator accumulator, final boolean initIncluded);
 
     public abstract CharList toCharList();
 
@@ -500,14 +562,13 @@ public abstract class CharStream
      */
     public abstract CharStream merge(final CharStream b, final CharBiFunction<Nth> nextSelector);
 
-    public abstract CharStream zipWith(CharStream b, CharBiFunction<Character> zipFunction);
+    public abstract CharStream zipWith(CharStream b, CharBinaryOperator zipFunction);
 
-    public abstract CharStream zipWith(CharStream b, CharStream c, CharTriFunction<Character> zipFunction);
+    public abstract CharStream zipWith(CharStream b, CharStream c, CharTernaryOperator zipFunction);
 
-    public abstract CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBiFunction<Character> zipFunction);
+    public abstract CharStream zipWith(CharStream b, char valueForNoneA, char valueForNoneB, CharBinaryOperator zipFunction);
 
-    public abstract CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC,
-            CharTriFunction<Character> zipFunction);
+    public abstract CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTernaryOperator zipFunction);
 
     /**
      * Returns a {@code LongStream} consisting of the elements of this stream,
@@ -1411,8 +1472,29 @@ public abstract class CharStream
      * @param b
      * @return
      */
-    public static CharStream zip(final char[] a, final char[] b, final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final char[] a, final char[] b, final CharBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new CharIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsChar(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1421,10 +1503,32 @@ public abstract class CharStream
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static CharStream zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final char[] a, final char[] b, final char[] c, final CharTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new CharIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsChar(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1435,8 +1539,18 @@ public abstract class CharStream
      * @param b
      * @return
      */
-    public static CharStream zip(final CharIterator a, final CharIterator b, final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharBinaryOperator zipFunction) {
+        return new IteratorCharStream(new CharIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                return zipFunction.applyAsChar(a.nextChar(), b.nextChar());
+            }
+        });
     }
 
     /**
@@ -1447,8 +1561,18 @@ public abstract class CharStream
      * @param b
      * @return
      */
-    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTernaryOperator zipFunction) {
+        return new IteratorCharStream(new CharIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                return zipFunction.applyAsChar(a.nextChar(), b.nextChar(), c.nextChar());
+            }
+        });
     }
 
     /**
@@ -1459,8 +1583,8 @@ public abstract class CharStream
      * @param b
      * @return
      */
-    public static CharStream zip(final CharStream a, final CharStream b, final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final CharStream a, final CharStream b, final CharBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1471,8 +1595,8 @@ public abstract class CharStream
      * @param b
      * @return
      */
-    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final CharTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1498,9 +1622,32 @@ public abstract class CharStream
      * @param zipFunction
      * @return
      */
-    public static CharStream zip(final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToChar(ToCharFunction.UNBOX);
+    public static CharStream zip(final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB, final CharBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new CharIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private char ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsChar(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1517,8 +1664,33 @@ public abstract class CharStream
      * @return
      */
     public static CharStream zip(final char[] a, final char[] b, final char[] c, final char valueForNoneA, final char valueForNoneB, final char valueForNoneC,
-            final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToChar(ToCharFunction.UNBOX);
+            final CharTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorCharStream(new CharIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private char ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public char nextChar() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsChar(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1533,8 +1705,22 @@ public abstract class CharStream
      * @return
      */
     public static CharStream zip(final CharIterator a, final CharIterator b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToChar(ToCharFunction.UNBOX);
+            final CharBinaryOperator zipFunction) {
+        return new IteratorCharStream(new CharIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsChar(a.nextChar(), b.hasNext() ? b.nextChar() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsChar(valueForNoneA, b.nextChar());
+                }
+            }
+        });
     }
 
     /**
@@ -1551,8 +1737,24 @@ public abstract class CharStream
      * @return
      */
     public static CharStream zip(final CharIterator a, final CharIterator b, final CharIterator c, final char valueForNoneA, final char valueForNoneB,
-            final char valueForNoneC, final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToChar(ToCharFunction.UNBOX);
+            final char valueForNoneC, final CharTernaryOperator zipFunction) {
+        return new IteratorCharStream(new CharIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsChar(a.nextChar(), b.hasNext() ? b.nextChar() : valueForNoneB, c.hasNext() ? c.nextChar() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsChar(valueForNoneA, b.nextChar(), c.hasNext() ? c.nextChar() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsChar(valueForNoneA, valueForNoneB, c.nextChar());
+                }
+            }
+        });
     }
 
     /**
@@ -1567,8 +1769,8 @@ public abstract class CharStream
      * @return
      */
     public static CharStream zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
-            final CharBiFunction<Character> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToChar(ToCharFunction.UNBOX);
+            final CharBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1585,8 +1787,9 @@ public abstract class CharStream
      * @return
      */
     public static CharStream zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
-            final char valueForNoneC, final CharTriFunction<Character> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToChar(ToCharFunction.UNBOX);
+            final char valueForNoneC, final CharTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

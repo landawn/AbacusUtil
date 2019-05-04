@@ -58,10 +58,10 @@ import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongNFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongSupplier;
+import com.landawn.abacus.util.function.LongTernaryOperator;
 import com.landawn.abacus.util.function.LongToDoubleFunction;
 import com.landawn.abacus.util.function.LongToFloatFunction;
 import com.landawn.abacus.util.function.LongToIntFunction;
-import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Supplier;
@@ -107,6 +107,68 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public abstract <T> Stream<T> flatMappToObj(LongFunction<T[]> mapper);
 
     /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(LongBiPredicate, LongBinaryOperator)
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract LongStream rangeMap(final LongBiPredicate sameRange, final LongBinaryOperator mapper);
+
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     *  
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the leftmost and next elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see Stream#rangeMap(BiPredicate, BiFunction)
+     */
+    @SequentialOnly
+    public abstract <T> Stream<T> rangeMapp(final LongBiPredicate sameRange, final LongBiFunction<T> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @return
+     */
+    @SequentialOnly
+    public abstract Stream<LongList> collapse(final LongBiPredicate collapsible);
+
+    /**
      * Merge series of adjacent elements which satisfy the given predicate using
      * the merger function and return a new stream.
      * 
@@ -118,7 +180,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     @SequentialOnly
-    public abstract LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction);
+    public abstract LongStream collapse(final LongBiPredicate collapsible, final LongBinaryOperator mergeFunction);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -142,7 +204,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract LongStream scan(final LongBiFunction<Long> accumulator);
+    public abstract LongStream scan(final LongBinaryOperator accumulator);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
@@ -170,7 +232,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract LongStream scan(final long init, final LongBiFunction<Long> accumulator);
+    public abstract LongStream scan(final long init, final LongBinaryOperator accumulator);
 
     /**
      * 
@@ -180,7 +242,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     @SequentialOnly
-    public abstract LongStream scan(final long init, final LongBiFunction<Long> accumulator, final boolean initIncluded);
+    public abstract LongStream scan(final long init, final LongBinaryOperator accumulator, final boolean initIncluded);
 
     /**
      * <br />
@@ -326,14 +388,13 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract LongStream merge(final LongStream b, final LongBiFunction<Nth> nextSelector);
 
-    public abstract LongStream zipWith(LongStream b, LongBiFunction<Long> zipFunction);
+    public abstract LongStream zipWith(LongStream b, LongBinaryOperator zipFunction);
 
-    public abstract LongStream zipWith(LongStream b, LongStream c, LongTriFunction<Long> zipFunction);
+    public abstract LongStream zipWith(LongStream b, LongStream c, LongTernaryOperator zipFunction);
 
-    public abstract LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBiFunction<Long> zipFunction);
+    public abstract LongStream zipWith(LongStream b, long valueForNoneA, long valueForNoneB, LongBinaryOperator zipFunction);
 
-    public abstract LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC,
-            LongTriFunction<Long> zipFunction);
+    public abstract LongStream zipWith(LongStream b, LongStream c, long valueForNoneA, long valueForNoneB, long valueForNoneC, LongTernaryOperator zipFunction);
 
     public abstract FloatStream asFloatStream();
 
@@ -1269,8 +1330,29 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param b
      * @return
      */
-    public static LongStream zip(final long[] a, final long[] b, final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final long[] a, final long[] b, final LongBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorLongStream(new LongIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsLong(a[cursor], b[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1279,10 +1361,32 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * 
      * @param a
      * @param b
+     * @param c
      * @return
      */
-    public static LongStream zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final long[] a, final long[] b, final long[] c, final LongTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorLongStream(new LongIteratorEx() {
+            private final int len = N.min(N.len(a), N.len(b), N.len(c));
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                return zipFunction.applyAsLong(a[cursor], b[cursor], c[cursor++]);
+            }
+        });
     }
 
     /**
@@ -1293,8 +1397,18 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param b
      * @return
      */
-    public static LongStream zip(final LongIterator a, final LongIterator b, final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final LongIterator a, final LongIterator b, final LongBinaryOperator zipFunction) {
+        return new IteratorLongStream(new LongIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                return zipFunction.applyAsLong(a.nextLong(), b.nextLong());
+            }
+        });
     }
 
     /**
@@ -1305,8 +1419,18 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param b
      * @return
      */
-    public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTernaryOperator zipFunction) {
+        return new IteratorLongStream(new LongIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() && b.hasNext() && c.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                return zipFunction.applyAsLong(a.nextLong(), b.nextLong(), c.nextLong());
+            }
+        });
     }
 
     /**
@@ -1317,8 +1441,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param b
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final LongStream a, final LongStream b, final LongBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1329,8 +1453,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param b
      * @return
      */
-    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final LongTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -1356,8 +1480,32 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @param zipFunction
      * @return
      */
-    public static LongStream zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
+    public static LongStream zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final LongBinaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
+        return new IteratorLongStream(new LongIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), len = N.max(aLen, bLen);
+            private int cursor = 0;
+            private long ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsLong(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1374,8 +1522,33 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream zip(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB, final long valueForNoneC,
-            final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
+            final LongTernaryOperator zipFunction) {
+        if (N.isNullOrEmpty(a) && N.isNullOrEmpty(b) && N.isNullOrEmpty(c)) {
+            return empty();
+        }
+
+        return new IteratorLongStream(new LongIteratorEx() {
+            private final int aLen = N.len(a), bLen = N.len(b), cLen = N.len(c), len = N.max(aLen, bLen, cLen);
+            private int cursor = 0;
+            private long ret = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public long nextLong() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                ret = zipFunction.applyAsLong(cursor < aLen ? a[cursor] : valueForNoneA, cursor < bLen ? b[cursor] : valueForNoneB,
+                        cursor < cLen ? c[cursor] : valueForNoneC);
+                cursor++;
+                return ret;
+            }
+        });
     }
 
     /**
@@ -1390,8 +1563,22 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
+            final LongBinaryOperator zipFunction) {
+        return new IteratorLongStream(new LongIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsLong(a.nextLong(), b.hasNext() ? b.nextLong() : valueForNoneB);
+                } else {
+                    return zipFunction.applyAsLong(valueForNoneA, b.nextLong());
+                }
+            }
+        });
     }
 
     /**
@@ -1408,8 +1595,24 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream zip(final LongIterator a, final LongIterator b, final LongIterator c, final long valueForNoneA, final long valueForNoneB,
-            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
+            final long valueForNoneC, final LongTernaryOperator zipFunction) {
+        return new IteratorLongStream(new LongIteratorEx() {
+            @Override
+            public boolean hasNext() {
+                return a.hasNext() || b.hasNext() || c.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if (a.hasNext()) {
+                    return zipFunction.applyAsLong(a.nextLong(), b.hasNext() ? b.nextLong() : valueForNoneB, c.hasNext() ? c.nextLong() : valueForNoneC);
+                } else if (b.hasNext()) {
+                    return zipFunction.applyAsLong(valueForNoneA, b.nextLong(), c.hasNext() ? c.nextLong() : valueForNoneC);
+                } else {
+                    return zipFunction.applyAsLong(valueForNoneA, valueForNoneB, c.nextLong());
+                }
+            }
+        });
     }
 
     /**
@@ -1424,8 +1627,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
-            final LongBiFunction<Long> zipFunction) {
-        return Stream.zip(a, b, valueForNoneA, valueForNoneB, zipFunction).mapToLong(ToLongFunction.UNBOX);
+            final LongBinaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1442,8 +1645,9 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
-            final long valueForNoneC, final LongTriFunction<Long> zipFunction) {
-        return Stream.zip(a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction).mapToLong(ToLongFunction.UNBOX);
+            final long valueForNoneC, final LongTernaryOperator zipFunction) {
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+                .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**

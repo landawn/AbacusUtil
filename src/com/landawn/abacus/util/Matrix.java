@@ -1783,6 +1783,11 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
     }
 
     @Override
+    public void println() {
+        f.println(a);
+    }
+
+    @Override
     public int hashCode() {
         return N.deepHashCode(a);
     }

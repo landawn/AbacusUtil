@@ -46,10 +46,11 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBiPredicate;
+import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.function.ByteTriFunction;
+import com.landawn.abacus.util.function.ByteTernaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjByteConsumer;
 import com.landawn.abacus.util.function.Predicate;
@@ -105,6 +106,133 @@ abstract class AbstractByteStream extends ByteStream {
                 return Stream.of(mapper.apply(t));
             }
         });
+    }
+
+    @Override
+    public ByteStream rangeMap(final ByteBiPredicate sameRange, final ByteBinaryOperator mapper) {
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ByteIteratorEx() {
+            private byte left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                left = hasNext ? next : iter.nextByte();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextByte();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.applyAsByte(left, right);
+            }
+        }, false);
+    }
+
+    @Override
+    public <T> Stream<T> rangeMapp(final ByteBiPredicate sameRange, final ByteBiFunction<T> mapper) {
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<T>() {
+            private byte left = 0, right = 0, next = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                left = hasNext ? next : iter.nextByte();
+                right = left;
+
+                while (hasNext = iter.hasNext()) {
+                    next = iter.nextByte();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        break;
+                    }
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
+    @Override
+    public Stream<ByteList> collapse(final ByteBiPredicate collapsible) {
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ObjIteratorEx<ByteList>() {
+            private boolean hasNext = false;
+            private byte next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public ByteList next() {
+                final ByteList result = new ByteList(9);
+                result.add(hasNext ? next : (next = iter.nextByte()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextByte()))) {
+                        result.add(next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public ByteStream collapse(final ByteBiPredicate collapsible, final ByteBinaryOperator mergeFunction) {
+        final ByteIteratorEx iter = iteratorEx();
+
+        return newStream(new ByteIteratorEx() {
+            private boolean hasNext = false;
+            private byte next = 0;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                byte res = hasNext ? next : (next = iter.nextByte());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(next, (next = iter.nextByte()))) {
+                        res = mergeFunction.applyAsByte(res, next);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
@@ -304,8 +432,6 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (n == 0) {
                     return;
                 } else if (n == 1) {
@@ -342,37 +468,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction) {
-        final ByteIteratorEx iter = iteratorEx();
-
-        return newStream(new ByteIteratorEx() {
-            private boolean hasNext = false;
-            private byte next = 0;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public byte nextByte() {
-                byte res = hasNext ? next : (next = iter.nextByte());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(next, (next = iter.nextByte()))) {
-                        res = mergeFunction.apply(res, next);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public ByteStream scan(final ByteBiFunction<Byte> accumulator) {
+    public ByteStream scan(final ByteBinaryOperator accumulator) {
         final ByteIteratorEx iter = iteratorEx();
 
         return newStream(new ByteIteratorEx() {
@@ -390,14 +486,14 @@ abstract class AbstractByteStream extends ByteStream {
                     isFirst = false;
                     return (res = iter.nextByte());
                 } else {
-                    return (res = accumulator.apply(res, iter.nextByte()));
+                    return (res = accumulator.applyAsByte(res, iter.nextByte()));
                 }
             }
         }, false);
     }
 
     @Override
-    public ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator) {
+    public ByteStream scan(final byte init, final ByteBinaryOperator accumulator) {
         final ByteIteratorEx iter = iteratorEx();
 
         return newStream(new ByteIteratorEx() {
@@ -410,13 +506,13 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public byte nextByte() {
-                return (res = accumulator.apply(res, iter.nextByte()));
+                return (res = accumulator.applyAsByte(res, iter.nextByte()));
             }
         }, false);
     }
 
     @Override
-    public ByteStream scan(final byte init, final ByteBiFunction<Byte> accumulator, final boolean initIncluded) {
+    public ByteStream scan(final byte init, final ByteBinaryOperator accumulator, final boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
@@ -439,7 +535,7 @@ abstract class AbstractByteStream extends ByteStream {
                     return init;
                 }
 
-                return (res = accumulator.apply(res, iter.nextByte()));
+                return (res = accumulator.applyAsByte(res, iter.nextByte()));
             }
         }, false);
     }
@@ -525,8 +621,6 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -608,8 +702,6 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -712,8 +804,6 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -793,8 +883,6 @@ abstract class AbstractByteStream extends ByteStream {
 
             @Override
             public void skip(long n) {
-                checkArgNotNegative(n, "n");
-
                 if (initialized == false) {
                     init();
                 }
@@ -855,22 +943,22 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteBiFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteBinaryOperator zipFunction) {
         return ByteStream.zip(this, b, zipFunction);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteStream c, ByteTriFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteStream c, ByteTernaryOperator zipFunction) {
         return ByteStream.zip(this, b, c, zipFunction);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBiFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, byte valueForNoneA, byte valueForNoneB, ByteBinaryOperator zipFunction) {
         return ByteStream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
     @Override
-    public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
+    public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTernaryOperator zipFunction) {
         return ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
