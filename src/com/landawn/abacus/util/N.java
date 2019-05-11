@@ -103,9 +103,14 @@ import com.landawn.abacus.util.u.Nullable;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
  * <p>
@@ -11813,6 +11818,48 @@ public final class N {
         Array.sort(c, fromIndex, toIndex, cmp);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void sortBy(final T[] a, final Function<? super T, ? extends U> keyMapper) {
+        sort(a, Comparators.comparingBy(keyMapper));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void sortBy(final List<? extends T> c, final Function<? super T, ? extends U> keyMapper) {
+        sort(c, Comparators.comparingBy(keyMapper));
+    }
+
+    public static <T> void sortByInt(final T[] a, final ToIntFunction<? super T> keyMapper) {
+        sort(a, Comparators.comparingInt(keyMapper));
+    }
+
+    public static <T> void sortByInt(final List<? extends T> c, final ToIntFunction<? super T> keyMapper) {
+        sort(c, Comparators.comparingInt(keyMapper));
+    }
+
+    public static <T> void sortByLong(final T[] a, final ToLongFunction<? super T> keyMapper) {
+        sort(a, Comparators.comparingLong(keyMapper));
+    }
+
+    public static <T> void sortByLong(final List<? extends T> c, final ToLongFunction<? super T> keyMapper) {
+        sort(c, Comparators.comparingLong(keyMapper));
+    }
+
+    public static <T> void sortByFloat(final T[] a, final ToFloatFunction<? super T> keyMapper) {
+        sort(a, Comparators.comparingFloat(keyMapper));
+    }
+
+    public static <T> void sortByFloat(final List<? extends T> c, final ToFloatFunction<? super T> keyMapper) {
+        sort(c, Comparators.comparingFloat(keyMapper));
+    }
+
+    public static <T> void sortByDouble(final T[] a, final ToDoubleFunction<? super T> keyMapper) {
+        sort(a, Comparators.comparingDouble(keyMapper));
+    }
+
+    public static <T> void sortByDouble(final List<? extends T> c, final ToDoubleFunction<? super T> keyMapper) {
+        sort(c, Comparators.comparingDouble(keyMapper));
+    }
+
     public static void parallelSort(final char[] a) {
         Array.parallelSort(a);
     }
@@ -11899,6 +11946,48 @@ public final class N {
 
     public static <T> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         Array.parallelSort(c, fromIndex, toIndex, cmp);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void parallelSortBy(final T[] a, final Function<? super T, ? extends U> keyMapper) {
+        parallelSort(a, Comparators.comparingBy(keyMapper));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void parallelSortBy(final List<? extends T> c, final Function<? super T, ? extends U> keyMapper) {
+        parallelSort(c, Comparators.comparingBy(keyMapper));
+    }
+
+    public static <T> void parallelSortByInt(final T[] a, final ToIntFunction<? super T> keyMapper) {
+        parallelSort(a, Comparators.comparingInt(keyMapper));
+    }
+
+    public static <T> void parallelSortByInt(final List<? extends T> c, final ToIntFunction<? super T> keyMapper) {
+        parallelSort(c, Comparators.comparingInt(keyMapper));
+    }
+
+    public static <T> void parallelSortByLong(final T[] a, final ToLongFunction<? super T> keyMapper) {
+        parallelSort(a, Comparators.comparingLong(keyMapper));
+    }
+
+    public static <T> void parallelSortByLong(final List<? extends T> c, final ToLongFunction<? super T> keyMapper) {
+        parallelSort(c, Comparators.comparingLong(keyMapper));
+    }
+
+    public static <T> void parallelSortByFloat(final T[] a, final ToFloatFunction<? super T> keyMapper) {
+        parallelSort(a, Comparators.comparingFloat(keyMapper));
+    }
+
+    public static <T> void parallelSortByFloat(final List<? extends T> c, final ToFloatFunction<? super T> keyMapper) {
+        parallelSort(c, Comparators.comparingFloat(keyMapper));
+    }
+
+    public static <T> void parallelSortByDouble(final T[] a, final ToDoubleFunction<? super T> keyMapper) {
+        parallelSort(a, Comparators.comparingDouble(keyMapper));
+    }
+
+    public static <T> void parallelSortByDouble(final List<? extends T> c, final ToDoubleFunction<? super T> keyMapper) {
+        parallelSort(c, Comparators.comparingDouble(keyMapper));
     }
 
     public static void reverseSort(final boolean[] a) {
@@ -12001,6 +12090,16 @@ public final class N {
         //        reverse(c, fromIndex, toIndex);
 
         sort(c, fromIndex, toIndex, Fn.reversedOrder());
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void reverseSortBy(final T[] a, final Function<? super T, ? extends U> keyMapper) {
+        sort(a, Comparators.reversedComparingBy(keyMapper));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void reverseSortBy(final List<? extends T> c, final Function<? super T, ? extends U> keyMapper) {
+        sort(c, Comparators.reversedComparingBy(keyMapper));
     }
 
     /*
@@ -12137,6 +12236,16 @@ public final class N {
      */
     public static <T> void bucketSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         Array.bucketSort(c, fromIndex, toIndex, cmp);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void bucketSortBy(final T[] a, final Function<? super T, ? extends U> keyMapper) {
+        bucketSort(a, Comparators.comparingBy(keyMapper));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> void bucketSortBy(final List<? extends T> c, final Function<? super T, ? extends U> keyMapper) {
+        bucketSort(c, Comparators.comparingBy(keyMapper));
     }
 
     /**
@@ -12399,6 +12508,16 @@ public final class N {
      */
     public static <T> int binarySearch(final List<? extends T> c, final int fromIndex, final int toIndex, final T key, final Comparator<? super T> cmp) {
         return Array.binarySearch(c, fromIndex, toIndex, key, cmp);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> int binarySearchBy(final T[] a, final T key, final Function<? super T, ? extends U> keyMapper) {
+        return binarySearch(a, key, Comparators.comparingBy(keyMapper));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> int binarySearchBy(final List<? extends T> c, final T key, final Function<? super T, ? extends U> keyMapper) {
+        return binarySearch(c, key, Comparators.comparingBy(keyMapper));
     }
 
     public static int indexOf(final boolean[] a, final boolean e) {

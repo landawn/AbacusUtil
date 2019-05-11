@@ -4884,7 +4884,7 @@ public abstract class StringUtil {
      * @param n
      * @return
      */
-    public static String first(final String str, final int n) {
+    public static String firstChars(final String str, final int n) {
         N.checkArgNotNegative(n, "n");
 
         if (str == null || str.length() == 0 || n == 0) {
@@ -4904,7 +4904,7 @@ public abstract class StringUtil {
      * @param n
      * @return
      */
-    public static String last(final String str, final int n) {
+    public static String lastChars(final String str, final int n) {
         N.checkArgNotNegative(n, "n");
 
         if (str == null || str.length() == 0 || n == 0) {

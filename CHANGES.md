@@ -1,6 +1,8 @@
 ### 1.7.1
 
-* Add `StringUtil.first/lastChar/first/last`. 
+* Add `StringUtil.first/lastChar/firstChars/lastChars`. 
+
+* Add `N.sort/parallelSortBy/sortByInt/sortByLong/sortByFloat/sortByDouble/.../reverseSortBy/bucketSortBy/binarySearchBy`. 
 
 * Add `DisposiableArray/DisposiableIntArray/.../DisposiableDoubleArray.toList/toCollection`. 
 
