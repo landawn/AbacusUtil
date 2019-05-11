@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.N;
@@ -64,7 +65,7 @@ public abstract class AbstractHttpClient implements Closeable {
         this(url, maxConnection, connTimeout, readTimeout, null);
     }
 
-    protected AbstractHttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
+    protected AbstractHttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) throws UncheckedIOException {
         if (N.isNullOrEmpty(url)) {
             throw new IllegalArgumentException("url can't be null or empty");
         }
@@ -87,35 +88,35 @@ public abstract class AbstractHttpClient implements Closeable {
         return _url;
     }
 
-    public String get() {
+    public String get() throws UncheckedIOException {
         return get(String.class);
     }
 
-    public String get(final HttpSettings settings) {
+    public String get(final HttpSettings settings) throws UncheckedIOException {
         return get(String.class, settings);
     }
 
-    public String get(final Object queryParameters) {
+    public String get(final Object queryParameters) throws UncheckedIOException {
         return get(String.class, queryParameters);
     }
 
-    public String get(final Object queryParameters, final HttpSettings settings) {
+    public String get(final Object queryParameters, final HttpSettings settings) throws UncheckedIOException {
         return get(String.class, queryParameters, settings);
     }
 
-    public <T> T get(final Class<T> resultClass) {
+    public <T> T get(final Class<T> resultClass) throws UncheckedIOException {
         return get(resultClass, null, _settings);
     }
 
-    public <T> T get(final Class<T> resultClass, final HttpSettings settings) {
+    public <T> T get(final Class<T> resultClass, final HttpSettings settings) throws UncheckedIOException {
         return get(resultClass, null, settings);
     }
 
-    public <T> T get(final Class<T> resultClass, final Object queryParameters) {
+    public <T> T get(final Class<T> resultClass, final Object queryParameters) throws UncheckedIOException {
         return get(resultClass, queryParameters, _settings);
     }
 
-    public <T> T get(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+    public <T> T get(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) throws UncheckedIOException {
         return execute(resultClass, HttpMethod.GET, queryParameters, settings);
     }
 
@@ -151,35 +152,35 @@ public abstract class AbstractHttpClient implements Closeable {
         return asyncExecute(resultClass, HttpMethod.GET, queryParameters, settings);
     }
 
-    public String delete() {
+    public String delete() throws UncheckedIOException {
         return delete(String.class);
     }
 
-    public String delete(final HttpSettings settings) {
+    public String delete(final HttpSettings settings) throws UncheckedIOException {
         return delete(String.class, settings);
     }
 
-    public String delete(final Object queryParameters) {
+    public String delete(final Object queryParameters) throws UncheckedIOException {
         return delete(String.class, queryParameters);
     }
 
-    public String delete(final Object queryParameters, final HttpSettings settings) {
+    public String delete(final Object queryParameters, final HttpSettings settings) throws UncheckedIOException {
         return delete(String.class, queryParameters, settings);
     }
 
-    public <T> T delete(final Class<T> resultClass) {
+    public <T> T delete(final Class<T> resultClass) throws UncheckedIOException {
         return delete(resultClass, null, _settings);
     }
 
-    public <T> T delete(final Class<T> resultClass, final HttpSettings settings) {
+    public <T> T delete(final Class<T> resultClass, final HttpSettings settings) throws UncheckedIOException {
         return delete(resultClass, null, settings);
     }
 
-    public <T> T delete(final Class<T> resultClass, final Object queryParameters) {
+    public <T> T delete(final Class<T> resultClass, final Object queryParameters) throws UncheckedIOException {
         return delete(resultClass, queryParameters, _settings);
     }
 
-    public <T> T delete(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) {
+    public <T> T delete(final Class<T> resultClass, final Object queryParameters, final HttpSettings settings) throws UncheckedIOException {
         return execute(resultClass, HttpMethod.DELETE, queryParameters, settings);
     }
 
@@ -215,19 +216,19 @@ public abstract class AbstractHttpClient implements Closeable {
         return asyncExecute(resultClass, HttpMethod.DELETE, queryParameters, settings);
     }
 
-    public String post(final Object request) {
+    public String post(final Object request) throws UncheckedIOException {
         return post(String.class, request);
     }
 
-    public String post(final Object request, final HttpSettings settings) {
+    public String post(final Object request, final HttpSettings settings) throws UncheckedIOException {
         return post(String.class, request, settings);
     }
 
-    public <T> T post(final Class<T> resultClass, final Object request) {
+    public <T> T post(final Class<T> resultClass, final Object request) throws UncheckedIOException {
         return post(resultClass, request, _settings);
     }
 
-    public <T> T post(final Class<T> resultClass, final Object request, final HttpSettings settings) {
+    public <T> T post(final Class<T> resultClass, final Object request, final HttpSettings settings) throws UncheckedIOException {
         return execute(resultClass, HttpMethod.POST, request, settings);
     }
 
@@ -247,19 +248,19 @@ public abstract class AbstractHttpClient implements Closeable {
         return asyncExecute(resultClass, HttpMethod.POST, request, settings);
     }
 
-    public String put(final Object request) {
+    public String put(final Object request) throws UncheckedIOException {
         return put(String.class, request);
     }
 
-    public String put(final Object request, final HttpSettings settings) {
+    public String put(final Object request, final HttpSettings settings) throws UncheckedIOException {
         return put(String.class, request, settings);
     }
 
-    public <T> T put(final Class<T> resultClass, final Object request) {
+    public <T> T put(final Class<T> resultClass, final Object request) throws UncheckedIOException {
         return put(resultClass, request, _settings);
     }
 
-    public <T> T put(final Class<T> resultClass, final Object request, final HttpSettings settings) {
+    public <T> T put(final Class<T> resultClass, final Object request, final HttpSettings settings) throws UncheckedIOException {
         return execute(resultClass, HttpMethod.PUT, request, settings);
     }
 
@@ -279,15 +280,15 @@ public abstract class AbstractHttpClient implements Closeable {
         return asyncExecute(resultClass, HttpMethod.PUT, request, settings);
     }
 
-    public String execute(final HttpMethod httpMethod, final Object request) {
+    public String execute(final HttpMethod httpMethod, final Object request) throws UncheckedIOException {
         return execute(String.class, httpMethod, request);
     }
 
-    public String execute(final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public String execute(final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         return execute(String.class, httpMethod, request, settings);
     }
 
-    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request) {
+    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request) throws UncheckedIOException {
         return execute(resultClass, httpMethod, request, _settings);
     }
 
@@ -300,7 +301,8 @@ public abstract class AbstractHttpClient implements Closeable {
      * @param settings
      * @return
      */
-    public abstract <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings);
+    public abstract <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings)
+            throws UncheckedIOException;
 
     /**
      * 
@@ -309,7 +311,7 @@ public abstract class AbstractHttpClient implements Closeable {
      * @param request
      * @param settings
      */
-    public abstract void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings);
+    public abstract void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException;
 
     /**
      * 
@@ -318,7 +320,8 @@ public abstract class AbstractHttpClient implements Closeable {
      * @param request
      * @param settings
      */
-    public abstract void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings);
+    public abstract void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings)
+            throws UncheckedIOException;
 
     /**
      * 
@@ -327,7 +330,8 @@ public abstract class AbstractHttpClient implements Closeable {
      * @param request
      * @param settings
      */
-    public abstract void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings);
+    public abstract void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings)
+            throws UncheckedIOException;
 
     public ContinuableFuture<String> asyncExecute(final HttpMethod httpMethod, final Object request) {
         return asyncExecute(String.class, httpMethod, request);

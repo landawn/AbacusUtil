@@ -32,8 +32,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.ParseException;
+import com.landawn.abacus.exception.UncheckedIOException;
 
 /**
  * the cql scripts are configured in xml file and mapped to short ids referenced in program. for example: <br>
@@ -72,7 +72,7 @@ public final class CQLMapper {
      * 
      * @param filePath it could be multiple file paths separated by ',' or ';'
      */
-    public void loadFrom(String filePath) {
+    public void loadFrom(String filePath) throws UncheckedIOException {
         String[] filePaths = Splitter.with(WD.COMMA).trim(true).splitToArray(filePath);
 
         if (filePaths.length == 1) {
@@ -135,7 +135,7 @@ public final class CQLMapper {
         cqlMap.remove(id);
     }
 
-    public void saveTo(File file) {
+    public void saveTo(File file) throws UncheckedIOException {
         OutputStream os = null;
 
         try {

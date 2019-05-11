@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalChar;
 import com.landawn.abacus.util.u.OptionalDouble;
 import com.landawn.abacus.util.u.OptionalFloat;
 import com.landawn.abacus.util.u.OptionalInt;
@@ -4847,6 +4848,72 @@ public abstract class StringUtil {
         }
 
         return res;
+    }
+
+    /**
+     * 
+     * @param str
+     * @return
+     */
+    public static OptionalChar firstChar(final String str) {
+        if (str == null || str.length() == 0) {
+            return OptionalChar.empty();
+        }
+
+        return OptionalChar.of(str.charAt(0));
+    }
+
+    /**
+     * 
+     * @param str
+     * @return
+     */
+    public static OptionalChar lastChar(final String str) {
+        if (str == null || str.length() == 0) {
+            return OptionalChar.empty();
+        }
+
+        return OptionalChar.of(str.charAt(str.length() - 1));
+    }
+
+    /**
+     * Returns the first {@code n} chars of the specified {@code String} if its length is bigger than {@code n}, 
+     * or an empty String {@code ""} if {@code str} is empty or null, or itself it's length equal to or less than {@code n}.
+     * 
+     * @param str
+     * @param n
+     * @return
+     */
+    public static String first(final String str, final int n) {
+        N.checkArgNotNegative(n, "n");
+
+        if (str == null || str.length() == 0 || n == 0) {
+            return N.EMPTY_STRING;
+        } else if (str.length() <= n) {
+            return str;
+        } else {
+            return str.substring(0, n);
+        }
+    }
+
+    /**
+     * Returns the last {@code n} chars of the specified {@code String} if its length is bigger than {@code n}, 
+     * or an empty String {@code ""} if {@code str} is empty or null, or itself it's length equal to or less than {@code n}.
+     * 
+     * @param str
+     * @param n
+     * @return
+     */
+    public static String last(final String str, final int n) {
+        N.checkArgNotNegative(n, "n");
+
+        if (str == null || str.length() == 0 || n == 0) {
+            return N.EMPTY_STRING;
+        } else if (str.length() <= n) {
+            return str;
+        } else {
+            return str.substring(str.length() - n);
+        }
     }
 
     public static String join(final boolean[] a) {

@@ -712,36 +712,39 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> T insert(final String sql, final Object... parameters) {
+    public final <T> T insert(final String sql, final Object... parameters) throws UncheckedSQLException {
         return insert(sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
-    public final <T> T insert(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public final <T> T insert(final String sql, final StatementSetter statementSetter, final Object... parameters) throws UncheckedSQLException {
         return insert(sql, statementSetter, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> T insert(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T insert(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
         return insert(sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> T insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
         return insert(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> T insert(final Connection conn, final String sql, final Object... parameters) {
+    public final <T> T insert(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         return insert(conn, sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
-    public final <T> T insert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public final <T> T insert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters)
+            throws UncheckedSQLException {
         return insert(conn, sql, statementSetter, null, parameters);
     }
 
-    public final <T> T insert(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T insert(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
         return insert(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
@@ -750,7 +753,8 @@ public class SQLExecutor implements Closeable {
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     @SafeVarargs
-    public final <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -847,31 +851,34 @@ public class SQLExecutor implements Closeable {
         return id;
     }
 
-    public <T> List<T> batchInsert(final String sql, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final String sql, final List<?> parametersList) throws UncheckedSQLException {
         return batchInsert(sql, StatementSetter.DEFAULT, parametersList);
     }
 
-    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final List<?> parametersList) throws UncheckedSQLException {
         return batchInsert(sql, statementSetter, null, parametersList);
     }
 
-    public <T> List<T> batchInsert(final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) throws UncheckedSQLException {
         return batchInsert(sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
     }
 
-    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchInsert(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    public <T> List<T> batchInsert(final Connection conn, final String sql, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final Connection conn, final String sql, final List<?> parametersList) throws UncheckedSQLException {
         return batchInsert(conn, sql, StatementSetter.DEFAULT, parametersList);
     }
 
-    public <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchInsert(conn, sql, statementSetter, null, parametersList);
     }
 
-    public <T> List<T> batchInsert(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public <T> List<T> batchInsert(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchInsert(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
     }
 
@@ -881,7 +888,7 @@ public class SQLExecutor implements Closeable {
      */
     @SuppressWarnings("deprecation")
     public <T> List<T> batchInsert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final List<?> parametersList) {
+            final List<?> parametersList) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -1083,37 +1090,39 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final int update(final String sql, final Object... parameters) {
+    public final int update(final String sql, final Object... parameters) throws UncheckedSQLException {
         return update(sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
-    public final int update(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public final int update(final String sql, final StatementSetter statementSetter, final Object... parameters) throws UncheckedSQLException {
         return update(sql, statementSetter, null, parameters);
     }
 
     @SafeVarargs
-    public final int update(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final int update(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
         return update(sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final int update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final int update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
         return update(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final int update(final Connection conn, final String sql, final Object... parameters) {
+    public final int update(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         return update(conn, sql, StatementSetter.DEFAULT, parameters);
     }
 
     @SafeVarargs
-    public final int update(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    public final int update(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters)
+            throws UncheckedSQLException {
         return update(conn, sql, statementSetter, null, parameters);
     }
 
     @SafeVarargs
-    public final int update(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final int update(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
         return update(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
@@ -1121,7 +1130,8 @@ public class SQLExecutor implements Closeable {
      * @see #batchUpdate(Connection, String, StatementSetter, JdbcSettings, Object[])
      */
     @SafeVarargs
-    public final int update(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
+    public final int update(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -1156,38 +1166,42 @@ public class SQLExecutor implements Closeable {
         return stmt.executeUpdate();
     }
 
-    public int batchUpdate(final String sql, final List<?> parametersList) {
+    public int batchUpdate(final String sql, final List<?> parametersList) throws UncheckedSQLException {
         return batchUpdate(sql, StatementSetter.DEFAULT, parametersList);
     }
 
-    public int batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+    public int batchUpdate(final String sql, final StatementSetter statementSetter, final List<?> parametersList) throws UncheckedSQLException {
         return batchUpdate(sql, statementSetter, null, parametersList);
     }
 
-    public int batchUpdate(final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public int batchUpdate(final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) throws UncheckedSQLException {
         return batchUpdate(sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
     }
 
-    public int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public int batchUpdate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchUpdate(null, sql, statementSetter, jdbcSettings, parametersList);
     }
 
-    public int batchUpdate(final Connection conn, final String sql, final List<?> parametersList) {
+    public int batchUpdate(final Connection conn, final String sql, final List<?> parametersList) throws UncheckedSQLException {
         return batchUpdate(conn, sql, StatementSetter.DEFAULT, parametersList);
     }
 
-    public int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList) {
+    public int batchUpdate(final Connection conn, final String sql, final StatementSetter statementSetter, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchUpdate(conn, sql, statementSetter, null, parametersList);
     }
 
-    public int batchUpdate(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public int batchUpdate(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final List<?> parametersList)
+            throws UncheckedSQLException {
         return batchUpdate(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
     }
 
     /**
      * @see #batchUpdate(Connection, String, StatementSetter, JdbcSettings, Object[])
      */
-    public int batchUpdate(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final List<?> parametersList) {
+    public int batchUpdate(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final List<?> parametersList)
+            throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -3102,7 +3116,7 @@ public class SQLExecutor implements Closeable {
     //        return result;
     //    }
 
-    public final void execute(final String sql, final Object... parameters) {
+    public final void execute(final String sql, final Object... parameters) throws UncheckedSQLException {
         execute(null, sql, parameters);
     }
 
@@ -3116,7 +3130,7 @@ public class SQLExecutor implements Closeable {
      * @see java.sql.PreparedStatement#execute()
      */
     @SafeVarargs
-    public final void execute(final Connection conn, final String sql, final Object... parameters) {
+    public final void execute(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
         final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL, _sqlMapper.getAttrs(sql));

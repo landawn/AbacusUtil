@@ -16,6 +16,7 @@ package com.landawn.abacus.http;
 
 import java.util.Map;
 
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.ContinuableFuture;
 
 /**
@@ -74,11 +75,11 @@ abstract class AbstractHttpRequest<S extends AbstractHttpRequest<S>> {
         return (S) this;
     }
 
-    public String get() {
+    public String get() throws UncheckedIOException {
         return get(String.class);
     }
 
-    public <T> T get(Class<T> resultClass) {
+    public <T> T get(Class<T> resultClass) throws UncheckedIOException {
         return get(resultClass, null);
     }
 
@@ -86,7 +87,7 @@ abstract class AbstractHttpRequest<S extends AbstractHttpRequest<S>> {
         return get(String.class, query);
     }
 
-    public <T> T get(Class<T> resultClass, Object query) {
+    public <T> T get(Class<T> resultClass, Object query) throws UncheckedIOException {
         this.httpMethod = HttpMethod.GET;
         this.request = query;
 
@@ -97,37 +98,37 @@ abstract class AbstractHttpRequest<S extends AbstractHttpRequest<S>> {
         return post(String.class, body);
     }
 
-    public <T> T post(Class<T> resultClass, Object body) {
+    public <T> T post(Class<T> resultClass, Object body) throws UncheckedIOException {
         this.httpMethod = HttpMethod.POST;
         this.request = body;
 
         return execute(resultClass);
     }
 
-    public String put(Object body) {
+    public String put(Object body) throws UncheckedIOException {
         return put(String.class, body);
     }
 
-    public <T> T put(Class<T> resultClass, Object body) {
+    public <T> T put(Class<T> resultClass, Object body) throws UncheckedIOException {
         this.httpMethod = HttpMethod.PUT;
         this.request = body;
 
         return execute(resultClass);
     }
 
-    public String delete() {
+    public String delete() throws UncheckedIOException {
         return delete(String.class);
     }
 
-    public <T> T delete(Class<T> resultClass) {
+    public <T> T delete(Class<T> resultClass) throws UncheckedIOException {
         return delete(resultClass, null);
     }
 
-    public String delete(Object query) {
+    public String delete(Object query) throws UncheckedIOException {
         return delete(String.class, query);
     }
 
-    public <T> T delete(Class<T> resultClass, Object query) {
+    public <T> T delete(Class<T> resultClass, Object query) throws UncheckedIOException {
         this.httpMethod = HttpMethod.DELETE;
         this.request = query;
 

@@ -214,7 +214,7 @@ public class SpyMemcached<T> extends AbstractDistributedCacheClient<T> {
         }
     }
 
-    protected net.spy.memcached.MemcachedClient createSpyMemcachedClient(String serverUrl, ConnectionFactory connFactory) {
+    protected net.spy.memcached.MemcachedClient createSpyMemcachedClient(String serverUrl, ConnectionFactory connFactory) throws UncheckedIOException {
         try {
             return new net.spy.memcached.MemcachedClient(connFactory, AddrUtil.getAddressList(serverUrl));
         } catch (IOException e) {

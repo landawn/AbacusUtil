@@ -81,7 +81,7 @@ public class EchoServlet extends AbstractHttpServlet {
         execute(req, resp);
     }
 
-    protected void execute(HttpServletRequest request, HttpServletResponse response) {
+    protected void execute(HttpServletRequest request, HttpServletResponse response) throws UncheckedIOException {
         final ContentFormat contentFormat = getContentFormat(request);
         Map<String, String[]> paramMap = null;
         Charset charset = Charsets.UTF_8;

@@ -107,7 +107,7 @@ public final class AnyPut {
         return this;
     }
 
-    public AnyPut add(Cell kv) {
+    public AnyPut add(Cell kv) throws UncheckedIOException {
         try {
             put.add(kv);
         } catch (IOException e) {

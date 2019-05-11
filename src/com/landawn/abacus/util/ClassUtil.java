@@ -932,12 +932,12 @@ public final class ClassUtil {
     //        return method;
     //    }
 
-    public static List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException) {
+    public static List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException) throws UncheckedIOException {
         return getClassesByPackage(pkgName, isRecursive, skipClassLoaddingException, Fn.alwaysTrue());
     }
 
     public static <E extends Exception> List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException,
-            Try.Predicate<? super Class<?>, E> predicate) throws E {
+            Try.Predicate<? super Class<?>, E> predicate) throws UncheckedIOException, E {
         if (logger.isInfoEnabled()) {
             logger.info("Looking for classes in package: " + pkgName);
         }

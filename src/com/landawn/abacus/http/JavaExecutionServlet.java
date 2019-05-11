@@ -94,7 +94,7 @@ public class JavaExecutionServlet extends AbstractHttpServlet {
         execute(request, response);
     }
 
-    protected void execute(final HttpServletRequest request, final HttpServletResponse response) {
+    protected void execute(final HttpServletRequest request, final HttpServletResponse response) throws UncheckedIOException {
         final ContentFormat contentFormat = getContentFormat(request);
         final long startTime = System.currentTimeMillis();
         final RemoteExecutionResponse remoteResponse = new RemoteExecutionResponse();

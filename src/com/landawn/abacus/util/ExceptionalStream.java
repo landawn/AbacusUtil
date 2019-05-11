@@ -503,8 +503,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * 
      * @param resultSet
      * @return
+     * @throws UncheckedSQLException 
      */
-    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet) {
+    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet) throws UncheckedSQLException {
         return rows(Object[].class, resultSet);
     }
 
@@ -516,7 +517,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
+    static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) throws UncheckedSQLException {
         return rows(Object[].class, resultSet, closeResultSet);
     }
 
@@ -526,6 +527,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param targetClass Array/List/Map or Entity with getter/setter methods.
      * @param resultSet
      * @return
+     * @throws UncheckedSQLException 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet) {
         N.checkArgNotNull(targetClass, "targetClass");
@@ -574,8 +576,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param recordGetter
      * @return
+     * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter) {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter)
+            throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(recordGetter, "recordGetter");
 
@@ -623,9 +627,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param recordGetter
      * @return
+     * @throws UncheckedSQLException 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) {
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(recordGetter, "recordGetter");
 
@@ -689,8 +694,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param columnIndex starts from 0, not 1.
      * @return
+     * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex) {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNegative(columnIndex, "columnIndex");
 
@@ -764,8 +770,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param columnName
      * @return
+     * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName) {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(columnName, "columnName");
 
@@ -781,14 +788,15 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet) {
+    static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet)
+            throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(columnName, "columnName");
 
         return rows(resultSet, getColumnIndex(resultSet, columnName), closeResultSet);
     }
 
-    private static int getColumnIndex(final ResultSet resultSet, final String columnName) {
+    private static int getColumnIndex(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {
         int columnIndex = -1;
 
         try {

@@ -82,7 +82,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         this(url, maxConnection, connTimeout, readTimeout, null);
     }
 
-    protected OKHttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
+    protected OKHttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) throws UncheckedIOException {
         this(url, maxConnection, connTimeout, readTimeout, settings, new AtomicInteger(0));
     }
 
@@ -109,7 +109,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         this(client, url, maxConnection, null);
     }
 
-    protected OKHttpClient(OkHttpClient client, String url, int maxConnection, HttpSettings settings) {
+    protected OKHttpClient(OkHttpClient client, String url, int maxConnection, HttpSettings settings) throws UncheckedIOException {
         this(client, url, maxConnection, settings, new AtomicInteger(0));
     }
 
@@ -135,7 +135,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         return new OKHttpClient(url, maxConnection, connTimeout, readTimeout);
     }
 
-    public static OKHttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
+    public static OKHttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) throws UncheckedIOException {
         return new OKHttpClient(url, maxConnection, connTimeout, readTimeout, settings);
     }
 
@@ -148,7 +148,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         return new OKHttpClient(client, url, maxConnection);
     }
 
-    public static OKHttpClient create(OkHttpClient client, String url, int maxConnection, HttpSettings settings) {
+    public static OKHttpClient create(OkHttpClient client, String url, int maxConnection, HttpSettings settings) throws UncheckedIOException {
         return new OKHttpClient(client, url, maxConnection, settings);
     }
 
@@ -158,12 +158,13 @@ public final class OKHttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings)
+            throws UncheckedIOException {
         return execute(resultClass, null, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -177,17 +178,17 @@ public final class OKHttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         execute(null, output, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         execute(null, null, output, httpMethod, request, settings);
     }
 
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
-            final Object request, final HttpSettings settings) {
+            final Object request, final HttpSettings settings) throws UncheckedIOException {
 
         if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
             _activeConnectionCounter.decrementAndGet();
@@ -339,7 +340,7 @@ public final class OKHttpClient extends AbstractHttpClient {
         }
     }
 
-    private void setHeaders(okhttp3.Request.Builder requestBuilder, HttpSettings settings) {
+    private void setHeaders(okhttp3.Request.Builder requestBuilder, HttpSettings settings) throws UncheckedIOException {
         final HttpHeaders headers = settings.headers();
 
         if (headers != null) {

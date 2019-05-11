@@ -1,3 +1,14 @@
+### 1.7.1
+
+* Add `StringUtil.first/lastChar/first/last`. 
+
+* Add `DisposiableArray/DisposiableIntArray/.../DisposiableDoubleArray.toList/toCollection`. 
+
+* Refactoring: change `DataSet/Sheet.println(..., Writer)` to `DataSet.println(Writer, ...)`. 
+
+* Improvements and bug fix.
+
+
 ### 1.7.0
 
 * Add `DataSet.map/flatMap`.

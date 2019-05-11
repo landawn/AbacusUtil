@@ -37,5 +37,4 @@ public class OKHttpRequest extends AbstractHttpRequest<OKHttpRequest> {
     public static OKHttpRequest url(String url, long connTimeout, long readTimeout) {
         return new OKHttpRequest(OKHttpClient.create(url, 1, connTimeout, readTimeout));
     }
-
 }

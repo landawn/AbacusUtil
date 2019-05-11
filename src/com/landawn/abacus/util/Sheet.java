@@ -2213,14 +2213,28 @@ public final class Sheet<R, C, E> implements Cloneable {
     }
 
     public void println(final Collection<R> rowKeySet, final Collection<C> columnKeySet) throws UncheckedIOException {
-        println(rowKeySet, columnKeySet, new OutputStreamWriter(System.out));
+        println(new OutputStreamWriter(System.out), rowKeySet, columnKeySet);
     }
 
-    public void println(final Writer outputWriter) throws UncheckedIOException {
-        println(this._rowKeySet, this._columnKeySet, outputWriter);
+    /**
+     * 
+     * @param outputWriter
+     * @return the specified {@code outputWriter}
+     * @throws UncheckedIOException
+     */
+    public <W extends Writer> W println(final W outputWriter) throws UncheckedIOException {
+        return println(outputWriter, this._rowKeySet, this._columnKeySet);
     }
 
-    public void println(final Collection<R> rowKeySet, final Collection<C> columnKeySet, final Writer outputWriter) throws UncheckedIOException {
+    /**
+     * 
+     * @param outputWriter
+     * @param rowKeySet
+     * @param columnKeySet
+     * @return the specified {@code outputWriter}
+     * @throws UncheckedIOException
+     */
+    public <W extends Writer> W println(final W outputWriter, final Collection<R> rowKeySet, final Collection<C> columnKeySet) throws UncheckedIOException {
         if (N.notNullOrEmpty(rowKeySet) && this._rowKeySet.containsAll(rowKeySet) == false) {
             throw new IllegalArgumentException(
                     "Row keys: " + N.difference(rowKeySet, this._rowKeySet) + " are not included in this sheet row keys: " + this._rowKeySet);
@@ -2238,14 +2252,14 @@ public final class Sheet<R, C, E> implements Cloneable {
 
         try {
             if (N.isNullOrEmpty(rowKeySet) && N.isNullOrEmpty(columnKeySet)) {
-                bw.write(" - ");
+                bw.write("+---+");
                 bw.write(IOUtil.LINE_SEPARATOR);
-                bw.write("| |");
+                bw.write("|   |");
                 bw.write(IOUtil.LINE_SEPARATOR);
-                bw.write(" - ");
+                bw.write("+---+");
             } else {
                 final int rowLen = rowKeySet.size();
-                final int columnLen = columnKeySet.size() + 1;
+                final int columnLen = N.max(2, columnKeySet.size() + 1);
 
                 final int[] rowIndices = new int[rowLen];
                 int idx = 0;
@@ -2258,15 +2272,23 @@ public final class Sheet<R, C, E> implements Cloneable {
                 idx = 0;
                 columnIndices[idx++] = -1; // rowKey Column
 
-                for (C columnKey : columnKeySet) {
-                    columnIndices[idx++] = getColumnIndex(columnKey);
+                if (N.isNullOrEmpty(columnKeySet)) {
+                    columnIndices[idx] = -1;
+                } else {
+                    for (C columnKey : columnKeySet) {
+                        columnIndices[idx++] = getColumnIndex(columnKey);
+                    }
                 }
 
                 final List<String> columnNameList = new ArrayList<>(columnLen);
-                columnNameList.add(""); // add for row key column
+                columnNameList.add(" "); // add for row key column
 
-                for (C ck : columnKeySet) {
-                    columnNameList.add(N.toString(ck));
+                if (N.isNullOrEmpty(columnKeySet)) {
+                    columnNameList.add(" "); // add for row key column
+                } else {
+                    for (C ck : columnKeySet) {
+                        columnNameList.add(N.toString(ck));
+                    }
                 }
 
                 final List<List<String>> strColumnList = new ArrayList<>(columnLen);
@@ -2283,6 +2305,9 @@ public final class Sheet<R, C, E> implements Cloneable {
                             maxLen = N.max(maxLen, N.len(str));
                             strColumn.add(str);
                         }
+                    } else if (columnIndices[i] < 0) {
+                        maxLen = N.max(maxLen, 1);
+                        N.fill(strColumn, 0, rowLen, " ");
                     } else if (_initialized == false) {
                         maxLen = N.max(maxLen, 4);
                         N.fill(strColumn, 0, rowLen, "null");
@@ -2299,14 +2324,18 @@ public final class Sheet<R, C, E> implements Cloneable {
                 }
 
                 final char hch = '-';
-                final char hchDelta = 3;
+                final char hchDelta = 2;
                 for (int i = 0; i < columnLen; i++) {
                     if (i == 0) {
-                        bw.write(StringUtil.repeat(' ', maxColumnLens[i] + hchDelta) + "-");
+                        bw.write(StringUtil.repeat(' ', maxColumnLens[i] + hchDelta + 1));
                     } else {
+                        bw.write('+');
+
                         bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                     }
                 }
+
+                bw.write('+');
 
                 bw.write(IOUtil.LINE_SEPARATOR);
 
@@ -2325,12 +2354,16 @@ public final class Sheet<R, C, E> implements Cloneable {
                 bw.write(IOUtil.LINE_SEPARATOR);
 
                 for (int i = 0; i < columnLen; i++) {
-                    if (i == 0) {
-                        bw.write(hch);
-                    }
+                    bw.write('+');
 
-                    bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
+                    if (i == 1 && N.isNullOrEmpty(columnKeySet)) {
+                        bw.write(StringUtil.repeat(' ', maxColumnLens[i] + hchDelta));
+                    } else {
+                        bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
+                    }
                 }
+
+                bw.write('+');
 
                 for (int j = 0; j < rowLen; j++) {
                     bw.write(IOUtil.LINE_SEPARATOR);
@@ -2366,12 +2399,12 @@ public final class Sheet<R, C, E> implements Cloneable {
                 bw.write(IOUtil.LINE_SEPARATOR);
 
                 for (int i = 0; i < columnLen; i++) {
-                    if (i == 0) {
-                        bw.write(hch);
-                    }
+                    bw.write('+');
 
                     bw.write(StringUtil.repeat(hch, maxColumnLens[i] + hchDelta));
                 }
+
+                bw.write('+');
             }
 
             bw.write(IOUtil.LINE_SEPARATOR);
@@ -2384,6 +2417,8 @@ public final class Sheet<R, C, E> implements Cloneable {
                 Objectory.recycle((BufferedWriter) bw);
             }
         }
+
+        return outputWriter;
     }
 
     @Override

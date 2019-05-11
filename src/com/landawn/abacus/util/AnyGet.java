@@ -142,7 +142,7 @@ public final class AnyGet {
         return get.getTimeRange();
     }
 
-    public AnyGet setTimeRange(long minStamp, long maxStamp) {
+    public AnyGet setTimeRange(long minStamp, long maxStamp) throws UncheckedIOException {
         try {
             get.setTimeRange(minStamp, maxStamp);
         } catch (IOException e) {
@@ -152,7 +152,7 @@ public final class AnyGet {
         return this;
     }
 
-    public AnyGet setTimeStamp(long timestamp) {
+    public AnyGet setTimeStamp(long timestamp) throws UncheckedIOException {
         try {
             get.setTimeStamp(timestamp);
         } catch (IOException e) {
@@ -166,7 +166,7 @@ public final class AnyGet {
         return get.getMaxVersions();
     }
 
-    public AnyGet setMaxVersions(int maxVersions) {
+    public AnyGet setMaxVersions(int maxVersions) throws UncheckedIOException {
         try {
             get.setMaxVersions(maxVersions);
         } catch (IOException e) {

@@ -54,18 +54,8 @@ import com.landawn.abacus.util.DateUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
-import com.landawn.abacus.util.u.Nullable;
 import com.landawn.abacus.util.ObjectPool;
 import com.landawn.abacus.util.Objectory;
-import com.landawn.abacus.util.u.Optional;
-import com.landawn.abacus.util.u.OptionalBoolean;
-import com.landawn.abacus.util.u.OptionalByte;
-import com.landawn.abacus.util.u.OptionalChar;
-import com.landawn.abacus.util.u.OptionalDouble;
-import com.landawn.abacus.util.u.OptionalFloat;
-import com.landawn.abacus.util.u.OptionalInt;
-import com.landawn.abacus.util.u.OptionalLong;
-import com.landawn.abacus.util.u.OptionalShort;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
@@ -75,6 +65,16 @@ import com.landawn.abacus.util.SQLParser;
 import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.WD;
+import com.landawn.abacus.util.u.Nullable;
+import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.u.OptionalBoolean;
+import com.landawn.abacus.util.u.OptionalByte;
+import com.landawn.abacus.util.u.OptionalChar;
+import com.landawn.abacus.util.u.OptionalDouble;
+import com.landawn.abacus.util.u.OptionalFloat;
+import com.landawn.abacus.util.u.OptionalInt;
+import com.landawn.abacus.util.u.OptionalLong;
+import com.landawn.abacus.util.u.OptionalShort;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -2185,10 +2185,10 @@ public final class SQLiteExecutor {
 
     private Command interpretIn(In in) {
         final Command cmd = new Command();
-
-        cmd.setSql(formatName(in.getPropName()) + in.inPart());
-
         final List<Object> parameters = in.getParameters();
+
+        cmd.setSql(formatName(in.getPropName()) + " IN (" + SQLBuilder.repeatQM(parameters.size()) + ")");
+
         final String[] args = new String[parameters.size()];
 
         for (int i = 0, len = args.length; i < len; i++) {

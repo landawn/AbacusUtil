@@ -89,7 +89,7 @@ public final class HttpClient extends AbstractHttpClient {
         this(url, maxConnection, connTimeout, readTimeout, null);
     }
 
-    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
+    protected HttpClient(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) throws UncheckedIOException {
         this(url, maxConnection, connTimeout, readTimeout, settings, new AtomicInteger(0));
     }
 
@@ -122,7 +122,7 @@ public final class HttpClient extends AbstractHttpClient {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout);
     }
 
-    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) {
+    public static HttpClient create(String url, int maxConnection, long connTimeout, long readTimeout, HttpSettings settings) throws UncheckedIOException {
         return new HttpClient(url, maxConnection, connTimeout, readTimeout, settings);
     }
 
@@ -132,12 +132,13 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public <T> T execute(final Class<T> resultClass, final HttpMethod httpMethod, final Object request, final HttpSettings settings)
+            throws UncheckedIOException {
         return execute(resultClass, null, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final File output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         OutputStream os = null;
 
         try {
@@ -151,17 +152,17 @@ public final class HttpClient extends AbstractHttpClient {
     }
 
     @Override
-    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final OutputStream output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         execute(null, output, null, httpMethod, request, settings);
     }
 
     @Override
-    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) {
+    public void execute(final Writer output, final HttpMethod httpMethod, final Object request, final HttpSettings settings) throws UncheckedIOException {
         execute(null, null, output, httpMethod, request, settings);
     }
 
     private <T> T execute(final Class<T> resultClass, final OutputStream outputStream, final Writer outputWriter, final HttpMethod httpMethod,
-            final Object request, final HttpSettings settings) {
+            final Object request, final HttpSettings settings) throws UncheckedIOException {
         final ContentFormat requestContentFormat = getContentFormat(settings);
         final HttpURLConnection connection = openConnection(httpMethod, request, request != null, settings);
         final Charset requestCharset = HTTP.getCharset(settings == null || settings.headers().isEmpty() ? _settings.headers() : settings.headers());
@@ -257,23 +258,23 @@ public final class HttpClient extends AbstractHttpClient {
         }
     }
 
-    HttpURLConnection openConnection(HttpMethod httpMethod) {
+    HttpURLConnection openConnection(HttpMethod httpMethod) throws UncheckedIOException {
         return openConnection(httpMethod, HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod));
     }
 
-    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput) throws UncheckedIOException {
         return openConnection(httpMethod, doOutput, _settings);
     }
 
-    HttpURLConnection openConnection(HttpMethod httpMethod, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, HttpSettings settings) throws UncheckedIOException {
         return openConnection(httpMethod, HttpMethod.POST.equals(httpMethod) || HttpMethod.PUT.equals(httpMethod), settings);
     }
 
-    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, boolean doOutput, HttpSettings settings) throws UncheckedIOException {
         return openConnection(httpMethod, null, doOutput, settings);
     }
 
-    HttpURLConnection openConnection(HttpMethod httpMethod, final Object queryParameters, boolean doOutput, HttpSettings settings) {
+    HttpURLConnection openConnection(HttpMethod httpMethod, final Object queryParameters, boolean doOutput, HttpSettings settings) throws UncheckedIOException {
         HttpURLConnection connection = null;
 
         if (_activeConnectionCounter.incrementAndGet() > _maxConnection) {
@@ -340,7 +341,7 @@ public final class HttpClient extends AbstractHttpClient {
         }
     }
 
-    void setHttpProperties(HttpURLConnection connection, HttpSettings settings) {
+    void setHttpProperties(HttpURLConnection connection, HttpSettings settings) throws UncheckedIOException {
         final HttpHeaders headers = settings.headers();
 
         if (headers != null) {
