@@ -6680,7 +6680,7 @@ public final class JdbcUtil {
                 status = Status.COMMITTED;
             } finally {
                 if (status == Status.COMMITTED) {
-                    logger.info("Transaction(id={}) is committed successfully", id);
+                    logger.info("Transaction(id={}) has been committed successfully", id);
 
                     resetAndCloseConnection();
                 } else {
@@ -6705,7 +6705,7 @@ public final class JdbcUtil {
                         && (status == Status.COMMITTED || status == Status.FAILED_COMMIT || status == Status.ROLLED_BACK || status == Status.FAILED_ROLLBACK)) {
                     // Do nothing. It happened in finally block.
                 } else {
-                    logger.warn("Transaction(id={}) is already: {}. This rolling back is ignored", id, status);
+                    logger.warn("Transaction(id={}) is already: {}. This rollback is ignored", id, status);
                 }
 
                 return;
@@ -6731,7 +6731,7 @@ public final class JdbcUtil {
                 throw new UncheckedSQLException(e);
             } finally {
                 if (status == Status.ROLLED_BACK) {
-                    logger.warn("Transaction(id={}) is rolled back successfully", id);
+                    logger.warn("Transaction(id={}) has been rolled back successfully", id);
                 } else {
                     logger.warn("Failed to roll back transaction(id={})", id);
                 }

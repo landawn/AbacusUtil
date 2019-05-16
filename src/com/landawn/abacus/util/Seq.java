@@ -1403,6 +1403,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    public <E extends Exception> List<List<T>> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible) throws E {
+        return collapse(collapsible, Suppliers.<T> ofList());
+    }
+
     public <C extends Collection<T>, E extends Exception> List<C> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible,
             final Supplier<? extends C> collectionSupplier) throws E {
         N.checkArgNotNull(collapsible);

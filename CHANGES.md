@@ -1,3 +1,9 @@
+### 1.7.2
+
+* Refactoring `f` to Ambiguous method error. 
+
+* Improvements and bug fix.
+
 ### 1.7.1
 
 * Add `StringUtil.first/lastChar/firstChars/lastChars`. 

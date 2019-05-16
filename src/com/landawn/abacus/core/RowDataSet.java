@@ -645,6 +645,12 @@ public class RowDataSet implements DataSet, Cloneable {
         return getColumn(checkColumnName(columnName));
     }
 
+    @SuppressWarnings("rawtypes")
+    @Override
+    public <T> List<T> copyOfColumn(final String columnName) {
+        return new ArrayList<>((List) _columnList.get(checkColumnName(columnName)));
+    }
+
     @Override
     public void addColumn(final String columnName, final List<?> column) {
         addColumn(_columnList.size(), columnName, column);
@@ -871,8 +877,14 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <E extends Exception> void removeColumnsIf(Predicate<String, E> filter) throws E {
+    public <E extends Exception> void removeColumns(Predicate<String, E> filter) throws E {
         removeColumns(N.filter(_columnNameList, filter));
+    }
+
+    @Deprecated
+    @Override
+    public <E extends Exception> void removeColumnsIf(Predicate<String, E> filter) throws E {
+        removeColumns(filter);
     }
 
     @Override

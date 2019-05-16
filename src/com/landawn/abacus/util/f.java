@@ -41,26 +41,6 @@ public final class f {
         }
     }
 
-    public static <T, E extends Exception> void replaceAlll(final T[][] a, final Try.UnaryOperator<T, E> operator) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            replaceAlll(a[i], operator);
-        }
-    }
-
-    public static <T, E extends Exception> void replaceAlll(final T[][][] a, final Try.UnaryOperator<T, E> operator) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            replaceAlll(a[i], operator);
-        }
-    }
-
     public static <T, E extends Exception> void replaceIff(final T[] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
@@ -69,194 +49,6 @@ public final class f {
         for (int i = 0, n = a.length; i < n; i++) {
             if (predicate.test(a[i])) {
                 a[i] = newValue;
-            }
-        }
-    }
-
-    public static <T, E extends Exception> void replaceIff(final T[][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            replaceIff(a[i], predicate, newValue);
-        }
-    }
-
-    public static <T, E extends Exception> void replaceIff(final T[][][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            replaceIff(a[i], predicate, newValue);
-        }
-    }
-
-    public static <T> T[][] reshappe(final T[] a, final int m) {
-        N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
-
-        //        if (N.isNullOrEmpty(a)) {
-        //            return new T[0][0];
-        //        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m, RoundingMode.CEILING);
-        final T[][] c = N.newArray(a.getClass(), n);
-
-        for (int i = 0, from = 0; i < n; i++, from += m) {
-            c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
-        }
-
-        return c;
-    }
-
-    public static <T> T[][][] reshappe(final T[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
-
-        //        if (N.isNullOrEmpty(a)) {
-        //            return new T[0][0][0];
-        //        }
-
-        final int len = a.length;
-        final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
-        final T[][][] c = N.newArray(N.newArray(a.getClass(), 0).getClass(), n);
-
-        for (int i = 0, from = 0; i < n; i++) {
-            c[i] = N.newArray(a.getClass(), N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING)));
-
-            for (int j = 0, y = c[i].length; j < y; j++, from += l) {
-                c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
-            }
-        }
-
-        return c;
-    }
-
-    public static <T> T[] flattenn(final T[][] a) {
-        int count = 0;
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            count += (a[i] == null ? 0 : a[i].length);
-        }
-
-        final T[] c = N.newArray(a.getClass().getComponentType().getComponentType(), count);
-        int from = 0;
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            if (N.isNullOrEmpty(a[i])) {
-                continue;
-            }
-
-            N.copy(a[i], 0, c, from, a[i].length);
-
-            from += a[i].length;
-        }
-
-        return c;
-    }
-
-    public static <T> T[] flattenn(final T[][][] a) {
-        int count = 0;
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            if (N.isNullOrEmpty(a[i])) {
-                continue;
-            }
-
-            for (int j = 0, m = a[i].length; j < m; j++) {
-                if (N.isNullOrEmpty(a[i][j])) {
-                    continue;
-                }
-
-                count += (a[i][j] == null ? 0 : a[i][j].length);
-            }
-        }
-
-        final T[] c = N.newArray(a.getClass().getComponentType().getComponentType().getComponentType(), count);
-        int from = 0;
-
-        for (int i = 0, n = a.length; i < n; i++) {
-            if (N.isNullOrEmpty(a[i])) {
-                continue;
-            }
-
-            for (int j = 0, m = a[i].length; j < m; j++) {
-                if (N.isNullOrEmpty(a[i][j])) {
-                    continue;
-                }
-
-                N.copy(a[i][j], 0, c, from, a[i][j].length);
-
-                from += a[i][j].length;
-            }
-        }
-
-        return c;
-    }
-
-    /**
-     * flatten -> execute {@code op} -> set values back.
-     * <pre>
-     * <code>
-     * f.flattOp(a, t -> N.sort(t));
-     * </code>
-     * </pre>
-     * 
-     * @param a
-     * @param op
-     * @throws E
-     */
-    public static <T, E extends Exception> void flattOp(final T[][] a, Try.Consumer<T[], E> op) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        final T[] tmp = flattenn(a);
-
-        op.accept(tmp);
-
-        int idx = 0;
-
-        for (T[] e : a) {
-            if (N.notNullOrEmpty(e)) {
-                N.copy(tmp, idx, e, 0, e.length);
-                idx += e.length;
-            }
-        }
-    }
-
-    /**
-     * flatten -> execute {@code op} -> set values back.
-     * <pre>
-     * <code>
-     * f.flattOp(a, t -> N.sort(t));
-     * </code>
-     * </pre>
-     * 
-     * @param a
-     * @param op
-     * @throws E
-     */
-    public static <T, E extends Exception> void flattOp(final T[][][] a, Try.Consumer<T[], E> op) throws E {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        final T[] tmp = flattenn(a);
-
-        op.accept(tmp);
-
-        int idx = 0;
-
-        for (T[][] e : a) {
-            if (N.notNullOrEmpty(e)) {
-                for (T[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
-                        idx += ee.length;
-                    }
-                }
             }
         }
     }
@@ -284,52 +76,6 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[][] mapp(final T[][] a, final Try.UnaryOperator<T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        return map((Class<T>) a.getClass().getComponentType().getComponentType(), a, func);
-    }
-
-    public static <T, R, E extends Exception> R[][] map(final Class<R> cls, final T[][] a, final Try.Function<? super T, R, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final R[][] c = N.newArray(N.newArray(cls, 0).getClass(), len);
-
-        for (int i = 0; i < len; i++) {
-            c[i] = map(cls, a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> T[][][] mapp(final T[][][] a, final Try.UnaryOperator<T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        return map((Class<T>) a.getClass().getComponentType().getComponentType().getComponentType(), a, func);
-    }
-
-    public static <T, R, E extends Exception> R[][][] map(final Class<R> cls, final T[][][] a, final Try.Function<? super T, R, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final R[][][] c = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
-
-        for (int i = 0; i < len; i++) {
-            c[i] = map(cls, a[i], func);
-        }
-
-        return c;
-    }
-
     public static <T, E extends Exception> boolean[] mapToBoolean(final T[] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
         if (a == null) {
             return null;
@@ -340,36 +86,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             c[i] = func.applyAsBoolean(a[i]);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> boolean[][] mapToBoolean(final T[][] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final boolean[][] c = new boolean[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToBoolean(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> boolean[][][] mapToBoolean(final T[][][] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final boolean[][][] c = new boolean[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToBoolean(a[i], func);
         }
 
         return c;
@@ -390,36 +106,6 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> char[][] mapToChar(final T[][] a, final Try.ToCharFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final char[][] c = new char[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToChar(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> char[][][] mapToChar(final T[][][] a, final Try.ToCharFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final char[][][] c = new char[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToChar(a[i], func);
-        }
-
-        return c;
-    }
-
     public static <T, E extends Exception> byte[] mapToByte(final T[] a, final Try.ToByteFunction<? super T, E> func) throws E {
         if (a == null) {
             return null;
@@ -430,36 +116,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             c[i] = func.applyAsByte(a[i]);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> byte[][] mapToByte(final T[][] a, final Try.ToByteFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final byte[][] c = new byte[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToByte(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> byte[][][] mapToByte(final T[][][] a, final Try.ToByteFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final byte[][][] c = new byte[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToByte(a[i], func);
         }
 
         return c;
@@ -480,36 +136,6 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> short[][] mapToShort(final T[][] a, final Try.ToShortFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final short[][] c = new short[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToShort(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> short[][][] mapToShort(final T[][][] a, final Try.ToShortFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final short[][][] c = new short[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToShort(a[i], func);
-        }
-
-        return c;
-    }
-
     public static <T, E extends Exception> int[] mapToInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (a == null) {
             return null;
@@ -520,36 +146,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             c[i] = func.applyAsInt(a[i]);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> int[][] mapToInt(final T[][] a, final Try.ToIntFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final int[][] c = new int[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToInt(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> int[][][] mapToInt(final T[][][] a, final Try.ToIntFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final int[][][] c = new int[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToInt(a[i], func);
         }
 
         return c;
@@ -570,36 +166,6 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> long[][] mapToLong(final T[][] a, final Try.ToLongFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][] c = new long[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToLong(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> long[][][] mapToLong(final T[][][] a, final Try.ToLongFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final long[][][] c = new long[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToLong(a[i], func);
-        }
-
-        return c;
-    }
-
     public static <T, E extends Exception> float[] mapToFloat(final T[] a, final Try.ToFloatFunction<? super T, E> func) throws E {
         if (a == null) {
             return null;
@@ -615,36 +181,6 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> float[][] mapToFloat(final T[][] a, final Try.ToFloatFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final float[][] c = new float[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToFloat(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> float[][][] mapToFloat(final T[][][] a, final Try.ToFloatFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final float[][][] c = new float[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToFloat(a[i], func);
-        }
-
-        return c;
-    }
-
     public static <T, E extends Exception> double[] mapToDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (a == null) {
             return null;
@@ -655,36 +191,6 @@ public final class f {
 
         for (int i = 0; i < len; i++) {
             c[i] = func.applyAsDouble(a[i]);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> double[][] mapToDouble(final T[][] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final double[][] c = new double[len][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToDouble(a[i], func);
-        }
-
-        return c;
-    }
-
-    public static <T, E extends Exception> double[][][] mapToDouble(final T[][][] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
-        if (a == null) {
-            return null;
-        }
-
-        final int len = N.len(a);
-        final double[][][] c = new double[len][][];
-
-        for (int i = 0; i < len; i++) {
-            c[i] = mapToDouble(a[i], func);
         }
 
         return c;
@@ -1168,212 +674,6 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, zipFunction);
-    }
-
-    public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b,
-            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-
-        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB));
-
-        for (int i = 0, len = result.length; i < len; i++) {
-            result[i] = zip(cls, a[i], b[i], zipFunction);
-        }
-
-        return result;
-    }
-
-    public static <A, B, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
-            final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
-    }
-
-    public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
-            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
-    }
-
-    private static <A, B, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b,
-            final A valueForNoneA, final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-
-        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
-
-        for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
-            result[i] = zip(rowLen, cls, a[i], b[i], valueForNoneA, valueForNoneB, zipFunction);
-        }
-
-        if (lenA < lenB && lenA < len) {
-            for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
-                result[i] = zip(rowLen, cls, null, b[i], valueForNoneA, valueForNoneB, zipFunction);
-            }
-        } else if (lenB < lenA && lenB < len) {
-            for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
-                result[i] = zip(rowLen, cls, a[i], null, valueForNoneA, valueForNoneB, zipFunction);
-            }
-        }
-
-        if (N.max(lenA, lenB) < len) {
-            for (int i = N.max(lenA, lenB); i < len; i++) {
-                result[i] = zip(rowLen, cls, null, null, valueForNoneA, valueForNoneB, zipFunction);
-            }
-        }
-
-        return result;
-    }
-
-    public static <A, B, C, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final C[][] c,
-            final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, zipFunction);
-    }
-
-    public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
-            final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-        final int lenC = N.len(c);
-
-        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB, lenC));
-
-        for (int i = 0, len = result.length; i < len; i++) {
-            result[i] = zip(cls, a[i], b[i], c[i], zipFunction);
-        }
-
-        return result;
-    }
-
-    public static <A, B, C, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-    }
-
-    public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA,
-            final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), cls, a, b, c, valueForNoneA,
-                valueForNoneB, valueForNoneC, zipFunction);
-    }
-
-    private static <A, B, C, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
-            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction)
-            throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-        final int lenC = N.len(c);
-
-        final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
-
-        for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
-            result[i] = zip(rowLen, cls, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-        }
-
-        if (N.min(lenA, lenB, lenC) < len) {
-            for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
-                result[i] = zip(rowLen, cls, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
-                        valueForNoneC, zipFunction);
-            }
-        }
-
-        return result;
-    }
-
-    public static <A, B, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction)
-            throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, zipFunction);
-    }
-
-    public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b,
-            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-
-        final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB));
-
-        for (int i = 0, len = result.length; i < len; i++) {
-            result[i] = zip(cls, a[i], b[i], zipFunction);
-        }
-
-        return result;
-    }
-
-    public static <A, B, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
-            final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
-    }
-
-    public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
-            final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-
-        final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB));
-
-        for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
-            result[i] = zip(cls, a[i], b[i], valueForNoneA, valueForNoneB, zipFunction);
-        }
-
-        if (lenA < lenB) {
-            for (int i = lenA; i < lenB; i++) {
-                result[i] = zip(cls, null, b[i], valueForNoneA, valueForNoneB, zipFunction);
-            }
-        } else if (lenB < lenA) {
-            for (int i = lenB; i < lenA; i++) {
-                result[i] = zip(cls, a[i], null, valueForNoneA, valueForNoneB, zipFunction);
-            }
-        }
-
-        return result;
-    }
-
-    public static <A, B, C, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final C[][][] c,
-            final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, zipFunction);
-    }
-
-    public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c,
-            final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-        final int lenC = N.len(c);
-
-        final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB, lenC));
-
-        for (int i = 0, len = result.length; i < len; i++) {
-            result[i] = zip(cls, a[i], b[i], c[i], zipFunction);
-        }
-
-        return result;
-    }
-
-    public static <A, B, C, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
-        return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
-    }
-
-    public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA,
-            final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
-        final int lenA = N.len(a);
-        final int lenB = N.len(b);
-        final int lenC = N.len(c);
-
-        final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB, lenC));
-
-        for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
-            result[i] = zip(cls, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
-        }
-
-        for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
-            result[i] = zip(cls, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
-                    zipFunction);
-        }
-
-        return result;
-    }
-
     public static <T> String println(final T[] a) {
         if (a == null) {
             return N.println("null");
@@ -1501,34 +801,918 @@ public final class f {
         }
     }
 
-    public static <T> int minSubArrayLen(T[][] a) {
-        if (a == null) {
-            return 0;
+    public static final class ff {
+        private ff() {
+            // Singleton
         }
 
-        final int len = a.length;
-        int minLen = 0;
+        public static <T, E extends Exception> void replaceAll(final T[][] a, final Try.UnaryOperator<T, E> operator) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
 
-        for (int i = 0; i < len; i++) {
-            minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+            for (int i = 0, n = a.length; i < n; i++) {
+                f.replaceAlll(a[i], operator);
+            }
         }
 
-        return minLen;
+        public static <T, E extends Exception> void replaceIf(final T[][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                f.replaceIff(a[i], predicate, newValue);
+            }
+        }
+
+        public static <T> T[][] reshape(final T[] a, final int m) {
+            N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
+
+            //        if (N.isNullOrEmpty(a)) {
+            //            return new T[0][0];
+            //        }
+
+            final int len = a.length;
+            final int n = Matth.divide(len, m, RoundingMode.CEILING);
+            final T[][] c = N.newArray(a.getClass(), n);
+
+            for (int i = 0, from = 0; i < n; i++, from += m) {
+                c[i] = N.copyOfRange(a, from, from + N.min(len - from, m));
+            }
+
+            return c;
+        }
+
+        public static <T> T[] flatten(final T[][] a) {
+            int count = 0;
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                count += (a[i] == null ? 0 : a[i].length);
+            }
+
+            final T[] c = N.newArray(a.getClass().getComponentType().getComponentType(), count);
+            int from = 0;
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                if (N.isNullOrEmpty(a[i])) {
+                    continue;
+                }
+
+                N.copy(a[i], 0, c, from, a[i].length);
+
+                from += a[i].length;
+            }
+
+            return c;
+        }
+
+        /**
+         * flatten -> execute {@code op} -> set values back.
+         * <pre>
+         * <code>
+         * f.flattOp(a, t -> N.sort(t));
+         * </code>
+         * </pre>
+         * 
+         * @param a
+         * @param op
+         * @throws E
+         */
+        public static <T, E extends Exception> void flatOp(final T[][] a, Try.Consumer<T[], E> op) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
+
+            final T[] tmp = flatten(a);
+
+            op.accept(tmp);
+
+            int idx = 0;
+
+            for (T[] e : a) {
+                if (N.notNullOrEmpty(e)) {
+                    N.copy(tmp, idx, e, 0, e.length);
+                    idx += e.length;
+                }
+            }
+        }
+
+        public static <T, E extends Exception> T[][] map(final T[][] a, final Try.UnaryOperator<T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            return map((Class<T>) a.getClass().getComponentType().getComponentType(), a, func);
+        }
+
+        public static <T, R, E extends Exception> R[][] map(final Class<R> cls, final T[][] a, final Try.Function<? super T, R, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final R[][] c = N.newArray(N.newArray(cls, 0).getClass(), len);
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.map(cls, a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> boolean[][] mapToBoolean(final T[][] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final boolean[][] c = new boolean[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToBoolean(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> char[][] mapToChar(final T[][] a, final Try.ToCharFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final char[][] c = new char[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToChar(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> byte[][] mapToByte(final T[][] a, final Try.ToByteFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final byte[][] c = new byte[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToByte(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> short[][] mapToShort(final T[][] a, final Try.ToShortFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final short[][] c = new short[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToShort(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> int[][] mapToInt(final T[][] a, final Try.ToIntFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final int[][] c = new int[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToInt(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> long[][] mapToLong(final T[][] a, final Try.ToLongFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final long[][] c = new long[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToLong(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> float[][] mapToFloat(final T[][] a, final Try.ToFloatFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final float[][] c = new float[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToFloat(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> double[][] mapToDouble(final T[][] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final double[][] c = new double[len][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = f.mapToDouble(a[i], func);
+            }
+
+            return c;
+        }
+
+        private static <A, B, R, E extends Exception> R[] zip(final int len, final Class<R> cls, final A[] a, final B[] b, final A valueForNoneA,
+                final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+
+            final R[] result = N.newArray(cls, len);
+
+            for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+                result[i] = zipFunction.apply(a[i], b[i]);
+            }
+
+            if (lenA < lenB && lenA < len) {
+                for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                    result[i] = zipFunction.apply(valueForNoneA, b[i]);
+                }
+            } else if (lenB < lenA && lenB < len) {
+                for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                    result[i] = zipFunction.apply(a[i], valueForNoneB);
+                }
+            }
+
+            if (N.max(lenA, lenB) < len) {
+                for (int i = N.max(lenA, lenB); i < len; i++) {
+                    result[i] = zipFunction.apply(valueForNoneA, valueForNoneB);
+                }
+            }
+
+            return result;
+        }
+
+        private static <A, B, C, R, E extends Exception> R[] zip(final int len, final Class<R> cls, final A[] a, final B[] b, final C[] c,
+                final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction)
+                throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+            final int lenC = N.len(c);
+
+            final R[] result = N.newArray(cls, len);
+
+            for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+                result[i] = zipFunction.apply(a[i], b[i], c[i]);
+            }
+
+            if (N.min(lenA, lenB, lenC) < len) {
+                for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                    result[i] = zipFunction.apply(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB, i < lenC ? c[i] : valueForNoneC);
+                }
+            }
+
+            return result;
+        }
+
+        public static <A, B, E extends Exception> A[][] zip(final A[][] a, final B[][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction)
+                throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, zipFunction);
+        }
+
+        public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b,
+                final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+
+            final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB));
+
+            for (int i = 0, len = result.length; i < len; i++) {
+                result[i] = f.zip(cls, a[i], b[i], zipFunction);
+            }
+
+            return result;
+        }
+
+        public static <A, B, E extends Exception> A[][] zip(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
+                final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        }
+
+        public static <A, B, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
+                final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            return zip(N.max(N.len(a), N.len(b)), N.max(maxSubArrayLen(a), maxSubArrayLen(b)), cls, a, b, valueForNoneA, valueForNoneB, zipFunction);
+        }
+
+        private static <A, B, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b,
+                final A valueForNoneA, final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+
+            final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
+
+            for (int i = 0, min = N.min(lenA, lenB, len); i < min; i++) {
+                result[i] = zip(rowLen, cls, a[i], b[i], valueForNoneA, valueForNoneB, zipFunction);
+            }
+
+            if (lenA < lenB && lenA < len) {
+                for (int i = lenA, min = N.min(lenB, len); i < min; i++) {
+                    result[i] = zip(rowLen, cls, null, b[i], valueForNoneA, valueForNoneB, zipFunction);
+                }
+            } else if (lenB < lenA && lenB < len) {
+                for (int i = lenB, min = N.min(lenA, len); i < min; i++) {
+                    result[i] = zip(rowLen, cls, a[i], null, valueForNoneA, valueForNoneB, zipFunction);
+                }
+            }
+
+            if (N.max(lenA, lenB) < len) {
+                for (int i = N.max(lenA, lenB); i < len; i++) {
+                    result[i] = zip(rowLen, cls, null, null, valueForNoneA, valueForNoneB, zipFunction);
+                }
+            }
+
+            return result;
+        }
+
+        public static <A, B, C, E extends Exception> A[][] zip(final A[][] a, final B[][] b, final C[][] c,
+                final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, zipFunction);
+        }
+
+        public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c,
+                final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+            final int lenC = N.len(c);
+
+            final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), N.min(lenA, lenB, lenC));
+
+            for (int i = 0, len = result.length; i < len; i++) {
+                result[i] = f.zip(cls, a[i], b[i], c[i], zipFunction);
+            }
+
+            return result;
+        }
+
+        public static <A, B, C, E extends Exception> A[][] zip(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB,
+                final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        }
+
+        public static <A, B, C, R, E extends Exception> R[][] zip(final Class<R> cls, final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA,
+                final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+            return zip(N.max(N.len(a), N.len(b), N.len(c)), N.max(maxSubArrayLen(a), maxSubArrayLen(b), maxSubArrayLen(c)), cls, a, b, c, valueForNoneA,
+                    valueForNoneB, valueForNoneC, zipFunction);
+        }
+
+        private static <A, B, C, R, E extends Exception> R[][] zip(final int len, final int rowLen, final Class<R> cls, final A[][] a, final B[][] b,
+                final C[][] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+                final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+            final int lenC = N.len(c);
+
+            final R[][] result = N.newArray(N.newArray(cls, 0).getClass(), len);
+
+            for (int i = 0, min = N.min(lenA, lenB, lenC, len); i < min; i++) {
+                result[i] = zip(rowLen, cls, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+            }
+
+            if (N.min(lenA, lenB, lenC) < len) {
+                for (int i = N.min(lenA, lenB, lenC); i < len; i++) {
+                    result[i] = zip(rowLen, cls, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB,
+                            valueForNoneC, zipFunction);
+                }
+            }
+
+            return result;
+        }
+
+        public static <T> int minSubArrayLen(T[][] a) {
+            if (a == null) {
+                return 0;
+            }
+
+            final int len = a.length;
+            int minLen = 0;
+
+            for (int i = 0; i < len; i++) {
+                minLen = N.min(minLen, a[i] == null ? 0 : a[i].length);
+            }
+
+            return minLen;
+        }
+
+        public static <T> int maxSubArrayLen(T[][] a) {
+            if (a == null) {
+                return 0;
+            }
+
+            final int len = N.len(a);
+            int maxLen = 0;
+
+            for (int i = 0; i < len; i++) {
+                maxLen = N.max(maxLen, a[i] == null ? 0 : a[i].length);
+            }
+
+            return maxLen;
+        }
+
+        public static <T> String println(final T[][] a) {
+            if (a == null) {
+                return N.println("null");
+            } else if (a.length == 0) {
+                return N.println("[]");
+            } else {
+                final int len = a.length;
+                final StringBuilder sb = Objectory.createStringBuilder();
+                String str = null;
+
+                try {
+                    sb.append('[');
+
+                    for (int i = 0; i < len; i++) {
+                        if (i > 0) {
+                            sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
+                        }
+
+                        if (a[i] == null) {
+                            sb.append("null");
+                        } else if (a[i].length == 0) {
+                            sb.append("[]");
+                        } else {
+                            final T[] ai = a[i];
+                            sb.append('[');
+
+                            for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                                if (j > 0) {
+                                    sb.append(", ");
+                                }
+
+                                sb.append(ai[j]);
+                            }
+
+                            sb.append(']');
+                        }
+                    }
+
+                    sb.append(']');
+                    str = sb.toString();
+                } finally {
+                    Objectory.recycle(sb);
+                }
+
+                N.println(str);
+
+                return str;
+            }
+        }
     }
 
-    public static <T> int maxSubArrayLen(T[][] a) {
-        if (a == null) {
-            return 0;
+    public static final class fff {
+        private fff() {
+            // Singleton
         }
 
-        final int len = N.len(a);
-        int maxLen = 0;
+        public static <T, E extends Exception> void replaceAll(final T[][][] a, final Try.UnaryOperator<T, E> operator) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
 
-        for (int i = 0; i < len; i++) {
-            maxLen = N.max(maxLen, a[i] == null ? 0 : a[i].length);
+            for (int i = 0, n = a.length; i < n; i++) {
+                ff.replaceAll(a[i], operator);
+            }
         }
 
-        return maxLen;
+        public static <T, E extends Exception> void replaceIf(final T[][][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                ff.replaceIf(a[i], predicate, newValue);
+            }
+        }
+
+        public static <T> T[][][] reshape(final T[] a, final int m, final int l) {
+            N.checkArgNotNull(a, "a");
+            N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
+
+            //        if (N.isNullOrEmpty(a)) {
+            //            return new T[0][0][0];
+            //        }
+
+            final int len = a.length;
+            final int n = Matth.divide(len, m * l, RoundingMode.CEILING);
+            final T[][][] c = N.newArray(N.newArray(a.getClass(), 0).getClass(), n);
+
+            for (int i = 0, from = 0; i < n; i++) {
+                c[i] = N.newArray(a.getClass(), N.min(m, Matth.divide(len - from, l, RoundingMode.CEILING)));
+
+                for (int j = 0, y = c[i].length; j < y; j++, from += l) {
+                    c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
+                }
+            }
+
+            return c;
+        }
+
+        public static <T> T[] flatten(final T[][][] a) {
+            int count = 0;
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                if (N.isNullOrEmpty(a[i])) {
+                    continue;
+                }
+
+                for (int j = 0, m = a[i].length; j < m; j++) {
+                    if (N.isNullOrEmpty(a[i][j])) {
+                        continue;
+                    }
+
+                    count += (a[i][j] == null ? 0 : a[i][j].length);
+                }
+            }
+
+            final T[] c = N.newArray(a.getClass().getComponentType().getComponentType().getComponentType(), count);
+            int from = 0;
+
+            for (int i = 0, n = a.length; i < n; i++) {
+                if (N.isNullOrEmpty(a[i])) {
+                    continue;
+                }
+
+                for (int j = 0, m = a[i].length; j < m; j++) {
+                    if (N.isNullOrEmpty(a[i][j])) {
+                        continue;
+                    }
+
+                    N.copy(a[i][j], 0, c, from, a[i][j].length);
+
+                    from += a[i][j].length;
+                }
+            }
+
+            return c;
+        }
+
+        /**
+         * flatten -> execute {@code op} -> set values back.
+         * <pre>
+         * <code>
+         * f.flattOp(a, t -> N.sort(t));
+         * </code>
+         * </pre>
+         * 
+         * @param a
+         * @param op
+         * @throws E
+         */
+        public static <T, E extends Exception> void flatOp(final T[][][] a, Try.Consumer<T[], E> op) throws E {
+            if (N.isNullOrEmpty(a)) {
+                return;
+            }
+
+            final T[] tmp = flatten(a);
+
+            op.accept(tmp);
+
+            int idx = 0;
+
+            for (T[][] e : a) {
+                if (N.notNullOrEmpty(e)) {
+                    for (T[] ee : e) {
+                        if (N.notNullOrEmpty(e)) {
+                            N.copy(tmp, idx, ee, 0, e.length);
+                            idx += ee.length;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static <T, E extends Exception> T[][][] map(final T[][][] a, final Try.UnaryOperator<T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            return map((Class<T>) a.getClass().getComponentType().getComponentType().getComponentType(), a, func);
+        }
+
+        public static <T, R, E extends Exception> R[][][] map(final Class<R> cls, final T[][][] a, final Try.Function<? super T, R, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final R[][][] c = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), len);
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.map(cls, a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> boolean[][][] mapToBoolean(final T[][][] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final boolean[][][] c = new boolean[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToBoolean(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> char[][][] mapToChar(final T[][][] a, final Try.ToCharFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final char[][][] c = new char[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToChar(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> byte[][][] mapToByte(final T[][][] a, final Try.ToByteFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final byte[][][] c = new byte[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToByte(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> short[][][] mapToShort(final T[][][] a, final Try.ToShortFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final short[][][] c = new short[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToShort(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> int[][][] mapToInt(final T[][][] a, final Try.ToIntFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final int[][][] c = new int[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToInt(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> long[][][] mapToLong(final T[][][] a, final Try.ToLongFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final long[][][] c = new long[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToLong(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> float[][][] mapToFloat(final T[][][] a, final Try.ToFloatFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final float[][][] c = new float[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToFloat(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <T, E extends Exception> double[][][] mapToDouble(final T[][][] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
+            if (a == null) {
+                return null;
+            }
+
+            final int len = N.len(a);
+            final double[][][] c = new double[len][][];
+
+            for (int i = 0; i < len; i++) {
+                c[i] = ff.mapToDouble(a[i], func);
+            }
+
+            return c;
+        }
+
+        public static <A, B, E extends Exception> A[][][] zip(final A[][][] a, final B[][][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction)
+                throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, zipFunction);
+        }
+
+        public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b,
+                final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+
+            final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB));
+
+            for (int i = 0, len = result.length; i < len; i++) {
+                result[i] = ff.zip(cls, a[i], b[i], zipFunction);
+            }
+
+            return result;
+        }
+
+        public static <A, B, E extends Exception> A[][][] zip(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
+                final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
+        }
+
+        public static <A, B, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final A valueForNoneA,
+                final B valueForNoneB, final Try.BiFunction<? super A, ? super B, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+
+            final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB));
+
+            for (int i = 0, min = N.min(lenA, lenB); i < min; i++) {
+                result[i] = ff.zip(cls, a[i], b[i], valueForNoneA, valueForNoneB, zipFunction);
+            }
+
+            if (lenA < lenB) {
+                for (int i = lenA; i < lenB; i++) {
+                    result[i] = ff.zip(cls, null, b[i], valueForNoneA, valueForNoneB, zipFunction);
+                }
+            } else if (lenB < lenA) {
+                for (int i = lenB; i < lenA; i++) {
+                    result[i] = ff.zip(cls, a[i], null, valueForNoneA, valueForNoneB, zipFunction);
+                }
+            }
+
+            return result;
+        }
+
+        public static <A, B, C, E extends Exception> A[][][] zip(final A[][][] a, final B[][][] b, final C[][][] c,
+                final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, zipFunction);
+        }
+
+        public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c,
+                final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction) throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+            final int lenC = N.len(c);
+
+            final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.min(lenA, lenB, lenC));
+
+            for (int i = 0, len = result.length; i < len; i++) {
+                result[i] = ff.zip(cls, a[i], b[i], c[i], zipFunction);
+            }
+
+            return result;
+        }
+
+        public static <A, B, C, E extends Exception> A[][][] zip(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA,
+                final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
+            return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
+                    zipFunction);
+        }
+
+        public static <A, B, C, R, E extends Exception> R[][][] zip(final Class<R> cls, final A[][][] a, final B[][][] b, final C[][][] c,
+                final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, R, E> zipFunction)
+                throws E {
+            final int lenA = N.len(a);
+            final int lenB = N.len(b);
+            final int lenC = N.len(c);
+
+            final R[][][] result = N.newArray(N.newArray(N.newArray(cls, 0).getClass(), 0).getClass(), N.max(lenA, lenB, lenC));
+
+            for (int i = 0, min = N.min(lenA, lenB, lenC); i < min; i++) {
+                result[i] = ff.zip(cls, a[i], b[i], c[i], valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+            }
+
+            for (int i = N.min(lenA, lenB, lenC), len = result.length; i < len; i++) {
+                result[i] = ff.zip(cls, i < lenA ? a[i] : null, i < lenB ? b[i] : null, i < lenC ? c[i] : null, valueForNoneA, valueForNoneB, valueForNoneC,
+                        zipFunction);
+            }
+
+            return result;
+        }
+
+        public static <T> String println(final T[][][] a) {
+            if (a == null) {
+                return N.println("null");
+            } else if (a.length == 0) {
+                return N.println("[]");
+            } else {
+                final int len = a.length;
+                final StringBuilder sb = Objectory.createStringBuilder();
+                String str = null;
+
+                try {
+                    sb.append('[');
+
+                    for (int i = 0; i < len; i++) {
+                        if (i > 0) {
+                            sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
+                        }
+
+                        if (a[i] == null) {
+                            sb.append("null");
+                        } else if (a[i].length == 0) {
+                            sb.append("[]");
+                        } else {
+                            final T[][] ai = a[i];
+                            sb.append('[');
+
+                            for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
+                                if (j > 0) {
+                                    sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
+                                }
+
+                                if (ai[j] == null) {
+                                    sb.append("null");
+                                } else if (ai[j].length == 0) {
+                                    sb.append("[]");
+                                } else {
+                                    final T[] aij = ai[j];
+                                    sb.append('[');
+
+                                    for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
+                                        if (k > 0) {
+                                            sb.append(", ");
+                                        }
+
+                                        sb.append(aij[k]);
+                                    }
+
+                                    sb.append(']');
+                                }
+                            }
+
+                            sb.append(']');
+                        }
+                    }
+
+                    sb.append(']');
+                    str = sb.toString();
+                } finally {
+                    Objectory.recycle(sb);
+                }
+
+                N.println(str);
+
+                return str;
+            }
+        }
     }
 
     public static <E extends Exception> void replaceAll(final boolean[] a, final Try.BooleanUnaryOperator<E> operator) throws E {

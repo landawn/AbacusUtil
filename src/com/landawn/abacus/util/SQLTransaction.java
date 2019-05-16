@@ -101,7 +101,7 @@ public final class SQLTransaction implements Transaction {
         }
 
         if (status.equals(Status.MARKED_ROLLBACK)) {
-            logger.warn("Transaction(id={}) be rolled back because it's marked for roll back only", id);
+            logger.warn("Transaction(id={}) will be rolled back because it's marked for roll back only", id);
 
             executeRollback();
         }
@@ -122,7 +122,7 @@ public final class SQLTransaction implements Transaction {
             throw new UncheckedSQLException("Failed to commit transaction(id=" + id + ")", e);
         } finally {
             if (status == Status.COMMITTED) {
-                logger.info("Transaction(id={}) is committed sucessfully", id);
+                logger.info("Transaction(id={}) has been committed sucessfully", id);
 
                 resetAndCloseConnection();
             } else {
@@ -160,7 +160,7 @@ public final class SQLTransaction implements Transaction {
             throw new UncheckedSQLException("Failed to roll back transaction(id=" + id + ")", e);
         } finally {
             if (status == Status.ROLLED_BACK) {
-                logger.warn("Transaction(id={}) is rolled back successfully", id);
+                logger.warn("Transaction(id={}) has been rolled back successfully", id);
             } else {
                 logger.warn("Failed to roll back transaction(id={})", id);
             }

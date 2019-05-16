@@ -57,9 +57,12 @@ import com.landawn.abacus.util.stream.Stream;
  * @see com.landawn.abacus.util.function.IntFunction
  * @see com.landawn.abacus.util.Fn.Factory
  * @see com.landawn.abacus.util.Clazz
+ * @see com.landawn.abacus.util.N#newEmptyDataSet()
+ * @see com.landawn.abacus.util.N#newEmptyDataSet(Collection)
  * @see com.landawn.abacus.util.N#newDataSet(Map)
  * @see com.landawn.abacus.util.N#newDataSet(Collection)
  * @see com.landawn.abacus.util.N#newDataSet(Collection, Collection)
+ * @see com.landawn.abacus.util.N#newDataSet(String, String, Map)
  */
 public interface DataSet {
 
@@ -442,6 +445,8 @@ public interface DataSet {
      */
     <T> ImmutableList<T> getColumn(String columnName);
 
+    <T> List<T> copyOfColumn(String columnName);
+
     /**
      * Method addColumn.
      *
@@ -481,7 +486,7 @@ public interface DataSet {
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
      * @param newColumnName
      * @param fromColumnNames
-     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super DisposableObjArray, ?, E> func)
             throws E;
@@ -492,7 +497,7 @@ public interface DataSet {
      * @param columnIndex
      * @param newColumnName
      * @param fromColumnNames
-     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames,
             Try.Function<? super DisposableObjArray, ?, E> func) throws E;
@@ -553,7 +558,18 @@ public interface DataSet {
      * Remove the column(s) whose name matches the specified {@code filter}
      *
      * @param filter column name filter
+     * @throws E
      */
+    <E extends Exception> void removeColumns(Try.Predicate<String, E> filter) throws E;
+
+    /**
+     * Remove the column(s) whose name matches the specified {@code filter}
+     *
+     * @param filter column name filter
+     * @throws E
+     * @deprecated replaced by {@code removeColumns}.
+     */
+    @Deprecated
     <E extends Exception> void removeColumnsIf(Try.Predicate<String, E> filter) throws E;
 
     /**
@@ -608,7 +624,7 @@ public interface DataSet {
      * 
      * @param columnNames
      * @param newColumnName
-     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @throws E
      */
     <E extends Exception> void combineColumns(Collection<String> columnNames, String newColumnName, Try.Function<? super DisposableObjArray, ?, E> combineFunc)
@@ -619,13 +635,20 @@ public interface DataSet {
     <E extends Exception> void combineColumns(Tuple3<String, String, String> columnNames, String newColumnName, Try.TriFunction<?, ?, ?, ?, E> combineFunc)
             throws E;
 
+    /**
+     * 
+     * @param columnNameFilter
+     * @param newColumnName
+     * @param newColumnClass it can be Object[]/List/Set/Map/Entity
+     * @throws E
+     */
     <E extends Exception> void combineColumns(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
 
     /**
      * 
      * @param columnNameFilter
      * @param newColumnName
-     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param combineFunc DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @throws E
      * @throws E2
      */
@@ -838,7 +861,7 @@ public interface DataSet {
      * until all rows have been processed or the action throws an
      * exception.
      * 
-     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void forEach(Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
@@ -848,7 +871,7 @@ public interface DataSet {
      * exception.
      * 
      * @param columnNames
-     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
@@ -859,7 +882,7 @@ public interface DataSet {
      * 
      * @param fromRowIndex
      * @param toRowIndex
-     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super DisposableObjArray, E> action) throws E;
 
@@ -871,7 +894,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param action DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param action DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super DisposableObjArray, E> action)
             throws E;
@@ -1653,7 +1676,7 @@ public interface DataSet {
      * @param columnName
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      * @throws E
@@ -1713,10 +1736,10 @@ public interface DataSet {
     /**
      * 
      * @param columnName
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      * @throws E
@@ -1771,7 +1794,7 @@ public interface DataSet {
      * @param columnNames
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      * @throws E
@@ -1782,7 +1805,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      * @throws E
      */
@@ -1791,7 +1814,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param collector
@@ -1804,7 +1827,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param func
@@ -1818,7 +1841,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
      * @param collector
@@ -1831,10 +1854,10 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      * @throws E
@@ -1888,7 +1911,7 @@ public interface DataSet {
      * @param columnNames
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      */
@@ -1898,7 +1921,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> Stream<DataSet> rollup(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper);
@@ -1906,7 +1929,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param collector
@@ -1918,7 +1941,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param func
@@ -1931,7 +1954,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
      * @param collector
@@ -1943,10 +1966,10 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      */
@@ -1998,7 +2021,7 @@ public interface DataSet {
      * @param columnNames
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      */
@@ -2008,7 +2031,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> Stream<DataSet> cube(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper);
@@ -2016,7 +2039,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param collector
@@ -2028,7 +2051,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName
      * @param func
@@ -2041,7 +2064,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
      * @param collector
@@ -2053,10 +2076,10 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param collector
      * @return
      */
@@ -2093,7 +2116,7 @@ public interface DataSet {
     /**
      *
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     @SuppressWarnings("rawtypes")
     void sortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper);
@@ -2127,7 +2150,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      */
     @SuppressWarnings("rawtypes")
     void parallelSortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper);
@@ -2170,7 +2193,7 @@ public interface DataSet {
      * 
      * @param columnNames
      * @param n
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     @SuppressWarnings("rawtypes")
@@ -2214,21 +2237,21 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param keyMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super DisposableObjArray, ?, E> keyMapper) throws E;
 
     /**
      *
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> DataSet filter(Try.Predicate<? super DisposableObjArray, E> filter) throws E;
 
     /**
      * 
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param max
      * @return
      */
@@ -2238,7 +2261,7 @@ public interface DataSet {
      *
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter) throws E;
@@ -2247,7 +2270,7 @@ public interface DataSet {
      * 
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param max
      * @return
      */
@@ -2365,7 +2388,7 @@ public interface DataSet {
     /**
      *
      * @param columnNames
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super DisposableObjArray, E> filter) throws E;
@@ -2373,7 +2396,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param max
      * @return
      */
@@ -2384,7 +2407,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super DisposableObjArray, E> filter)
@@ -2395,7 +2418,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param filter DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param filter DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param max
      * @return
      */
@@ -2451,7 +2474,7 @@ public interface DataSet {
     /**
      * 
      * @param fromColumnNames
-     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param newColumnName
      * @param copyingColumnNames
      * @return
@@ -2511,7 +2534,7 @@ public interface DataSet {
     /**
      * 
      * @param fromColumnNames
-     * @param func DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param func DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @param newColumnName
      * @param copyingColumnNames
      * @return
@@ -2947,7 +2970,7 @@ public interface DataSet {
     <T> Stream<T> stream(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      *
      * @return
      */
@@ -2957,7 +2980,7 @@ public interface DataSet {
      *
      * @param fromRowIndex
      * @param toRowIndex
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <T> Stream<T> stream(int fromRowIndex, int toRowIndex, Function<? super DisposableObjArray, T> rowMapper);
@@ -2965,7 +2988,7 @@ public interface DataSet {
     /**
      * 
      * @param columnNames
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <T> Stream<T> stream(Collection<String> columnNames, Function<? super DisposableObjArray, T> rowMapper);
@@ -2975,7 +2998,7 @@ public interface DataSet {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray}.
+     * @param rowMapper DON't cache or update the input parameter {@code DisposableObjArray} or its values(Array)
      * @return
      */
     <T> Stream<T> stream(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super DisposableObjArray, T> rowMapper);

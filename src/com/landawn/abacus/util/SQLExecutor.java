@@ -2769,10 +2769,13 @@ public class SQLExecutor implements Closeable {
             @Override
             public ObjIteratorEx<T> get() {
                 if (internalIter == null) {
-                    final int offset = jdbcSettings == null ? 0 : jdbcSettings.getOffset();
-                    final int count = jdbcSettings == null ? Integer.MAX_VALUE : jdbcSettings.getCount();
+                    final JdbcSettings newJdbcSettings = jdbcSettings == null ? _jdbcSettings.copy() : jdbcSettings.copy();
+                    final int offset = newJdbcSettings.getOffset();
+                    final int count = newJdbcSettings.getCount();
+                    newJdbcSettings.setOffset(0);
+                    newJdbcSettings.setCount(Integer.MAX_VALUE);
 
-                    final ResultSet rs = SQLExecutor.this.query(sql, statementSetter, RESULT_SET_EXTRACTOR, parameters);
+                    final ResultSet rs = SQLExecutor.this.query(sql, statementSetter, RESULT_SET_EXTRACTOR, newJdbcSettings, parameters);
 
                     internalIter = new ObjIteratorEx<T>() {
                         private boolean skipped = false;

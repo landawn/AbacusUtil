@@ -28326,9 +28326,16 @@ public final class N {
      * @param obj
      * @return the input <code>obj</code>
      */
+    @SuppressWarnings("rawtypes")
     public static <T> T println(final T obj) {
-        final String str = N.deepToString(obj);
-        System.out.println(str);
+        if (obj instanceof Collection) {
+            System.out.println(Joiner.with(N.ELEMENT_SEPARATOR, "[", "]").reuseCachedBuffer(true).appendAll((Collection) obj));
+        } else if (obj instanceof Map) {
+            System.out.println(Joiner.with(N.ELEMENT_SEPARATOR, "=", "{", "}").reuseCachedBuffer(true).appendEntries((Map) obj));
+        } else {
+            System.out.println(N.toString(obj));
+        }
+
         return obj;
     }
 

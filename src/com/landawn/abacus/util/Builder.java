@@ -25,6 +25,7 @@ import com.landawn.abacus.util.Try.Predicate;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.u.Optional;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1171,6 +1172,20 @@ public class Builder<T> {
             return this;
         }
 
+        public <E extends Exception> DataSetBuilder removeColumns(Predicate<String, E> filter) throws E {
+            val.removeColumns(filter);
+
+            return this;
+        }
+
+        /**
+         * 
+         * @param filter
+         * @return
+         * @throws E
+         * @deprecated replaced by {@code removeColumns}.
+         */
+        @Deprecated
         public <E extends Exception> DataSetBuilder removeColumnsIf(Predicate<String, E> filter) throws E {
             val.removeColumnsIf(filter);
 
@@ -1306,6 +1321,13 @@ public class Builder<T> {
             return this;
         }
 
+        @SuppressWarnings("rawtypes")
+        public DataSetBuilder sortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper) {
+            val.sortBy(columnNames, keyMapper);
+
+            return this;
+        }
+
         public DataSetBuilder parallelSortBy(String columnName) {
             val.parallelSortBy(columnName);
 
@@ -1326,6 +1348,13 @@ public class Builder<T> {
 
         public DataSetBuilder parallelSortBy(Collection<String> columnNames, Comparator<? super Object[]> cmp) {
             val.parallelSortBy(columnNames, cmp);
+
+            return this;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public DataSetBuilder parallelSortBy(Collection<String> columnNames, Function<? super DisposableObjArray, ? extends Comparable> keyMapper) {
+            val.parallelSortBy(columnNames, keyMapper);
 
             return this;
         }
