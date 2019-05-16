@@ -1,8 +1,9 @@
 ### 1.7.2
 
-* Refactoring `f` to Ambiguous method error. 
+* Refactoring `f` to avoid Ambiguous method error. 
 
 * Improvements and bug fix.
+
 
 ### 1.7.1
 
