@@ -729,6 +729,7 @@ public final class CSVUtil {
 
         try {
             stmt = conn.prepareStatement(namedSQL.getPureSQL(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
             stmt.setFetchSize(200);
 
             return exportCSV(out, stmt, selectColumnNames, offset, count, writeTitle, quoted);

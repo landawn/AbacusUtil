@@ -1,5 +1,7 @@
 ### 1.7.2
 
+* Add `Jdbc.Dao`.
+
 * Refactoring `f` to avoid Ambiguous method error. 
 
 * Improvements and bug fix.

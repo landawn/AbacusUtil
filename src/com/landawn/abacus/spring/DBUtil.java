@@ -139,4 +139,55 @@ public class DBUtil {
             }
         };
     }
+
+    public static interface Dao extends JdbcUtil.Dao {
+
+        @Override
+        default PreparedQuery prepareQuery(final DataSource ds, final String query) throws SQLException {
+            final Connection conn = DataSourceUtils.getConnection(ds);
+            PreparedQuery result = null;
+
+            try {
+                result = JdbcUtil.prepareQuery(conn, query).onClose(() -> DataSourceUtils.releaseConnection(conn, ds));
+            } finally {
+                if (result == null && conn != null) {
+                    DataSourceUtils.releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
+
+        @Override
+        default PreparedQuery prepareQuery(final DataSource ds, final String query, final boolean generateKeys) throws SQLException {
+            final Connection conn = DataSourceUtils.getConnection(ds);
+            PreparedQuery result = null;
+
+            try {
+                result = JdbcUtil.prepareQuery(conn, query, generateKeys).onClose(() -> DataSourceUtils.releaseConnection(conn, ds));
+            } finally {
+                if (result == null && conn != null) {
+                    DataSourceUtils.releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
+
+        @Override
+        default PreparedCallableQuery prepareCallableQuery(final DataSource ds, final String query) throws SQLException {
+            final Connection conn = DataSourceUtils.getConnection(ds);
+            PreparedCallableQuery result = null;
+
+            try {
+                result = JdbcUtil.prepareCallableQuery(conn, query).onClose(() -> DataSourceUtils.releaseConnection(conn, ds));
+            } finally {
+                if (result == null && conn != null) {
+                    DataSourceUtils.releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
+    }
 }

@@ -30,9 +30,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.CallableStatement;
@@ -104,6 +115,7 @@ import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.StringUtil.Strings;
+import com.landawn.abacus.util.Try.BiFunction;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
@@ -122,6 +134,8 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.stream.Stream.StreamEx;
 
 /**
  *
@@ -1473,6 +1487,9 @@ public final class JdbcUtil {
 
         try {
             stmt = prepareStatement(conn, sql, parameters);
+
+            stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
+
             rs = stmt.executeQuery();
 
             return extractData(rs);
@@ -1829,7 +1846,20 @@ public final class JdbcUtil {
                 }
             };
         } else {
-            throw new IllegalArgumentException(targetClass.getCanonicalName() + " is not an Array/List/Map/Entity class");
+            return new BiRecordGetter<T, RuntimeException>() {
+                private final Type<? extends T> targetType = N.typeOf(targetClass);
+                private int columnCount = 0;
+
+                @Override
+                public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
+                    if (columnCount != 1 && (columnCount = columnLabelList.size()) != 1) {
+                        throw new IllegalArgumentException(
+                                "Type: " + targetClass + " doesn't support retrieving value from multiple columns: " + columnLabelList);
+                    }
+
+                    return targetType.get(rs, 1);
+                }
+            };
         }
     }
 
@@ -2924,6 +2954,8 @@ public final class JdbcUtil {
         try {
             stmt = prepareStatement(conn, sql);
 
+            stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
+
             stmt.setFetchSize(200);
 
             parse(stmt, offset, count, processThreadNum, queueSize, rowParser, onComplete);
@@ -3277,6 +3309,7 @@ public final class JdbcUtil {
         final AsyncExecutor asyncExecutor;
         final S stmt;
         Connection conn;
+        boolean isFetchDirectionSet = false;
         boolean isBatch = false;
         boolean closeAfterExecution = true;
         boolean isClosed = false;
@@ -4097,7 +4130,7 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
-        public <E extends Exception> Q setParameters(Try.EE.Consumer<? super S, SQLException, E> paramSetter) throws SQLException, E {
+        public <E extends Exception> Q setParameters(ParametersSetter<? super S, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
             boolean isOK = false;
@@ -4122,7 +4155,7 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Q setParameters(final T parameter, final Try.EE.BiConsumer<? super S, ? super T, SQLException, E> paramSetter)
+        public <T, E extends Exception> Q setParameters(final T parameter, final BiParametersSetter<? super S, ? super T, E> paramSetter)
                 throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -4148,7 +4181,7 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
-        public <E extends Exception> Q settParameters(Try.EE.Consumer<? super Q, SQLException, E> paramSetter) throws SQLException, E {
+        public <E extends Exception> Q settParameters(ParametersSetter<? super Q, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
             boolean isOK = false;
@@ -4173,8 +4206,7 @@ public final class JdbcUtil {
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Q settParameters(final T parameter, Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter)
-                throws SQLException, E {
+        public <T, E extends Exception> Q settParameters(final T parameter, BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
             checkArgNotNull(paramSetter, "paramSetter");
 
             boolean isOK = false;
@@ -4200,7 +4232,7 @@ public final class JdbcUtil {
         //         * @throws SQLException
         //         * @throws E
         //         */
-        //        public <E extends Exception> Q setParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super S, SQLException, E> paramSetter)
+        //        public <E extends Exception> Q setParameters(final int startParameterIndex, BiParametersSetter<Integer, ? super S, E> paramSetter)
         //                throws SQLException, E {
         //            checkArgNotNull(paramSetter, "paramSetter");
         //
@@ -4227,7 +4259,7 @@ public final class JdbcUtil {
         //         * @throws SQLException
         //         * @throws E
         //         */
-        //        public <E extends Exception> Q settParameters(final int startParameterIndex, Try.EE.BiConsumer<Integer, ? super Q, SQLException, E> paramSetter)
+        //        public <E extends Exception> Q settParameters(final int startParameterIndex, BiParametersSetter<Integer, ? super Q, E> paramSetter)
         //                throws SQLException, E {
         //            checkArgNotNull(paramSetter, "paramSetter");
         //
@@ -4262,6 +4294,8 @@ public final class JdbcUtil {
          * @see {@link java.sql.Statement#setFetchDirection(int)}
          */
         public Q setFetchDirection(FetchDirection direction) throws SQLException {
+            isFetchDirectionSet = true;
+
             stmt.setFetchDirection(direction.intValue);
 
             return (Q) this;
@@ -4300,7 +4334,7 @@ public final class JdbcUtil {
         public OptionalBoolean queryForBoolean() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalBoolean.of(rs.getBoolean(1)) : OptionalBoolean.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4310,7 +4344,7 @@ public final class JdbcUtil {
         public OptionalChar queryForChar() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     final String str = rs.getString(1);
 
@@ -4326,7 +4360,7 @@ public final class JdbcUtil {
         public OptionalByte queryForByte() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalByte.of(rs.getByte(1)) : OptionalByte.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4336,7 +4370,7 @@ public final class JdbcUtil {
         public OptionalShort queryForShort() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalShort.of(rs.getShort(1)) : OptionalShort.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4346,7 +4380,7 @@ public final class JdbcUtil {
         public OptionalInt queryForInt() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalInt.of(rs.getInt(1)) : OptionalInt.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4356,7 +4390,7 @@ public final class JdbcUtil {
         public OptionalLong queryForLong() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalLong.of(rs.getLong(1)) : OptionalLong.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4366,7 +4400,7 @@ public final class JdbcUtil {
         public OptionalFloat queryForFloat() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalFloat.of(rs.getFloat(1)) : OptionalFloat.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4376,7 +4410,7 @@ public final class JdbcUtil {
         public OptionalDouble queryForDouble() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? OptionalDouble.of(rs.getDouble(1)) : OptionalDouble.empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4386,7 +4420,7 @@ public final class JdbcUtil {
         public Nullable<String> queryForString() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getString(1)) : Nullable.<String> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4396,7 +4430,7 @@ public final class JdbcUtil {
         public Nullable<BigDecimal> queryBigDecimal() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getBigDecimal(1)) : Nullable.<BigDecimal> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4406,7 +4440,7 @@ public final class JdbcUtil {
         public Nullable<java.sql.Date> queryForDate() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getDate(1)) : Nullable.<java.sql.Date> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4416,7 +4450,7 @@ public final class JdbcUtil {
         public Nullable<java.sql.Time> queryForTime() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getTime(1)) : Nullable.<java.sql.Time> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4426,7 +4460,7 @@ public final class JdbcUtil {
         public Nullable<java.sql.Timestamp> queryForTimestamp() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(rs.getTimestamp(1)) : Nullable.<java.sql.Timestamp> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4444,7 +4478,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4462,7 +4496,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Optional.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Optional.<V> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4482,7 +4516,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final Nullable<V> result = rs.next() ? Nullable.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Nullable.<V> empty();
 
                 if (result.isPresent() && rs.next()) {
@@ -4509,7 +4543,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final Optional<V> result = rs.next() ? Optional.of(N.convert(JdbcUtil.getColumnValue(rs, 1), targetClass)) : Optional.<V> empty();
 
                 if (result.isPresent() && rs.next()) {
@@ -4537,7 +4571,7 @@ public final class JdbcUtil {
             checkArgNotNull(resultExtrator, "resultExtrator");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return resultExtrator.apply(rs);
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4548,7 +4582,7 @@ public final class JdbcUtil {
             checkArgNotNull(resultExtrator, "resultExtrator");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return resultExtrator.apply(rs, getColumnLabelList(rs));
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4601,7 +4635,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     final T result = Objects.requireNonNull(get(targetClass, rs));
 
@@ -4630,7 +4664,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     final T result = Objects.requireNonNull(recordGetter.apply(rs));
 
@@ -4660,7 +4694,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     final T result = Objects.requireNonNull(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs)));
 
@@ -4688,7 +4722,7 @@ public final class JdbcUtil {
             checkArgNotNull(targetClass, "targetClass");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(get(targetClass, rs));
                 } else {
@@ -4703,7 +4737,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Optional.of(recordGetter.apply(rs)) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4716,7 +4750,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
                         return Optional.of(recordGetter.apply(rs));
@@ -4733,7 +4767,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next() ? Optional.of(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -4746,7 +4780,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordGetter, "recordGetter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
@@ -4789,7 +4823,7 @@ public final class JdbcUtil {
             checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<T> result = new ArrayList<>();
 
                 while (maxResult > 0 && rs.next()) {
@@ -4825,7 +4859,7 @@ public final class JdbcUtil {
             checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 final List<T> result = new ArrayList<>();
 
@@ -4860,7 +4894,7 @@ public final class JdbcUtil {
                                 ResultSet rs = null;
 
                                 try {
-                                    rs = stmt.executeQuery();
+                                    rs = executeQuery();
                                     final ResultSet resultSet = rs;
 
                                     internalIter = new ExceptionalIterator<T, SQLException>() {
@@ -4954,7 +4988,7 @@ public final class JdbcUtil {
                                 ResultSet rs = null;
 
                                 try {
-                                    rs = stmt.executeQuery();
+                                    rs = executeQuery();
                                     final ResultSet resultSet = rs;
 
                                     internalIter = new ExceptionalIterator<T, SQLException>() {
@@ -5048,7 +5082,7 @@ public final class JdbcUtil {
         public boolean exists() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 return rs.next();
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -5059,7 +5093,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs);
                 }
@@ -5072,7 +5106,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
                 }
@@ -5095,7 +5129,7 @@ public final class JdbcUtil {
             checkArgNotNull(orElseAction, "orElseAction");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs);
                 } else {
@@ -5120,7 +5154,7 @@ public final class JdbcUtil {
             checkArgNotNull(orElseAction, "orElseAction");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
                     recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
                 } else {
@@ -5142,7 +5176,7 @@ public final class JdbcUtil {
         public int count() throws SQLException {
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 int cnt = 0;
 
                 while (rs.next()) {
@@ -5159,7 +5193,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 int cnt = 0;
 
                 while (rs.next()) {
@@ -5178,7 +5212,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
                 int cnt = 0;
 
@@ -5198,7 +5232,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
                         return true;
@@ -5215,7 +5249,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
@@ -5234,7 +5268,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs) == false) {
                         return false;
@@ -5251,7 +5285,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
@@ -5278,7 +5312,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
 
                 while (rs.next()) {
                     recordConsumer.accept(rs);
@@ -5295,7 +5329,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
 
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
@@ -5311,7 +5345,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
@@ -5329,7 +5363,7 @@ public final class JdbcUtil {
             checkArgNotNull(recordConsumer, "recordConsumer");
             assertNotClosed();
 
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
@@ -5341,6 +5375,14 @@ public final class JdbcUtil {
             } finally {
                 closeAfterExecutionIfAllowed();
             }
+        }
+
+        private ResultSet executeQuery() throws SQLException {
+            if (!isFetchDirectionSet) {
+                stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
+            }
+
+            return stmt.executeQuery();
         }
 
         /**
@@ -5454,7 +5496,7 @@ public final class JdbcUtil {
          * @throws E
          */
         public <T, E extends Exception> int batchUpdate(final int batchSize, final Collection<T> batchParameters,
-                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
             return batchUpdate(batchSize, batchParameters == null ? N.<T> emptyIterator() : batchParameters.iterator(), paramSetter);
         }
 
@@ -5469,7 +5511,7 @@ public final class JdbcUtil {
          * @throws E
          */
         public <T, E extends Exception> int batchUpdate(final int batchSize, final Iterator<T> batchParameters,
-                final Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+                final BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
             checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -5510,7 +5552,7 @@ public final class JdbcUtil {
          * @throws E
          */
         public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Collection<T> batchParameters,
-                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
             return batchInsert(batchSize, batchParameters.iterator(), paramSetter);
         }
 
@@ -5525,7 +5567,7 @@ public final class JdbcUtil {
          * @throws E
          */
         public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Iterator<T> batchParameters,
-                Try.EE.BiConsumer<? super Q, ? super T, SQLException, E> paramSetter) throws SQLException, E {
+                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
             checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
             checkArgNotNull(paramSetter, "paramSetter");
 
@@ -6228,8 +6270,7 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
-        public <E extends Exception> Q registerOutParameters(final Try.EE.Consumer<? super CallableStatement, SQLException, E> register)
-                throws SQLException, E {
+        public <E extends Exception> Q registerOutParameters(final ParametersSetter<? super CallableStatement, E> register) throws SQLException, E {
             checkArgNotNull(register, "register");
 
             boolean isOK = false;
@@ -6846,6 +6887,14 @@ public final class JdbcUtil {
         }
     }
 
+    public static interface ParametersSetter<QS, E extends Exception> {
+        void accept(QS preparedQuery) throws SQLException, E;
+    }
+
+    public static interface BiParametersSetter<QS, T, E extends Exception> {
+        void accept(QS preparedQuery, T t) throws SQLException, E;
+    }
+
     public static interface ResultExtractor<T, E extends Exception> {
         public static final ResultExtractor<DataSet, RuntimeException> TO_DATA_SET = new ResultExtractor<DataSet, RuntimeException>() {
             @Override
@@ -6948,7 +6997,8 @@ public final class JdbcUtil {
          * @return
          */
         public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M, RuntimeException> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream, final Supplier<? extends M> supplier) {
+                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7761,6 +7811,680 @@ public final class JdbcUtil {
         };
 
         boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, E;
+    }
+
+    /**
+     * This interface is designed to share/manager SQL queries by Java APIs/methods with static parameter types and return type, while hiding the SQL scripts. 
+     * It's a gift from nature and created by thoughts.
+     * 
+     * <br />
+     * Note: Setting parameters by 'ParametersSetter' or Retrieving result/record by 'ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter' is disabled.
+     * 
+     * <br />
+     * 
+     * @implSpec
+     * 
+     * <li>The SQL operations/methods should be annotated with SQL scripts by {@code @Select/@Insert/@Update/@Delete/@NamedSelect/@NamedInsert/@NamedUpdate/@NamedDelete}.</li>
+     * 
+     * <li>The Order of the parameters in the method should be consistent with parameter order in SQL scripts.</li>
+     * 
+     * <li>SQL parameters can be set through input method parameters(by multiple parameters or a {@code Collection}), or by {@code JdbcUtil.ParametersSetter<PreparedQuery/PreparedCallabeQuery...>}.</li>
+     * 
+     * <li>{@code ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter} can be specified by the last parameter of the method.</li>
+     * 
+     * <li>The return type of the method must be same as the return type of {@code ResultExtractor/BiResultExtractor} if it's specified by the last parameter of the method.</li>
+     * 
+     * <li>The return type of update/delete operations only can int/Integer/long/Long/boolean/Boolean/void. If it's long/Long, {@code PreparedQuery#largeUpdate()} will be called, 
+     * otherwise, {@code PreparedQuery#update()} will be called.</li>
+     * 
+     * <li>Remember declaring {@code throws SQLException} in the method.</li>
+     * <br />
+     * <li>Which underline {@code PreparedQuery/PreparedCallableQuery} method to call for SQL methods/operations annotated with {@code @Select/@NamedSelect}: 
+     * <ul>
+     *   <li>If {@code ResultExtractor/BiResultExtractor} is specified by the last parameter of the method, {@code PreparedQuery#query(ResultExtractor/BiResultExtractor)} will be called.</li>
+     *   <li>Or else if {@code RecordGetter/BiRecordGetter} is specified by the last parameter of the method:</li>
+     *      <ul>
+     *          <li>If the return type of the method is {@code List} and one of below conditions is matched, {@code PreparedQuery#list(RecordGetter/BiRecordGetter)} will be called:</li>
+     *          <ul>
+     *              <li>The return type of the method is raw {@code List} without parameterized type, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}.</li>
+     *          </ul>
+     *          <ul>
+     *              <li>The last parameter type is raw {@code RecordGetter/BiRecordGetter} without parameterized type, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}.</li>
+     *          </ul>
+     *          <ul>
+     *              <li>The return type of the method is generic {@code List} with parameterized type and The last parameter type is generic {@code RecordGetter/BiRecordGetter} with parameterized types, but They're not same.</li>
+     *          </ul>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code ExceptionalStream/Stream}, {@code PreparedQuery#stream(RecordGetter/BiRecordGetter)} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code Optional}, {@code PreparedQuery#findFirst(RecordGetter/BiRecordGetter)} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else, {@code PreparedQuery#findFirst(RecordGetter/BiRecordGetter).orNull()} will be called.</li>
+     *      </ul>
+     *   <li>Or else:</li>
+     *      <ul>
+     *          <li>If the return type of the method is {@code DataSet}, {@code PreparedQuery#query()} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code ExceptionalStream/Stream}, {@code PreparedQuery#stream(Class)} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code Map} or {@code Entity} class with {@code getter/setter} methods, {@code PreparedQuery#findFirst(Class).orNull()} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code Optional}:</li>
+     *          <ul>
+     *              <li>If the value type of {@code Optional} is {@code Map}, or {@code Entity} class with {@code getter/setter} methods, or {@code List}, or {@code Object[]}, {@code PreparedQuery#findFirst(Class)} will be called.</li>
+     *          </ul>
+     *          <ul>
+     *              <li>Or else, {@code PreparedQuery#queryForSingleNonNull(Class)} will be called.</li>
+     *          </ul>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code Nullable}:</li>
+     *          <ul>
+     *              <li>If the value type of {@code Nullable} is {@code Map}, or {@code Entity} class with {@code getter/setter} methods, or {@code List}, or {@code Object[]}, {@code PreparedQuery#findFirst(Class)} will be called.</li>
+     *          </ul>
+     *          <ul>
+     *              <li>Or else, {@code PreparedQuery#queryForSingleResult(Class)} will be called.</li>
+     *          </ul>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code OptionalBoolean/Byte/.../Double}, {@code PreparedQuery#queryForBoolean/Byte/...Double()} will called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else if the return type of the method is {@code List}, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}, {@code PreparedQuery#list(Class)} will be called.</li>
+     *      </ul>
+     *      <ul>
+     *          <li>Or else, {@code PreparedQuery#queryForSingleResult(Class).orNull()} will be called.</li>
+     *      </ul>
+     * </ul>
+     * 
+     * @author Haiyang Li
+     * 
+     * @see PreparedQuery#setParameters(int, Collection)
+     * @see PreparedQuery#settParameters(ParametersSetter)
+     * @see PreparedQuery#queryForBoolean()
+     * @see PreparedQuery#queryForChar()
+     * @see PreparedQuery#queryForByte()
+     * @see PreparedQuery#queryForShort()
+     * @see PreparedQuery#queryForInt()
+     * @see PreparedQuery#queryForLong()
+     * @see PreparedQuery#queryForFloat()
+     * @see PreparedQuery#queryForDouble() 
+     * @see PreparedQuery#queryForSingleResult(Class)
+     * @see PreparedQuery#queryForSingleNonNull(Class)
+     * @see PreparedQuery#findFirst(Class)
+     * @see PreparedQuery#findFirst(RecordGetter)
+     * @see PreparedQuery#findFirst(BiRecordGetter)
+     * @see PreparedQuery#list(Class)
+     * @see PreparedQuery#list(RecordGetter)
+     * @see PreparedQuery#list(BiRecordGetter)
+     * @see PreparedQuery#query()
+     * @see PreparedQuery#query(ResultExtractor)
+     * @see PreparedQuery#query(BiResultExtractor)
+     * @see PreparedQuery#stream(Class)
+     * @see PreparedQuery#stream(RecordGetter)
+     * @see PreparedQuery#stream(BiRecordGetter)
+     * 
+     * @since 1.8
+     */
+    public static interface Dao {
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface Select {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface Insert {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface Update {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface Delete {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface NamedSelect {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface NamedInsert {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface NamedUpdate {
+            String[] value();
+        }
+
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.METHOD)
+        public static @interface NamedDelete {
+            String[] value();
+        }
+
+        public javax.sql.DataSource dataSource();
+
+        default PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String query) throws SQLException {
+            return JdbcUtil.prepareQuery(ds, query);
+        }
+
+        default PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String query, final boolean autoGeneratedKeys) throws SQLException {
+            return JdbcUtil.prepareQuery(ds, query, autoGeneratedKeys);
+        }
+
+        default PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String query) throws SQLException {
+            return JdbcUtil.prepareCallableQuery(ds, query);
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <R extends Dao> R newInstance(final Class<R> mapperInterface, final javax.sql.DataSource dataSource) {
+            N.checkArgNotNull(mapperInterface, "mapperInterface");
+            N.checkArgNotNull(dataSource, "dataSource");
+
+            Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception> proxyInvoker = JdbcUtil.proxyInvokerMap.get(mapperInterface);
+
+            if (proxyInvoker == null) {
+                final Map<Method, Try.TriFunction<Dao, Object[], javax.sql.DataSource, ?, Exception>> methodInvokerMap = new HashMap<>();
+                final List<Method> sqlMethods = StreamEx.of(ClassUtil.getAllInterfaces(mapperInterface))
+                        .append(mapperInterface)
+                        .distinct()
+                        .flatMapp(clazz -> clazz.getDeclaredMethods())
+                        .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                        .toList();
+
+                for (Method m : sqlMethods) {
+                    final Annotation sqlAnno = StreamEx.of(m.getAnnotations())
+                            .filter(anno -> JdbcUtil.sqlAnnoMap.containsKey(anno.annotationType()))
+                            .first()
+                            .orNull();
+
+                    final Class<?>[] paramTypes = m.getParameterTypes();
+                    final Class<?> returnType = m.getReturnType();
+                    final int paramLen = paramTypes.length;
+
+                    Try.TriFunction<Dao, Object[], javax.sql.DataSource, ?, Exception> call = null;
+
+                    if (sqlAnno == null) {
+                        if (Modifier.isAbstract(m.getModifiers())) {
+                            if (m.getName().equals("dataSource") && javax.sql.DataSource.class.isAssignableFrom(returnType) && paramLen == 0) {
+                                call = (proxy, args, ds) -> ds;
+                            } else {
+                                call = (proxy, args, ds) -> {
+                                    throw new UnsupportedOperationException("Can't call abstract method: " + m.getName());
+                                };
+                            }
+                        } else {
+                            final MethodHandle methodHandle = createMethodHandle(m);
+
+                            call = (proxy, args, ds) -> {
+                                try {
+                                    return methodHandle.bindTo(proxy).invokeWithArguments(args);
+                                } catch (Throwable e) {
+                                    throw new Exception(e);
+                                }
+                            };
+                        }
+                    } else {
+                        final Class<?> lastParamType = paramLen == 0 ? null : paramTypes[paramLen - 1];
+                        final String query = JdbcUtil.sqlAnnoMap.get(sqlAnno.annotationType()).apply(sqlAnno);
+                        final boolean isNamedQuery = sqlAnno.annotationType().getSimpleName().startsWith("Named");
+                        final boolean returnGeneratedKeys = (sqlAnno.annotationType().equals(Dao.Insert.class)
+                                || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) && !returnType.equals(void.class);
+
+                        if (paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                            throw new UnsupportedOperationException(
+                                    "Setting parameters by 'ParametersSetter' is disabled. Can't use it in method: " + m.getName());
+                        }
+
+                        if (paramLen > 0 && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
+                                || RecordGetter.class.isAssignableFrom(lastParamType) || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
+                            throw new UnsupportedOperationException(
+                                    "Retrieving result/record by 'ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter' is disabled. Can't use it in method: "
+                                            + m.getName());
+                        }
+
+                        if (java.util.Optional.class.isAssignableFrom(returnType) || java.util.OptionalInt.class.isAssignableFrom(returnType)
+                                || java.util.OptionalLong.class.isAssignableFrom(returnType) || java.util.OptionalDouble.class.isAssignableFrom(returnType)) {
+                            throw new UnsupportedOperationException("the return type of the method: " + m.getName() + " can't be: " + returnType);
+                        }
+
+                        if (StreamEx.of(m.getExceptionTypes()).noneMatch(e -> SQLException.class.equals(e))) {
+                            throw new UnsupportedOperationException("'throws SQLException' is not declared in method: " + m.getName());
+                        }
+
+                        if (isNamedQuery && returnGeneratedKeys) {
+                            throw new UnsupportedOperationException(
+                                    "Named SQL query is not supported when the return type of insertion method: " + m.getName() + " is not 'void'");
+                        }
+
+                        if (sqlAnno.annotationType().equals(Dao.Select.class) || sqlAnno.annotationType().equals(Dao.NamedSelect.class)) {
+                            Try.BiFunction<AbstractPreparedQuery, Object[], R, Exception> queryFunc = createQueryFunctionByMethod(m);
+
+                            if (paramLen == 0) {
+                                call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys), args);
+                            } else if (paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                                call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                        .settParameters((JdbcUtil.ParametersSetter) args[0]), args);
+                            } else if (paramLen > 0 && Collection.class.isAssignableFrom(paramTypes[0])) {
+                                call = (proxy, args, ds) -> queryFunc.apply(
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).setParameters(1, (Collection) args[0]),
+                                        args);
+                            } else if (paramLen > 0
+                                    && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
+                                            || RecordGetter.class.isAssignableFrom(lastParamType) || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
+                                if (paramLen == 1) {
+                                    call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys),
+                                            args);
+                                } else {
+                                    call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(N.copyOfRange(args, 0, paramLen - 1))), args);
+                                }
+                            } else {
+                                call = (proxy, args, ds) -> queryFunc.apply(
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).setParameters(1, Array.asList(args)), args);
+                            }
+                        } else if (sqlAnno.annotationType().equals(Dao.Insert.class) || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) {
+                            if (paramLen == 0) {
+                                if (void.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).update();
+                                        return null;
+                                    };
+                                } else if (Optional.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).insert();
+                                } else {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).insert().orNull();
+                                }
+                            } else if (paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                                if (void.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                                .update();
+                                        return null;
+                                    };
+                                } else if (Optional.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                            .insert();
+                                } else {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                            .insert()
+                                            .orNull();
+                                }
+                            } else if (paramLen > 0 && Collection.class.isAssignableFrom(paramTypes[0])) {
+                                if (void.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .setParameters(1, (Collection) args[0])
+                                                .update();
+                                        return null;
+                                    };
+                                } else if (Optional.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, (Collection) args[0])
+                                            .insert();
+                                } else {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, (Collection) args[0])
+                                            .insert()
+                                            .orNull();
+                                }
+                            } else {
+                                if (void.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .setParameters(1, Array.asList(args))
+                                                .update();
+                                        return null;
+                                    };
+                                } else if (Optional.class.equals(returnType)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(args))
+                                            .insert();
+                                } else {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(args))
+                                            .insert()
+                                            .orNull();
+                                }
+                            }
+                        } else if (sqlAnno.annotationType().equals(Dao.Update.class) || sqlAnno.annotationType().equals(Dao.Delete.class)
+                                || sqlAnno.annotationType().equals(Dao.NamedUpdate.class) || sqlAnno.annotationType().equals(Dao.NamedDelete.class)) {
+                            if (!(returnType.equals(int.class) || returnType.equals(Integer.class) || returnType.equals(long.class)
+                                    || returnType.equals(Long.class) || returnType.equals(boolean.class) || returnType.equals(Boolean.class)
+                                    || returnType.equals(void.class))) {
+                                throw new UnsupportedOperationException(
+                                        "The return type of update/delete operations can only be: int/Integer/long/Long/boolean/Boolean/void, can't be: "
+                                                + returnType);
+                            }
+
+                            if (paramLen == 0) {
+                                if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).update();
+                                } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).update() > 0;
+                                } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).largeUpate();
+                                } else {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys).update();
+                                        return null;
+                                    };
+                                }
+                            } else if (paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                                if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                            .update();
+                                } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                            .update() > 0;
+                                } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                            .largeUpate();
+                                } else {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .settParameters((JdbcUtil.ParametersSetter) args[0])
+                                                .update();
+                                        return null;
+                                    };
+                                }
+                            } else if (paramLen > 0 && Collection.class.isAssignableFrom(paramTypes[0])) {
+                                if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, (Collection) args[0])
+                                            .update();
+                                } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, (Collection) args[0])
+                                            .update() > 0;
+                                } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, (Collection) args[0])
+                                            .largeUpate();
+                                } else {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .setParameters(1, (Collection) args[0])
+                                                .update();
+                                        return null;
+                                    };
+                                }
+                            } else {
+                                if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(args))
+                                            .update();
+                                } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(args))
+                                            .update() > 0;
+                                } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
+                                    call = (proxy, args, ds) -> JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                            .setParameters(1, Array.asList(args))
+                                            .largeUpate();
+                                } else {
+                                    call = (proxy, args, ds) -> {
+                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys)
+                                                .setParameters(1, Array.asList(args))
+                                                .update();
+                                        return null;
+                                    };
+                                }
+                            }
+                        } else {
+                            throw new UnsupportedOperationException("Unsupported sql annotation: " + sqlAnno.annotationType());
+                        }
+                    }
+
+                    methodInvokerMap.put(m, call);
+                }
+
+                proxyInvoker = (proxy, method, args, ds) -> methodInvokerMap.get(method).apply(proxy, args, ds);
+
+                JdbcUtil.proxyInvokerMap.put(mapperInterface, proxyInvoker);
+            }
+
+            final Class<R>[] interfaceClasses = N.asArray(mapperInterface);
+            final Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception> tmp = proxyInvoker;
+
+            final InvocationHandler h = (proxy, method, args) -> {
+                if (!("prepareQuery".equals(method.getName()) || "prepareCallableQuery".equals(method.getName()))) {
+                    logger.debug("Invoking SQL method: {} with args: {}", method.getName(), args);
+                }
+
+                return tmp.apply((Dao) proxy, method, args, dataSource);
+            };
+
+            return (R) N.newProxyInstance(interfaceClasses, h);
+        }
+    }
+
+    private static final Map<Class<?>, Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception>> proxyInvokerMap = new ConcurrentHashMap<>();
+
+    private static final Map<Class<? extends Annotation>, Function<Annotation, String>> sqlAnnoMap = new HashMap<>();
+    static {
+        sqlAnnoMap.put(Dao.Select.class, (Annotation anno) -> ((Dao.Select) anno).value()[0]);
+        sqlAnnoMap.put(Dao.Insert.class, (Annotation anno) -> ((Dao.Insert) anno).value()[0]);
+        sqlAnnoMap.put(Dao.Update.class, (Annotation anno) -> ((Dao.Update) anno).value()[0]);
+        sqlAnnoMap.put(Dao.Delete.class, (Annotation anno) -> ((Dao.Delete) anno).value()[0]);
+        sqlAnnoMap.put(Dao.NamedSelect.class, (Annotation anno) -> ((Dao.NamedSelect) anno).value()[0]);
+        sqlAnnoMap.put(Dao.NamedInsert.class, (Annotation anno) -> ((Dao.NamedInsert) anno).value()[0]);
+        sqlAnnoMap.put(Dao.NamedUpdate.class, (Annotation anno) -> ((Dao.NamedUpdate) anno).value()[0]);
+        sqlAnnoMap.put(Dao.NamedDelete.class, (Annotation anno) -> ((Dao.NamedDelete) anno).value()[0]);
+    }
+
+    static MethodHandle createMethodHandle(final Method method) {
+        final Class<?> declaringClass = method.getDeclaringClass();
+
+        try {
+            return MethodHandles.lookup().in(declaringClass).unreflectSpecial(method, declaringClass);
+        } catch (Exception e) {
+            try {
+                final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
+                constructor.setAccessible(true);
+
+                return constructor.newInstance(declaringClass).in(declaringClass).unreflectSpecial(method, declaringClass);
+            } catch (Exception ex) {
+                try {
+                    return MethodHandles.lookup().findSpecial(declaringClass, method.getName(),
+                            MethodType.methodType(method.getReturnType(), method.getParameterTypes()), declaringClass);
+                } catch (Exception exx) {
+                    throw new UnsupportedOperationException(exx);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <R> BiFunction<AbstractPreparedQuery, Object[], R, Exception> createQueryFunctionByMethod(final Method method) {
+        final Class<?>[] paramTypes = method.getParameterTypes();
+        final Class<?> returnType = method.getReturnType();
+        final int paramLen = paramTypes.length;
+        final Class<?> lastParamType = paramLen == 0 ? null : paramTypes[paramLen - 1];
+        final boolean isListQuery = isListQuery(method);
+
+        if (paramLen > 0 && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
+                || RecordGetter.class.isAssignableFrom(lastParamType) || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
+            if (RecordGetter.class.isAssignableFrom(lastParamType)) {
+                if (isListQuery) {
+                    return (preparedQuery, args) -> (R) preparedQuery.list((RecordGetter) args[paramLen - 1]);
+                } else if (Optional.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RecordGetter) args[paramLen - 1]);
+                } else if (ExceptionalStream.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((RecordGetter) args[paramLen - 1]);
+                } else if (Stream.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((RecordGetter) args[paramLen - 1]).unchecked();
+                } else {
+                    if (Nullable.class.isAssignableFrom(returnType)) {
+                        throw new UnsupportedOperationException("The return type of method: " + method.getName() + " can't be: " + returnType
+                                + " when RecordGetter/BiRecordGetter is specified");
+                    }
+
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RecordGetter) args[paramLen - 1]).orNull();
+                }
+            } else if (BiRecordGetter.class.isAssignableFrom(lastParamType)) {
+                if (isListQuery) {
+                    return (preparedQuery, args) -> (R) preparedQuery.list((BiRecordGetter) args[paramLen - 1]);
+                } else if (Optional.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRecordGetter) args[paramLen - 1]);
+                } else if (ExceptionalStream.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRecordGetter) args[paramLen - 1]);
+                } else if (Stream.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRecordGetter) args[paramLen - 1]).unchecked();
+                } else {
+                    if (Nullable.class.isAssignableFrom(returnType)) {
+                        throw new UnsupportedOperationException("The return type of method: " + method.getName() + " can't be: " + returnType
+                                + " when RecordGetter/BiRecordGetter is specified");
+                    }
+
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRecordGetter) args[paramLen - 1]).orNull();
+                }
+            } else {
+                if (method.getGenericParameterTypes()[paramLen - 1] instanceof ParameterizedType) {
+                    final java.lang.reflect.Type resultExtractorReturnType = ((ParameterizedType) method.getGenericParameterTypes()[paramLen - 1])
+                            .getActualTypeArguments()[0];
+                    final Class<?> resultExtractorReturnClass = resultExtractorReturnType instanceof Class ? (Class<?>) resultExtractorReturnType
+                            : (Class<?>) ((ParameterizedType) resultExtractorReturnType).getRawType();
+
+                    if (returnType.isAssignableFrom(resultExtractorReturnClass)) {
+                        throw new UnsupportedOperationException("The return type: " + returnType + " of method: " + method.getName()
+                                + " is not assignable from the return type of ResultExtractor: " + resultExtractorReturnClass);
+                    }
+                }
+
+                if (ResultExtractor.class.isAssignableFrom(lastParamType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.query((ResultExtractor) args[paramLen - 1]);
+                } else {
+                    return (preparedQuery, args) -> (R) preparedQuery.query((BiResultExtractor) args[paramLen - 1]);
+                }
+            }
+        } else if (DataSet.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.query();
+        } else if (N.isEntity(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(returnType)).orNull();
+        } else if (Map.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(returnType)).orNull();
+        } else if (isListQuery) {
+            final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
+            final Class<?> eleType = parameterizedReturnType.getActualTypeArguments()[0] instanceof Class
+                    ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
+                    : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
+
+            return (preparedQuery, args) -> (R) preparedQuery.list(BiRecordGetter.to(eleType));
+        } else if (Optional.class.isAssignableFrom(returnType) || Nullable.class.isAssignableFrom(returnType)) {
+            final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
+
+            final Class<?> eleType = parameterizedReturnType.getActualTypeArguments()[0] instanceof Class
+                    ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
+                    : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
+
+            if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
+                    || Object[].class.isAssignableFrom(eleType)) {
+                if (Nullable.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) Nullable.from(preparedQuery.findFirst(BiRecordGetter.to(eleType)));
+                } else {
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(eleType));
+                }
+            } else {
+                if (Nullable.class.isAssignableFrom(returnType)) {
+                    return (preparedQuery, args) -> (R) preparedQuery.queryForSingleResult(eleType);
+                } else {
+                    return (preparedQuery, args) -> (R) preparedQuery.queryForSingleNonNull(eleType);
+                }
+            }
+        } else if (OptionalBoolean.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForBoolean();
+        } else if (OptionalChar.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForChar();
+        } else if (OptionalByte.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForByte();
+        } else if (OptionalShort.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForShort();
+        } else if (OptionalInt.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForInt();
+        } else if (OptionalLong.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForLong();
+        } else if (OptionalFloat.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForFloat();
+        } else if (OptionalDouble.class.isAssignableFrom(returnType)) {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForDouble();
+        } else if (ExceptionalStream.class.isAssignableFrom(returnType) || Stream.class.isAssignableFrom(returnType)) {
+            final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
+
+            final Class<?> eleType = parameterizedReturnType.getActualTypeArguments()[0] instanceof Class
+                    ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
+                    : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
+
+            if (ExceptionalStream.class.isAssignableFrom(returnType)) {
+                return (preparedQuery, args) -> (R) preparedQuery.stream(BiRecordGetter.to(eleType));
+            } else {
+                return (preparedQuery, args) -> (R) preparedQuery.stream(BiRecordGetter.to(eleType)).unchecked();
+            }
+        } else {
+            return (preparedQuery, args) -> (R) preparedQuery.queryForSingleResult(returnType).orNull();
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    static AbstractPreparedQuery prepareQuery(final Dao proxy, final javax.sql.DataSource ds, final String query, final boolean isNamedQuery,
+            final boolean returnGeneratedKeys) throws SQLException {
+        if (returnGeneratedKeys) {
+            return proxy.prepareQuery(ds, query, returnGeneratedKeys);
+        } else {
+            return isNamedQuery ? proxy.prepareCallableQuery(ds, query) : proxy.prepareQuery(ds, query);
+        }
+    }
+
+    static boolean isListQuery(final Method method) {
+        final Class<?>[] paramTypes = method.getParameterTypes();
+        final Class<?> returnType = method.getReturnType();
+        final int paramLen = paramTypes.length;
+
+        if (List.class.isAssignableFrom(returnType)) {
+
+            // Check if return type is generic List type. 
+            if (method.getGenericReturnType() instanceof ParameterizedType) {
+                final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
+
+                if (paramLen > 0
+                        && (RecordGetter.class.isAssignableFrom(paramTypes[paramLen - 1]) || BiRecordGetter.class.isAssignableFrom(paramTypes[paramLen - 1]))
+                        && method.getGenericParameterTypes()[paramLen - 1] instanceof ParameterizedType) {
+
+                    // if the return type of the method is same as the return type of RecordGetter/BiRecordGetter parameter, return false;
+                    return !parameterizedReturnType.equals(((ParameterizedType) method.getGenericParameterTypes()[paramLen - 1]).getActualTypeArguments()[0]);
+                }
+            }
+
+            return !(method.getName().startsWith("get") || method.getName().startsWith("findFirst") || method.getName().startsWith("findOne"));
+        } else {
+            return false;
+        }
     }
 
     static class SimpleDataSource implements DataSource {

@@ -77,12 +77,18 @@ public class OkHttpRequest {
         });
     }
 
+    static final OkHttpClient defaultClient = new OkHttpClient();
+
     final OkHttpClient httpClient;
     final Request.Builder builder = new Request.Builder();
     RequestBody body;
 
     OkHttpRequest(OkHttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    public static OkHttpRequest create() {
+        return new OkHttpRequest(defaultClient);
     }
 
     public static OkHttpRequest create(OkHttpClient httpClient) {

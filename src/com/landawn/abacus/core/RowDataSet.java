@@ -7534,6 +7534,11 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
+    public Stream<String> columnNames() {
+        return Stream.of(_columnNameList);
+    }
+
+    @Override
     public Stream<ImmutableList<Object>> columns() {
         return IntStream.range(0, this._columnNameList.size()).mapToObj(new IntFunction<ImmutableList<Object>>() {
             @Override

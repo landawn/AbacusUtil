@@ -3116,6 +3116,8 @@ public interface DataSet {
      */
     Properties<String, Object> properties();
 
+    Stream<String> columnNames();
+
     Stream<ImmutableList<Object>> columns();
 
     /**

@@ -685,120 +685,11 @@ public final class f {
     }
 
     public static <T> String println(final T[][] a) {
-        if (a == null) {
-            return N.println("null");
-        } else if (a.length == 0) {
-            return N.println("[]");
-        } else {
-            final int len = a.length;
-            final StringBuilder sb = Objectory.createStringBuilder();
-            String str = null;
-
-            try {
-                sb.append('[');
-
-                for (int i = 0; i < len; i++) {
-                    if (i > 0) {
-                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(' ');
-                    }
-
-                    if (a[i] == null) {
-                        sb.append("null");
-                    } else if (a[i].length == 0) {
-                        sb.append("[]");
-                    } else {
-                        final T[] ai = a[i];
-                        sb.append('[');
-
-                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
-                            if (j > 0) {
-                                sb.append(", ");
-                            }
-
-                            sb.append(ai[j]);
-                        }
-
-                        sb.append(']');
-                    }
-                }
-
-                sb.append(']');
-                str = sb.toString();
-            } finally {
-                Objectory.recycle(sb);
-            }
-
-            N.println(str);
-
-            return str;
-        }
+        return ff.println(a);
     }
 
     public static <T> String println(final T[][][] a) {
-        if (a == null) {
-            return N.println("null");
-        } else if (a.length == 0) {
-            return N.println("[]");
-        } else {
-            final int len = a.length;
-            final StringBuilder sb = Objectory.createStringBuilder();
-            String str = null;
-
-            try {
-                sb.append('[');
-
-                for (int i = 0; i < len; i++) {
-                    if (i > 0) {
-                        sb.append(',').append(IOUtil.LINE_SEPARATOR).append(ARRAY_PRINT_SEPERATOR).append(' ');
-                    }
-
-                    if (a[i] == null) {
-                        sb.append("null");
-                    } else if (a[i].length == 0) {
-                        sb.append("[]");
-                    } else {
-                        final T[][] ai = a[i];
-                        sb.append('[');
-
-                        for (int j = 0, aiLen = ai.length; j < aiLen; j++) {
-                            if (j > 0) {
-                                sb.append(',').append(IOUtil.LINE_SEPARATOR).append("  ");
-                            }
-
-                            if (ai[j] == null) {
-                                sb.append("null");
-                            } else if (ai[j].length == 0) {
-                                sb.append("[]");
-                            } else {
-                                final T[] aij = ai[j];
-                                sb.append('[');
-
-                                for (int k = 0, aijLen = aij.length; k < aijLen; k++) {
-                                    if (k > 0) {
-                                        sb.append(", ");
-                                    }
-
-                                    sb.append(aij[k]);
-                                }
-
-                                sb.append(']');
-                            }
-                        }
-
-                        sb.append(']');
-                    }
-                }
-
-                sb.append(']');
-                str = sb.toString();
-            } finally {
-                Objectory.recycle(sb);
-            }
-
-            N.println(str);
-
-            return str;
-        }
+        return fff.println(a);
     }
 
     public static final class ff {
@@ -1236,7 +1127,7 @@ public final class f {
             return maxLen;
         }
 
-        public static <T> String println(final T[][] a) {
+        static <T> String println(final T[][] a) {
             if (a == null) {
                 return N.println("null");
             } else if (a.length == 0) {
@@ -1400,8 +1291,8 @@ public final class f {
             for (T[][] e : a) {
                 if (N.notNullOrEmpty(e)) {
                     for (T[] ee : e) {
-                        if (N.notNullOrEmpty(e)) {
-                            N.copy(tmp, idx, ee, 0, e.length);
+                        if (N.notNullOrEmpty(ee)) {
+                            N.copy(tmp, idx, ee, 0, ee.length);
                             idx += ee.length;
                         }
                     }
@@ -1647,7 +1538,7 @@ public final class f {
             return result;
         }
 
-        public static <T> String println(final T[][][] a) {
+        static <T> String println(final T[][][] a) {
             if (a == null) {
                 return N.println("null");
             } else if (a.length == 0) {
@@ -1944,8 +1835,8 @@ public final class f {
         for (boolean[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (boolean[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -2720,8 +2611,8 @@ public final class f {
         for (char[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (char[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -3453,8 +3344,8 @@ public final class f {
         for (byte[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (byte[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -5519,8 +5410,8 @@ public final class f {
         for (short[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (short[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -7550,8 +7441,8 @@ public final class f {
         for (int[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (int[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -9570,8 +9461,8 @@ public final class f {
         for (long[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (long[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -11596,8 +11487,8 @@ public final class f {
         for (float[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (float[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }
@@ -13627,8 +13518,8 @@ public final class f {
         for (double[][] e : a) {
             if (N.notNullOrEmpty(e)) {
                 for (double[] ee : e) {
-                    if (N.notNullOrEmpty(e)) {
-                        N.copy(tmp, idx, ee, 0, e.length);
+                    if (N.notNullOrEmpty(ee)) {
+                        N.copy(tmp, idx, ee, 0, ee.length);
                         idx += ee.length;
                     }
                 }

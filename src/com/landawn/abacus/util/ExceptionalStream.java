@@ -2997,7 +2997,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         return func.apply(collect(collector));
     }
 
-    Stream<T> unchecked() {
+    public Stream<T> unchecked() {
         if (N.isNullOrEmpty(this.closeHandlers)) {
             return Stream.of(new ObjIteratorEx<T>() {
                 @Override
@@ -3088,10 +3088,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 }
             });
         }
-    }
-
-    public Stream<T> __() {
-        return unchecked();
     }
 
     //    public <E2 extends Exception> ExceptionalStream<T, E2> __(final Class<E2> targetExceptionType) {

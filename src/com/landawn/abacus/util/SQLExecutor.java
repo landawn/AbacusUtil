@@ -2602,6 +2602,8 @@ public class SQLExecutor implements Closeable {
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
 
+            stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
+
             rs = stmt.executeQuery();
 
             result = resultExtractor.extractData(targetClass, namedSQL, rs, jdbcSettings);
