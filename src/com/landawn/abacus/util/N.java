@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.sql.SQLException;
@@ -27988,17 +27989,58 @@ public final class N {
         });
     }
 
+    private static final Map<Class<? extends Throwable>, Function<Throwable, RuntimeException>> toRuntimeExceptionFuncMap = new HashMap<>();
+    static {
+        toRuntimeExceptionFuncMap.put(RuntimeException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return (RuntimeException) e;
+            }
+        });
+
+        toRuntimeExceptionFuncMap.put(IOException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return new UncheckedIOException((IOException) e);
+            }
+        });
+
+        toRuntimeExceptionFuncMap.put(SQLException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return new UncheckedSQLException((SQLException) e);
+            }
+        });
+
+        toRuntimeExceptionFuncMap.put(ExecutionException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return e.getCause() == null ? new UncheckedException(e) : toRuntimeException(e.getCause());
+            }
+        });
+
+        toRuntimeExceptionFuncMap.put(InvocationTargetException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return e.getCause() == null ? new UncheckedException(e) : toRuntimeException(e.getCause());
+            }
+        });
+
+        toRuntimeExceptionFuncMap.put(UndeclaredThrowableException.class, new Function<Throwable, RuntimeException>() {
+            @Override
+            public RuntimeException apply(Throwable e) {
+                return e.getCause() == null ? new UncheckedException(e) : toRuntimeException(e.getCause());
+            }
+        });
+    }
+
     public static RuntimeException toRuntimeException(Throwable e) {
-        if (e instanceof RuntimeException) {
-            return (RuntimeException) e;
-        } else if (e instanceof ExecutionException || e instanceof InvocationTargetException) {
-            return e.getCause() == null ? new UncheckedException(e) : toRuntimeException(e.getCause());
-        } else if (e instanceof IOException) {
-            return new UncheckedIOException((IOException) e);
-        } else if (e instanceof SQLException) {
-            return new UncheckedSQLException((SQLException) e);
+        final Function<Throwable, RuntimeException> func = toRuntimeExceptionFuncMap.get(e.getClass());
+
+        if (func == null) {
+            return e instanceof RuntimeException ? (RuntimeException) e : new UncheckedException(e);
         } else {
-            return new UncheckedException(e);
+            return func.apply(e);
         }
     }
 

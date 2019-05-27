@@ -252,7 +252,6 @@ public final class MongoDB {
             } else {
                 return N.newDataSet(selectPropNames, rowList);
             }
-
         } else {
             return N.newEmptyDataSet();
         }
@@ -271,7 +270,7 @@ public final class MongoDB {
         final Optional<Object> first = N.firstNonNull(rowList);
 
         if (first.isPresent()) {
-            if (targetClass.isAssignableFrom(first.getClass())) {
+            if (targetClass.isAssignableFrom(first.get().getClass())) {
                 return (List<T>) rowList;
             } else {
                 final List<Object> resultList = new ArrayList<>(rowList.size());
@@ -290,9 +289,9 @@ public final class MongoDB {
                             resultList.add(N.copy(targetClass, row));
                         }
                     }
-                } else if (first.get() instanceof Map && ((Map<String, Object>) first.get()).size() == 1) {
+                } else if (first.get() instanceof Map && ((Map<String, Object>) first.get()).size() <= 2) {
                     final Map<String, Object> m = (Map<String, Object>) first.get();
-                    final String propName = m.keySet().iterator().next();
+                    final String propName = Iterables.findFirst(m.keySet(), Fn.notEqual(_ID)).orElse(_ID);
 
                     if (m.get(propName) != null && targetClass.isAssignableFrom(m.get(propName).getClass())) {
                         for (Object row : rowList) {
@@ -307,6 +306,7 @@ public final class MongoDB {
                     throw new IllegalArgumentException(
                             "Can't covert document: " + first.toString() + " to class: " + ClassUtil.getCanonicalClassName(targetClass));
                 }
+
                 return (List<T>) resultList;
             }
         } else {
@@ -317,7 +317,7 @@ public final class MongoDB {
     /**
      * The id in the specified <code>doc</code> will be set to the returned object if and only if the id is not null or empty and it's acceptable to the <code>targetClass</code>.
      * 
-     * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
+     * @param targetClass an entity class with getter/setter method, or <code>Map.class</code>.
      * @param doc
      * @return
      */
@@ -334,50 +334,74 @@ public final class MongoDB {
                 map.putAll(doc);
                 return (T) map;
             }
-        }
+        } else if (N.isEntity(targetClass)) {
+            final Method idSetMethod = getObjectIdSetMethod(targetClass);
+            final Class<?> parameterType = idSetMethod == null ? null : idSetMethod.getParameterTypes()[0];
+            final Object objectId = doc.get(_ID);
+            T entity = null;
 
-        final Method idSetMethod = getObjectIdSetMethod(targetClass);
-        final Class<?> parameterType = idSetMethod == null ? null : idSetMethod.getParameterTypes()[0];
-        final Object objectId = doc.getObjectId(_ID);
-        T entity = null;
+            doc.remove(_ID);
 
-        doc.remove(_ID);
+            try {
+                entity = Maps.map2Entity(targetClass, doc);
 
-        try {
-            entity = Maps.map2Entity(targetClass, doc);
-
-            if (objectId != null && parameterType != null) {
-                if (parameterType.isAssignableFrom(objectId.getClass())) {
-                    ClassUtil.setPropValue(entity, idSetMethod, objectId);
-                } else if (parameterType.isAssignableFrom(String.class)) {
-                    ClassUtil.setPropValue(entity, idSetMethod, objectId.toString());
-                } else {
-                    ClassUtil.setPropValue(entity, idSetMethod, objectId);
+                if (objectId != null && parameterType != null) {
+                    if (parameterType.isAssignableFrom(objectId.getClass())) {
+                        ClassUtil.setPropValue(entity, idSetMethod, objectId);
+                    } else if (parameterType.isAssignableFrom(String.class)) {
+                        ClassUtil.setPropValue(entity, idSetMethod, objectId.toString());
+                    } else {
+                        ClassUtil.setPropValue(entity, idSetMethod, objectId);
+                    }
                 }
+            } finally {
+                doc.put(_ID, objectId);
             }
-        } finally {
-            doc.put(_ID, objectId);
-        }
 
-        if (N.isDirtyMarker(entity.getClass())) {
-            ((DirtyMarker) entity).markDirty(false);
-        }
+            if (N.isDirtyMarker(entity.getClass())) {
+                ((DirtyMarker) entity).markDirty(false);
+            }
 
-        return entity;
+            return entity;
+        } else if (doc.size() <= 2) {
+            final String propName = Iterables.findFirst(doc.keySet(), Fn.notEqual(_ID)).orElse(_ID);
+
+            return N.convert(doc.get(propName), targetClass);
+        } else {
+            throw new IllegalArgumentException("Unsupported target type: " + targetClass);
+        }
     }
 
     private static <T> Method getObjectIdSetMethod(final Class<T> targetClass) {
         Method idSetMethod = classIdSetMethodPool.get(targetClass);
 
         if (idSetMethod == null) {
-            Method idPropSetMethod = ClassUtil.getPropSetMethod(targetClass, ID);
-            Class<?> parameterType = idPropSetMethod == null ? null : idPropSetMethod.getParameterTypes()[0];
+            final Set<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
+            Method idPropSetMethod = null;
+            Class<?> parameterType = null;
 
-            //            if (parameterType != null && (ObjectId.class.isAssignableFrom(parameterType) || String.class.isAssignableFrom(parameterType))) {
-            //                idSetMethod = idPropSetMethod;
-            //            }
-            if (parameterType != null && ObjectId.class.isAssignableFrom(parameterType)) {
-                idSetMethod = idPropSetMethod;
+            for (String fieldName : idFieldNames) {
+                idPropSetMethod = ClassUtil.getPropSetMethod(targetClass, fieldName);
+                parameterType = idPropSetMethod == null ? null : idPropSetMethod.getParameterTypes()[0];
+
+                if (parameterType != null && (String.class.isAssignableFrom(parameterType) || ObjectId.class.isAssignableFrom(parameterType))) {
+                    idSetMethod = idPropSetMethod;
+
+                    break;
+                }
+            }
+
+            if (idSetMethod == null) {
+                idPropSetMethod = ClassUtil.getPropSetMethod(targetClass, ID);
+                parameterType = idPropSetMethod == null ? null : idPropSetMethod.getParameterTypes()[0];
+
+                //            if (parameterType != null && (ObjectId.class.isAssignableFrom(parameterType) || String.class.isAssignableFrom(parameterType))) {
+                //                idSetMethod = idPropSetMethod;
+                //            }
+
+                if (parameterType != null && (String.class.isAssignableFrom(parameterType) || ObjectId.class.isAssignableFrom(parameterType))) {
+                    idSetMethod = idPropSetMethod;
+                }
             }
 
             if (idSetMethod == null) {

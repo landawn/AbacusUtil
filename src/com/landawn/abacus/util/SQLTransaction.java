@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.landawn.abacus.DataSource;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.Transaction;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -36,6 +37,7 @@ public final class SQLTransaction implements Transaction {
     private static final Logger logger = LoggerFactory.getLogger(SQLTransaction.class);
 
     private final SQLExecutor sqlExecutor;
+    private final DataSource ds;
     private final String id;
     private Connection conn;
     private final int originalIsolationLevel;
@@ -48,11 +50,12 @@ public final class SQLTransaction implements Transaction {
     private IsolationLevel isolationLevel;
     private boolean isForUpdateOnly;
 
-    SQLTransaction(SQLExecutor sqlExecutor, IsolationLevel isolationLevel) {
+    SQLTransaction(SQLExecutor sqlExecutor, DataSource ds, IsolationLevel isolationLevel) {
         this.sqlExecutor = sqlExecutor;
-        this.id = SQLExecutor.getTransactionThreadId() + "_" + System.currentTimeMillis();
+        this.ds = ds;
+        this.id = SQLExecutor.getTransactionThreadId(ds) + "_" + System.currentTimeMillis();
         this.isolationLevel = isolationLevel;
-        this.conn = sqlExecutor.getConnection();
+        this.conn = sqlExecutor.getConnection(ds);
         status = Status.ACTIVE;
 
         try {
@@ -222,7 +225,7 @@ public final class SQLTransaction implements Transaction {
         } catch (SQLException e) {
             logger.error("Failed to reset connection in transaction(id=" + id + ")", e);
         } finally {
-            JdbcUtil.closeQuietly(conn);
+            sqlExecutor.closeQuietly(conn, ds);
             conn = null;
         }
     }
@@ -255,7 +258,7 @@ public final class SQLTransaction implements Transaction {
         final int res = refCount.decrementAndGet();
 
         if (res == 0) {
-            sqlExecutor.threadTransactionMap.remove(SQLExecutor.getTransactionThreadId());
+            sqlExecutor.threadTransactionMap.remove(SQLExecutor.getTransactionThreadId(ds));
 
             logger.info("Finishing transaction(id={})", id);
 

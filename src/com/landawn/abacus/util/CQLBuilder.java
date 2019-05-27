@@ -256,6 +256,10 @@ public abstract class CQLBuilder {
     }
 
     private static Collection<String> getDeletePropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return N.emptyList();
+        }
+
         final Collection<String>[] val = loadPropNamesByClass(entityClass);
         final Collection<String> propNames = val[0];
 
@@ -424,7 +428,7 @@ public abstract class CQLBuilder {
         if (N.notNullOrEmpty(columnNames)) {
             switch (cqlPolicy) {
                 case CQL:
-                case RAW_CQL: {
+                case PARAMETERIZED_CQL: {
                     for (int i = 0, len = columnNames.length; i < len; i++) {
                         if (i > 0) {
                             sb.append(_COMMA_SPACE);
@@ -455,7 +459,7 @@ public abstract class CQLBuilder {
         } else if (N.notNullOrEmpty(columnNameList)) {
             switch (cqlPolicy) {
                 case CQL:
-                case RAW_CQL: {
+                case PARAMETERIZED_CQL: {
                     for (int i = 0, size = columnNameList.size(); i < size; i++) {
                         if (i > 0) {
                             sb.append(_COMMA_SPACE);
@@ -572,7 +576,7 @@ public abstract class CQLBuilder {
             throw new AbacusException("Invalid operation: " + op);
         }
 
-        if (N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(columnAliases)) {
+        if (op == OperationType.QUERY && N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(columnAliases)) {
             throw new AbacusException("Column names or props must be set first by select");
         }
 
@@ -602,12 +606,12 @@ public abstract class CQLBuilder {
                 } else {
                     sb.append(formalizeColumnName(propColumnNameMap, columnName));
 
-                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
+                    if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_S);
+                        sb.append(WD._QUOTATION_D);
                         sb.append(columnName);
-                        sb.append(WD._QUOTATION_S);
+                        sb.append(WD._QUOTATION_D);
                     }
                 }
             } else {
@@ -633,18 +637,18 @@ public abstract class CQLBuilder {
 
                         sb.append(_SPACE_AS_SPACE);
 
-                        sb.append(WD._QUOTATION_S);
+                        sb.append(WD._QUOTATION_D);
                         sb.append(columnName.substring(idx2 > 0 ? idx2 + 4 : idx + 1).trim());
-                        sb.append(WD._QUOTATION_S);
+                        sb.append(WD._QUOTATION_D);
                     } else {
                         sb.append(formalizeColumnName(propColumnNameMap, columnName));
 
-                        if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
+                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                             sb.append(_SPACE_AS_SPACE);
 
-                            sb.append(WD._QUOTATION_S);
+                            sb.append(WD._QUOTATION_D);
                             sb.append(columnName);
-                            sb.append(WD._QUOTATION_S);
+                            sb.append(WD._QUOTATION_D);
                         }
                     }
                 }
@@ -661,12 +665,12 @@ public abstract class CQLBuilder {
                 if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !WD.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_S);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(columnName);
-                    sb.append(WD._QUOTATION_S);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
-        } else {
+        } else if (N.notNullOrEmpty(columnAliases)) {
             int i = 0;
             for (Map.Entry<String, String> entry : columnAliases.entrySet()) {
                 if (i++ > 0) {
@@ -678,11 +682,15 @@ public abstract class CQLBuilder {
                 if (N.notNullOrEmpty(entry.getValue())) {
                     sb.append(_SPACE_AS_SPACE);
 
-                    sb.append(WD._QUOTATION_S);
+                    sb.append(WD._QUOTATION_D);
                     sb.append(entry.getValue());
-                    sb.append(WD._QUOTATION_S);
+                    sb.append(WD._QUOTATION_D);
                 }
             }
+        }
+
+        if (sb.charAt(sb.length() - 1) == ' ') {
+            sb.setLength(sb.length() - 1);
         }
 
         sb.append(_SPACE_FROM_SPACE);
@@ -858,7 +866,7 @@ public abstract class CQLBuilder {
 
             switch (cqlPolicy) {
                 case CQL:
-                case RAW_CQL: {
+                case PARAMETERIZED_CQL: {
                     for (int i = 0, len = columnNames.length; i < len; i++) {
                         if (i > 0) {
                             sb.append(_COMMA_SPACE);
@@ -910,7 +918,7 @@ public abstract class CQLBuilder {
 
         switch (cqlPolicy) {
             case CQL:
-            case RAW_CQL: {
+            case PARAMETERIZED_CQL: {
                 int i = 0;
                 for (String columnName : columnNames) {
                     if (i++ > 0) {
@@ -979,7 +987,7 @@ public abstract class CQLBuilder {
                 break;
             }
 
-            case RAW_CQL: {
+            case PARAMETERIZED_CQL: {
                 int i = 0;
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     if (i++ > 0) {
@@ -1218,6 +1226,8 @@ public abstract class CQLBuilder {
             activeStringBuilderCounter.decrementAndGet();
         }
 
+        // N.println(cql);
+
         if (logger.isDebugEnabled()) {
             logger.debug(cql);
         }
@@ -1315,7 +1325,7 @@ public abstract class CQLBuilder {
                 break;
             }
 
-            case RAW_CQL: {
+            case PARAMETERIZED_CQL: {
                 setParameterForRawCQL(propValue);
 
                 break;
@@ -1350,7 +1360,7 @@ public abstract class CQLBuilder {
                 break;
             }
 
-            case RAW_CQL: {
+            case PARAMETERIZED_CQL: {
                 int i = 0;
                 Object propValue = null;
                 for (String propName : props.keySet()) {
@@ -1499,24 +1509,24 @@ public abstract class CQLBuilder {
                 sb.append(subQuery.getSql());
             } else {
 
-                if (this instanceof E) {
-                    sb.append(E.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof RE) {
-                    sb.append(RE.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof NE) {
-                    sb.append(NE.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof E2) {
-                    sb.append(E2.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof RE2) {
-                    sb.append(RE2.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof NE2) {
-                    sb.append(NE2.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof E3) {
-                    sb.append(E3.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof RE3) {
-                    sb.append(RE3.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
-                } else if (this instanceof NE3) {
-                    sb.append(NE3.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                if (this instanceof SCCB) {
+                    sb.append(SCCB.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof PSC) {
+                    sb.append(PSC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof NSC) {
+                    sb.append(NSC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof ACCB) {
+                    sb.append(ACCB.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof PAC) {
+                    sb.append(PAC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof NAC) {
+                    sb.append(NAC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof LCCB) {
+                    sb.append(LCCB.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof PLC) {
+                    sb.append(PLC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
+                } else if (this instanceof NLC) {
+                    sb.append(NLC.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).cql());
                 } else {
                     throw new AbacusException("Unsupproted subQuery condition: " + cond);
                 }
@@ -1535,6 +1545,9 @@ public abstract class CQLBuilder {
 
             case UPPER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toUpperCaseWithUnderscore(entityPropName);
+
+            case LOWER_CAMEL_CASE:
+                return ClassUtil.formalizePropName(entityPropName);
 
             default:
                 return entityPropName;
@@ -1558,6 +1571,9 @@ public abstract class CQLBuilder {
 
             case UPPER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toUpperCaseWithUnderscore(propName);
+
+            case LOWER_CAMEL_CASE:
+                return ClassUtil.formalizePropName(propName);
 
             default:
                 return propName;
@@ -1634,22 +1650,30 @@ public abstract class CQLBuilder {
     }
 
     static enum CQLPolicy {
-        CQL, RAW_CQL, NAMED_CQL;
+        CQL, PARAMETERIZED_CQL, NAMED_CQL;
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore.
+     * Un-parameterized CQL builder with snake case (lower case with underscore) field/column naming strategy.
      * 
-     * @author haiyang li 
-     *
+     * For example:
+     * <pre>
+     * <code>
+     * SCCB.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql();
+     * // Output: SELECT first_name AS 'firstName', last_name AS 'lastName' FROM account WHERE id = 1
+     * </code>
+     * </pre>
+     * 
+     * @deprecated {@code PSC or NSC} is preferred.
      */
-    public static final class E extends CQLBuilder {
-        E() {
+    @Deprecated
+    public static final class SCCB extends CQLBuilder {
+        SCCB() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
         }
 
-        static E createInstance() {
-            return new E();
+        static SCCB createInstance() {
+            return new SCCB();
         }
 
         public static CQLBuilder insert(final String expr) {
@@ -1887,515 +1911,26 @@ public abstract class CQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the cql will be parameterized with question mark.
+     * Un-parameterized CQL builder with all capitals case (upper case with underscore) field/column naming strategy.
      * 
-     * @author haiyang li 
-     *
-     */
-    public static final class RE extends CQLBuilder {
-        RE() {
-            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.RAW_CQL);
-        }
-
-        static RE createInstance() {
-            return new RE();
-        }
-
-        public static CQLBuilder insert(final String expr) {
-            return insert(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder insert(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Map<String, Object> props) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.props = props;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Object entity) {
-            return insert(entity, null);
-        }
-
-        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entity.getClass();
-
-            parseInsertEntity(instance, entity, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass) {
-            return insert(entityClass, null);
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass) {
-            return insertInto(entityClass, null);
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(entityClass, excludedPropNames).into(entityClass);
-        }
-
-        public static CQLBuilder select(final String expr) {
-            return select(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder select(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnNames
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnAliases
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass) {
-            return select(entityClass, null);
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass) {
-            return selectFrom(entityClass, null);
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(entityClass, excludedPropNames).from(entityClass);
-        }
-
-        public static CQLBuilder update(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass) {
-            return update(entityClass, null);
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
-            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final String expr) {
-            return delete(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder delete(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass) {
-            return delete(entityClass, null);
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(entityClass, null);
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return delete(entityClass, excludedPropNames).from(entityClass);
-        }
-    }
-
-    /**
-     * All the property/column names in collection/map/entity/condition will be converted to lower case with underscore and the cql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
-     * @author haiyang li 
-     *
-     */
-    public static final class NE extends CQLBuilder {
-        NE() {
-            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
-        }
-
-        static NE createInstance() {
-            return new NE();
-        }
-
-        public static CQLBuilder insert(final String expr) {
-            return insert(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder insert(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Map<String, Object> props) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.props = props;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Object entity) {
-            return insert(entity, null);
-        }
-
-        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entity.getClass();
-
-            parseInsertEntity(instance, entity, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass) {
-            return insert(entityClass, null);
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass) {
-            return insertInto(entityClass, null);
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(entityClass, excludedPropNames).into(entityClass);
-        }
-
-        public static CQLBuilder select(final String expr) {
-            return select(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder select(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnNames
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnAliases
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass) {
-            return select(entityClass, null);
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass) {
-            return selectFrom(entityClass, null);
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(entityClass, excludedPropNames).from(entityClass);
-        }
-
-        public static CQLBuilder update(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass) {
-            return update(entityClass, null);
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
-            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final String expr) {
-            return delete(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder delete(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass) {
-            return delete(entityClass, null);
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(entityClass, null);
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return delete(entityClass, excludedPropNames).from(entityClass);
-        }
-    }
-
-    /**
-     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore.
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(ACCB.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // Output: SELECT FIRST_NAME AS 'firstName', LAST_NAME AS 'lastName' FROM ACCOUNT WHERE ID = 1
+     * </code>
+     * </pre>
      * 
-     * @author haiyang li
-     *
+     * @deprecated {@code PAC or NAC} is preferred.
      */
-    public static final class E2 extends CQLBuilder {
-        E2() {
+    @Deprecated
+    public static final class ACCB extends CQLBuilder {
+        ACCB() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
         }
 
-        static E2 createInstance() {
-            return new E2();
+        static ACCB createInstance() {
+            return new ACCB();
         }
 
         public static CQLBuilder insert(final String expr) {
@@ -2633,516 +2168,26 @@ public abstract class CQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the cql will be parameterized with question mark.
+     * Un-parameterized CQL builder with lower camel case field/column naming strategy.
      * 
-     * @author haiyang li
-     *
-     */
-    public static final class RE2 extends CQLBuilder {
-        RE2() {
-            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.RAW_CQL);
-        }
-
-        static RE2 createInstance() {
-            return new RE2();
-        }
-
-        public static CQLBuilder insert(final String expr) {
-            return insert(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder insert(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Map<String, Object> props) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.props = props;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Object entity) {
-            return insert(entity, null);
-        }
-
-        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entity.getClass();
-
-            parseInsertEntity(instance, entity, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass) {
-            return insert(entityClass, null);
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass) {
-            return insertInto(entityClass, null);
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(entityClass, excludedPropNames).into(entityClass);
-        }
-
-        public static CQLBuilder select(final String expr) {
-            return select(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder select(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnNames
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnAliases
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass) {
-            return select(entityClass, null);
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass) {
-            return selectFrom(entityClass, null);
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(entityClass, excludedPropNames).from(entityClass);
-        }
-
-        public static CQLBuilder update(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass) {
-            return update(entityClass, null);
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
-            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final String expr) {
-            return delete(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder delete(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass) {
-            return delete(entityClass, null);
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(entityClass, null);
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return delete(entityClass, excludedPropNames).from(entityClass);
-        }
-    }
-
-    /**
-     * All the property/column names in collection/map/entity/condition will be converted to upper case with underscore and the cql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(LCCB.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT firstName, lastName FROM account WHERE id = 1
+     * </code>
+     * </pre>
      * 
-     * @author haiyang li
-     *
+     * @deprecated {@code PLC or NLC} is preferred.
      */
-    public static final class NE2 extends CQLBuilder {
-        NE2() {
-            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
-        }
-
-        static NE2 createInstance() {
-            return new NE2();
-        }
-
-        public static CQLBuilder insert(final String expr) {
-            return insert(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder insert(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Map<String, Object> props) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.props = props;
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Object entity) {
-            return insert(entity, null);
-        }
-
-        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entity.getClass();
-
-            parseInsertEntity(instance, entity, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass) {
-            return insert(entityClass, null);
-        }
-
-        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.ADD;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass) {
-            return insertInto(entityClass, null);
-        }
-
-        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return insert(entityClass, excludedPropNames).into(entityClass);
-        }
-
-        public static CQLBuilder select(final String expr) {
-            return select(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder select(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnNames
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        /**
-         * 
-         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
-         * @param columnAliases
-         * @return
-         */
-        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.predicates = expr;
-            instance.columnAliases = columnAliases;
-
-            return instance;
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass) {
-            return select(entityClass, null);
-        }
-
-        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.QUERY;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass) {
-            return selectFrom(entityClass, null);
-        }
-
-        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return select(entityClass, excludedPropNames).from(entityClass);
-        }
-
-        public static CQLBuilder update(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass) {
-            return update(entityClass, null);
-        }
-
-        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.UPDATE;
-            instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
-            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final String expr) {
-            return delete(N.asArray(expr));
-        }
-
-        @SafeVarargs
-        public static CQLBuilder delete(final String... columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNames = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Collection<String> columnNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.columnNameList = columnNames;
-
-            return instance;
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass) {
-            return delete(entityClass, null);
-        }
-
-        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.entityClass = entityClass;
-            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final String tableName) {
-            final CQLBuilder instance = createInstance();
-
-            instance.op = OperationType.DELETE;
-            instance.tableName = tableName;
-
-            return instance;
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(entityClass, null);
-        }
-
-        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            return delete(entityClass, excludedPropNames).from(entityClass);
-        }
-    }
-
-    /**
-     * All the property/column names in collection/map/entity/condition will be kept without any change.
-     * 
-     * @author haiyang li
-     *
-     */
-    public static final class E3 extends CQLBuilder {
-        E3() {
+    @Deprecated
+    public static final class LCCB extends CQLBuilder {
+        LCCB() {
             super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.CQL);
         }
 
-        static E3 createInstance() {
-            return new E3();
+        static LCCB createInstance() {
+            return new LCCB();
         }
 
         public static CQLBuilder insert(final String expr) {
@@ -3380,18 +2425,23 @@ public abstract class CQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be kept without any change and the cql will be parameterized with question mark.
+     * Parameterized('?') CQL builder with snake case (lower case with underscore) field/column naming strategy.
      * 
-     * @author haiyang li
-     *
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(PSC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT first_name AS 'firstName', last_name AS 'lastName' FROM account WHERE id = ?
+     * </code>
+     * </pre>
      */
-    public static final class RE3 extends CQLBuilder {
-        RE3() {
-            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.RAW_CQL);
+    public static final class PSC extends CQLBuilder {
+        PSC() {
+            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.PARAMETERIZED_CQL);
         }
 
-        static RE3 createInstance() {
-            return new RE3();
+        static PSC createInstance() {
+            return new PSC();
         }
 
         public static CQLBuilder insert(final String expr) {
@@ -3629,18 +2679,1039 @@ public abstract class CQLBuilder {
     }
 
     /**
-     * All the property/column names in collection/map/entity/condition will be kept without any change and the cql will be parameterized with named parameter with Hibernate/JPA format <code> :parameterName</code>
+     * Parameterized('?') CQL builder with all capitals case (upper case with underscore) field/column naming strategy.
      * 
-     * @author haiyang li
-     *
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(PAC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT FIRST_NAME AS 'firstName', LAST_NAME AS 'lastName' FROM ACCOUNT WHERE ID = ?
+     * </code>
+     * </pre>
      */
-    public static final class NE3 extends CQLBuilder {
-        NE3() {
+    public static final class PAC extends CQLBuilder {
+        PAC() {
+            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.PARAMETERIZED_CQL);
+        }
+
+        static PAC createInstance() {
+            return new PAC();
+        }
+
+        public static CQLBuilder insert(final String expr) {
+            return insert(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.props = props;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Object entity) {
+            return insert(entity, null);
+        }
+
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entity.getClass();
+
+            parseInsertEntity(instance, entity, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass) {
+            return insert(entityClass, null);
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
+            return insertInto(entityClass, null);
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(entityClass, excludedPropNames).into(entityClass);
+        }
+
+        public static CQLBuilder select(final String expr) {
+            return select(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnNames
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnAliases
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass) {
+            return select(entityClass, null);
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
+            return selectFrom(entityClass, null);
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(entityClass, excludedPropNames).from(entityClass);
+        }
+
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass) {
+            return update(entityClass, null);
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.entityClass = entityClass;
+            instance.tableName = getTableName(entityClass);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final String expr) {
+            return delete(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass) {
+            return delete(entityClass, null);
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
+            return deleteFrom(entityClass, null);
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return delete(entityClass, excludedPropNames).from(entityClass);
+        }
+    }
+
+    /**
+     * Parameterized('?') CQL builder with lower camel case field/column naming strategy.
+     * 
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(PLC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT firstName, lastName FROM account WHERE id = ?
+     * </code>
+     * </pre>
+     */
+    public static final class PLC extends CQLBuilder {
+        PLC() {
+            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.PARAMETERIZED_CQL);
+        }
+
+        static PLC createInstance() {
+            return new PLC();
+        }
+
+        public static CQLBuilder insert(final String expr) {
+            return insert(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.props = props;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Object entity) {
+            return insert(entity, null);
+        }
+
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entity.getClass();
+
+            parseInsertEntity(instance, entity, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass) {
+            return insert(entityClass, null);
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
+            return insertInto(entityClass, null);
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(entityClass, excludedPropNames).into(entityClass);
+        }
+
+        public static CQLBuilder select(final String expr) {
+            return select(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnNames
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnAliases
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass) {
+            return select(entityClass, null);
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
+            return selectFrom(entityClass, null);
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(entityClass, excludedPropNames).from(entityClass);
+        }
+
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass) {
+            return update(entityClass, null);
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.entityClass = entityClass;
+            instance.tableName = getTableName(entityClass);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final String expr) {
+            return delete(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass) {
+            return delete(entityClass, null);
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
+            return deleteFrom(entityClass, null);
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return delete(entityClass, excludedPropNames).from(entityClass);
+        }
+    }
+
+    /**
+     * Named CQL builder with snake case (lower case with underscore) field/column naming strategy.
+     * 
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(NSC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT first_name AS 'firstName', last_name AS 'lastName' FROM account WHERE id = :id
+     * </code>
+     * </pre>
+     */
+    public static final class NSC extends CQLBuilder {
+        NSC() {
+            super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
+        }
+
+        static NSC createInstance() {
+            return new NSC();
+        }
+
+        public static CQLBuilder insert(final String expr) {
+            return insert(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.props = props;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Object entity) {
+            return insert(entity, null);
+        }
+
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entity.getClass();
+
+            parseInsertEntity(instance, entity, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass) {
+            return insert(entityClass, null);
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
+            return insertInto(entityClass, null);
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(entityClass, excludedPropNames).into(entityClass);
+        }
+
+        public static CQLBuilder select(final String expr) {
+            return select(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnNames
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnAliases
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass) {
+            return select(entityClass, null);
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
+            return selectFrom(entityClass, null);
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(entityClass, excludedPropNames).from(entityClass);
+        }
+
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass) {
+            return update(entityClass, null);
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.entityClass = entityClass;
+            instance.tableName = getTableName(entityClass);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final String expr) {
+            return delete(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass) {
+            return delete(entityClass, null);
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
+            return deleteFrom(entityClass, null);
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return delete(entityClass, excludedPropNames).from(entityClass);
+        }
+    }
+
+    /**
+     * Named CQL builder with all capitals case (upper case with underscore) field/column naming strategy.
+     * 
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(NAC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT FIRST_NAME AS 'firstName', LAST_NAME AS 'lastName' FROM ACCOUNT WHERE ID = :id
+     * </code>
+     * </pre>
+     */
+    public static final class NAC extends CQLBuilder {
+        NAC() {
+            super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
+        }
+
+        static NAC createInstance() {
+            return new NAC();
+        }
+
+        public static CQLBuilder insert(final String expr) {
+            return insert(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.props = props;
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Object entity) {
+            return insert(entity, null);
+        }
+
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entity.getClass();
+
+            parseInsertEntity(instance, entity, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass) {
+            return insert(entityClass, null);
+        }
+
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.ADD;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getInsertPropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
+            return insertInto(entityClass, null);
+        }
+
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return insert(entityClass, excludedPropNames).into(entityClass);
+        }
+
+        public static CQLBuilder select(final String expr) {
+            return select(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnNames
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        /**
+         * 
+         * @param expr <code>ALL | DISTINCT | DISTINCTROW...</code>
+         * @param columnAliases
+         * @return
+         */
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.predicates = expr;
+            instance.columnAliases = columnAliases;
+
+            return instance;
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass) {
+            return select(entityClass, null);
+        }
+
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.QUERY;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getSelectPropNamesByClass(entityClass, true, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
+            return selectFrom(entityClass, null);
+        }
+
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return select(entityClass, excludedPropNames).from(entityClass);
+        }
+
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass) {
+            return update(entityClass, null);
+        }
+
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.UPDATE;
+            instance.entityClass = entityClass;
+            instance.tableName = getTableName(entityClass);
+            instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final String expr) {
+            return delete(N.asArray(expr));
+        }
+
+        @SafeVarargs
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNames = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.columnNameList = columnNames;
+
+            return instance;
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass) {
+            return delete(entityClass, null);
+        }
+
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.entityClass = entityClass;
+            instance.columnNameList = getDeletePropNamesByClass(entityClass, excludedPropNames);
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
+
+            instance.op = OperationType.DELETE;
+            instance.tableName = tableName;
+
+            return instance;
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
+            return deleteFrom(entityClass, null);
+        }
+
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            return delete(entityClass, excludedPropNames).from(entityClass);
+        }
+    }
+
+    /**
+     * Named SQL builder with lower camel case field/column naming strategy.
+     * 
+     * For example:
+     * <pre>
+     * <code>
+     * N.println(NLC.select("firstName", "lastName").from("account").where(L.eq("id", 1)).sql());
+     * // SELECT firstName, lastName FROM account WHERE id = :id
+     * </code>
+     * </pre>
+     */
+    public static final class NLC extends CQLBuilder {
+        NLC() {
             super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.NAMED_CQL);
         }
 
-        static NE3 createInstance() {
-            return new NE3();
+        static NLC createInstance() {
+            return new NLC();
         }
 
         public static CQLBuilder insert(final String expr) {

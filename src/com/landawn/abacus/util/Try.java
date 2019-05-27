@@ -1172,58 +1172,58 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static final class EEE {
-        private EEE() {
-            // Singleton. Utility class.
-        }
-
-        public static interface Runnable<E extends Exception, E2 extends Exception, E3 extends Exception> {
-            void run() throws E, E2, E3;
-        }
-
-        public static interface Callable<R, E extends Exception, E2 extends Exception, E3 extends Exception> extends java.util.concurrent.Callable<R> {
-            @Override
-            R call() throws E, E2, E3;
-        }
-
-        public static interface Supplier<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            T get() throws E, E2, E3;
-        }
-
-        public static interface Predicate<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            boolean test(T t) throws E, E2, E3;
-        }
-
-        public static interface BiPredicate<T, U, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            boolean test(T t, U u) throws E, E2, E3;
-        }
-
-        public static interface TriPredicate<A, B, C, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            boolean test(A a, B b, C c) throws E, E2, E3;
-        }
-
-        public static interface Function<T, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            R apply(T t) throws E, E2, E3;
-        }
-
-        public static interface BiFunction<T, U, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            R apply(T t, U u) throws E, E2, E3;
-        }
-
-        public static interface TriFunction<A, B, C, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            R apply(A a, B b, C c) throws E, E2, E3;
-        }
-
-        public static interface Consumer<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            void accept(T t) throws E, E2, E3;
-        }
-
-        public static interface BiConsumer<T, U, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            void accept(T t, U u) throws E, E2, E3;
-        }
-
-        public static interface TriConsumer<A, B, C, E extends Exception, E2 extends Exception, E3 extends Exception> {
-            void accept(A a, B b, C c) throws E, E2, E3;
-        }
-    }
+    //    public static final class EEE {
+    //        private EEE() {
+    //            // Singleton. Utility class.
+    //        }
+    //
+    //        public static interface Runnable<E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            void run() throws E, E2, E3;
+    //        }
+    //
+    //        public static interface Callable<R, E extends Exception, E2 extends Exception, E3 extends Exception> extends java.util.concurrent.Callable<R> {
+    //            @Override
+    //            R call() throws E, E2, E3;
+    //        }
+    //
+    //        public static interface Supplier<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            T get() throws E, E2, E3;
+    //        }
+    //
+    //        public static interface Predicate<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            boolean test(T t) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface BiPredicate<T, U, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            boolean test(T t, U u) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface TriPredicate<A, B, C, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            boolean test(A a, B b, C c) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface Function<T, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            R apply(T t) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface BiFunction<T, U, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            R apply(T t, U u) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface TriFunction<A, B, C, R, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            R apply(A a, B b, C c) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface Consumer<T, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            void accept(T t) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface BiConsumer<T, U, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            void accept(T t, U u) throws E, E2, E3;
+    //        }
+    //
+    //        public static interface TriConsumer<A, B, C, E extends Exception, E2 extends Exception, E3 extends Exception> {
+    //            void accept(A a, B b, C c) throws E, E2, E3;
+    //        }
+    //    }
 }

@@ -110,11 +110,11 @@ class JDKLogger extends AbstractLogger {
     }
 
     private void log(Level level, String msg) {
-        log(SELF, Level.WARNING, msg, null);
+        log(SELF, level, msg, null);
     }
 
     private void log(Level level, String msg, Throwable t) {
-        log(SELF, Level.WARNING, msg, t);
+        log(SELF, level, msg, t);
     }
 
     /**

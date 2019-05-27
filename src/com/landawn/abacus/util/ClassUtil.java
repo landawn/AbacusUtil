@@ -47,6 +47,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,6 +89,8 @@ import java.util.jar.JarFile;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.annotation.Id;
+import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.NameUtil;
 import com.landawn.abacus.core.RowDataSet;
@@ -2161,6 +2164,45 @@ public final class ClassUtil {
         props.putAll(tmp);
 
         Objectory.recycle(tmp);
+    }
+
+    static Set<String> getIdFieldNames(final Class<?> targetClass) {
+        final Set<String> idPropNames = new LinkedHashSet<>();
+
+        final Set<Field> allFields = new LinkedHashSet<>();
+
+        for (Class<?> superClass : ClassUtil.getAllSuperclasses(targetClass)) {
+            allFields.addAll(Array.asList(superClass.getDeclaredFields()));
+        }
+
+        allFields.addAll(Array.asList(targetClass.getDeclaredFields()));
+
+        for (Field field : allFields) {
+            if (ClassUtil.getPropGetMethod(targetClass, field.getName()) == null
+                    && ClassUtil.getPropGetMethod(targetClass, ClassUtil.formalizePropName(field.getName())) == null) {
+                continue;
+            }
+
+            if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                idPropNames.add(field.getName());
+            } else {
+                try {
+                    if (field.isAnnotationPresent(javax.persistence.Id.class)) {
+                        idPropNames.add(field.getName());
+                    }
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+
+        if (targetClass.isAnnotationPresent(Id.class)) {
+            String[] values = targetClass.getAnnotation(Id.class).value();
+            N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
+            idPropNames.addAll(Arrays.asList(values));
+        }
+
+        return idPropNames;
     }
 
     static Map<String, Method> checkPropGetMethodList(final Class<?> cls) {

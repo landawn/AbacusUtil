@@ -397,6 +397,14 @@ public final class AsyncSQLExecutor {
         });
     }
 
+    /**
+     * 
+     * @param sql
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final ContinuableFuture<Integer> count(final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Integer>() {
@@ -407,6 +415,15 @@ public final class AsyncSQLExecutor {
         });
     }
 
+    /**
+     * 
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final ContinuableFuture<Integer> count(final Connection conn, final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Integer>() {

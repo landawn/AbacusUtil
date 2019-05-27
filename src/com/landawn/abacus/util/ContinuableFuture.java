@@ -295,27 +295,27 @@ public class ContinuableFuture<T> implements Future<T> {
     //        action.accept(result.orElse(null), result.getExceptionIfPresent());
     //    }
 
-    <U, E extends Exception> ContinuableFuture<U> thenApply(final Try.Function<? super T, U, E> action) {
+    public <U, E extends Exception> ContinuableFuture<U> map(final Try.Function<? super T, U, E> func) {
         return new ContinuableFuture<U>(new Future<U>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
-                return future.cancel(mayInterruptIfRunning);
+                return ContinuableFuture.this.cancel(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isCancelled() {
-                return future.isCancelled();
+                return ContinuableFuture.this.isCancelled();
             }
 
             @Override
             public boolean isDone() {
-                return future.isDone();
+                return ContinuableFuture.this.isDone();
             }
 
             @Override
             public U get() throws InterruptedException, ExecutionException {
                 try {
-                    return action.apply(future.get());
+                    return func.apply(ContinuableFuture.this.get());
                 } catch (InterruptedException | ExecutionException e) {
                     throw e;
                 } catch (Exception e) {
@@ -326,7 +326,7 @@ public class ContinuableFuture<T> implements Future<T> {
             @Override
             public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 try {
-                    return action.apply(future.get(timeout, unit));
+                    return func.apply(ContinuableFuture.this.get(timeout, unit));
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     throw e;
                 } catch (Exception e) {
@@ -336,12 +336,12 @@ public class ContinuableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return super.cancelAll(mayInterruptIfRunning);
+                return ContinuableFuture.this.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return super.isAllCancelled();
+                return ContinuableFuture.this.isAllCancelled();
             }
         };
     }

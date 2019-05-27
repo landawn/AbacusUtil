@@ -63,19 +63,23 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.BooleanSupplier;
+import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBiPredicate;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
+import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBiPredicate;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleBiPredicate;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
+import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatBiPredicate;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
@@ -87,10 +91,12 @@ import com.landawn.abacus.util.function.IndexedBiPredicate;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IndexedFunction;
 import com.landawn.abacus.util.function.IndexedPredicate;
+import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongBiPredicate;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -98,6 +104,7 @@ import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadFunction;
+import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortBiPredicate;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -6434,6 +6441,17 @@ public abstract class Fn extends Comparators {
         public static CharBiPredicate lessEqual() {
             return LESS_EQUAL;
         }
+
+        public static CharBiFunction<Nth> alternate() {
+            return new CharBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(char t, char u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
+        }
     }
 
     /**
@@ -6534,6 +6552,17 @@ public abstract class Fn extends Comparators {
 
         public static ByteBiPredicate lessEqual() {
             return LESS_EQUAL;
+        }
+
+        public static ByteBiFunction<Nth> alternate() {
+            return new ByteBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(byte t, byte u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
         }
     }
 
@@ -6636,6 +6665,17 @@ public abstract class Fn extends Comparators {
         public static ShortBiPredicate lessEqual() {
             return LESS_EQUAL;
         }
+
+        public static ShortBiFunction<Nth> alternate() {
+            return new ShortBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(short t, short u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
+        }
     }
 
     /**
@@ -6736,6 +6776,17 @@ public abstract class Fn extends Comparators {
 
         public static IntBiPredicate lessEqual() {
             return LESS_EQUAL;
+        }
+
+        public static IntBiFunction<Nth> alternate() {
+            return new IntBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(int t, int u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
         }
     }
 
@@ -6838,6 +6889,17 @@ public abstract class Fn extends Comparators {
         public static LongBiPredicate lessEqual() {
             return LESS_EQUAL;
         }
+
+        public static LongBiFunction<Nth> alternate() {
+            return new LongBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(long t, long u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
+        }
     }
 
     /**
@@ -6939,6 +7001,17 @@ public abstract class Fn extends Comparators {
         public static FloatBiPredicate lessEqual() {
             return LESS_EQUAL;
         }
+
+        public static FloatBiFunction<Nth> alternate() {
+            return new FloatBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(float t, float u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
+        }
     }
 
     /**
@@ -7039,6 +7112,17 @@ public abstract class Fn extends Comparators {
 
         public static DoubleBiPredicate lessEqual() {
             return LESS_EQUAL;
+        }
+
+        public static DoubleBiFunction<Nth> alternate() {
+            return new DoubleBiFunction<Nth>() {
+                private final MutableBoolean flag = MutableBoolean.of(true);
+
+                @Override
+                public Nth apply(double t, double u) {
+                    return flag.getAndInvert() ? Nth.FIRST : Nth.SECOND;
+                }
+            };
         }
     }
 

@@ -88,7 +88,7 @@ public class SQLExecutor extends com.landawn.abacus.util.SQLExecutor {
      */
     @Deprecated
     @Override
-    public SQLTransaction beginTransaction(IsolationLevel isolationLevel) {
+    public SQLTransaction beginTransaction(final IsolationLevel isolationLevel) {
         return super.beginTransaction(isolationLevel);
     }
 
@@ -102,7 +102,7 @@ public class SQLExecutor extends com.landawn.abacus.util.SQLExecutor {
      */
     @Deprecated
     @Override
-    public SQLTransaction beginTransaction(boolean forUpdateOnly) {
+    public SQLTransaction beginTransaction(final boolean forUpdateOnly) {
         return super.beginTransaction(forUpdateOnly);
     }
 
@@ -117,7 +117,23 @@ public class SQLExecutor extends com.landawn.abacus.util.SQLExecutor {
      */
     @Deprecated
     @Override
-    public SQLTransaction beginTransaction(IsolationLevel isolationLevel, boolean forUpdateOnly) {
+    public SQLTransaction beginTransaction(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
         return super.beginTransaction(isolationLevel, forUpdateOnly);
+    }
+
+    /**
+     * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
+     * DON'T close it again by calling the close method.
+     * 
+     * @param isolationLevel
+     * @param forUpdateOnly
+     * @param jdbcSettings
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    @Override
+    public SQLTransaction beginTransaction(final IsolationLevel isolationLevel, final boolean forUpdateOnly, final JdbcSettings jdbcSettings) {
+        return super.beginTransaction(isolationLevel, forUpdateOnly, jdbcSettings);
     }
 }

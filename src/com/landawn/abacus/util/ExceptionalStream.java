@@ -38,6 +38,8 @@ import java.util.concurrent.Executor;
 
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
+import com.landawn.abacus.logging.Logger;
+import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
@@ -63,6 +65,8 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public class ExceptionalStream<T, E extends Exception> implements AutoCloseable {
+    static final Logger logger = LoggerFactory.getLogger(ExceptionalStream.class);
+
     private final ExceptionalIterator<T, E> elements;
     private final boolean sorted;
     private final Comparator<? super T> comparator;
@@ -3311,6 +3315,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         //    if (isClosed || N.isNullOrEmpty(closeHandlers)) {
         //        return;
         //    }
+
+        logger.info("Closing ExceptionalStream");
 
         isClosed = true;
 

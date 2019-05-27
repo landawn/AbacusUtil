@@ -268,8 +268,8 @@ public final class CouchbaseExecutor implements Closeable {
         } else {
             final JsonObject first = rowList.get(0).value();
 
-            if (first.getNames().size() == 1) {
-                final String propName = first.getNames().iterator().next();
+            if (first.getNames().size() <= 2) {
+                final String propName = Iterables.findFirst(first.getNames(), Fn.notEqual(_ID)).orElse(_ID);
 
                 if (first.get(propName) != null && targetClass.isAssignableFrom(first.get(propName).getClass())) {
                     for (QueryRow row : rowList) {
@@ -329,6 +329,22 @@ public final class CouchbaseExecutor implements Closeable {
         Method idSetMethod = classIdSetMethodPool.get(targetClass);
 
         if (idSetMethod == null) {
+            final Set<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
+            Method idPropSetMethod = null;
+            Class<?> parameterType = null;
+
+            for (String fieldName : idFieldNames) {
+                idPropSetMethod = ClassUtil.getPropSetMethod(targetClass, fieldName);
+                parameterType = idPropSetMethod == null ? null : idPropSetMethod.getParameterTypes()[0];
+
+                if (parameterType != null && (String.class.isAssignableFrom(parameterType) || long.class.isAssignableFrom(parameterType)
+                        || Long.class.isAssignableFrom(parameterType))) {
+                    idSetMethod = idPropSetMethod;
+
+                    break;
+                }
+            }
+
             //            Method idPropSetMethod = N.getPropSetMethod(targetClass, ID);
             //            Class<?> parameterType = idPropSetMethod == null ? null : idPropSetMethod.getParameterTypes()[0];
             //
@@ -336,13 +352,12 @@ public final class CouchbaseExecutor implements Closeable {
             //                idSetMethod = idPropSetMethod;
             //            }
             //
-            //            if (idSetMethod == null) {
-            //                idSetMethod = N.METHOD_MASK;
-            //            }
-            //
-            //            classIdSetMethodPool.put(targetClass, idSetMethod);
 
-            classIdSetMethodPool.put(targetClass, ClassUtil.METHOD_MASK);
+            if (idSetMethod == null) {
+                idSetMethod = ClassUtil.METHOD_MASK;
+            }
+
+            classIdSetMethodPool.put(targetClass, idSetMethod);
         }
 
         return idSetMethod == ClassUtil.METHOD_MASK ? null : idSetMethod;
@@ -372,7 +387,7 @@ public final class CouchbaseExecutor implements Closeable {
                 result.putAll(m);
                 return (T) result;
             }
-        } else {
+        } else if (N.isEntity(targetClass)) {
             final T entity = N.newInstance(targetClass);
             final List<String> columnNameList = new ArrayList<>(jsonObject.getNames());
             Method propSetMethod = null;
@@ -391,13 +406,13 @@ public final class CouchbaseExecutor implements Closeable {
 
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof JsonObject) {
-                        if (parameterType.isAssignableFrom(Map.class) || N.isEntity(parameterType)) {
+                        if (Map.class.isAssignableFrom(parameterType) || N.isEntity(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (JsonObject) propValue));
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod, N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (JsonObject) propValue))));
                         }
                     } else if (propValue instanceof JsonArray) {
-                        if (parameterType.isAssignableFrom(List.class)) {
+                        if (List.class.isAssignableFrom(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, ((JsonArray) propValue).toList());
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod, N.valueOf(parameterType, N.stringOf(((JsonArray) propValue).toList())));
@@ -415,7 +430,14 @@ public final class CouchbaseExecutor implements Closeable {
             }
 
             return entity;
+        } else if (jsonObject.size() <= 2) {
+            final String propName = Iterables.findFirst(jsonObject.getNames(), Fn.notEqual(_ID)).orElse(_ID);
+
+            return N.convert(jsonObject.getObject(propName), targetClass);
+        } else {
+            throw new IllegalArgumentException("Unsupported target type: " + targetClass);
         }
+
     }
 
     public static String toJSON(JsonArray jsonArray) {
@@ -763,6 +785,14 @@ public final class CouchbaseExecutor implements Closeable {
         return resultSet.iterator().hasNext();
     }
 
+    /**
+     * 
+     * @param query
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final long count(final String query, final Object... parameters) {
         return queryForSingleResult(long.class, query, parameters).orElse(0L);
@@ -1208,6 +1238,14 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
+    /**
+     * 
+     * @param query
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final ContinuableFuture<Long> asyncCount(final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Long>() {

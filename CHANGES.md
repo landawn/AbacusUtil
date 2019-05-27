@@ -1,3 +1,14 @@
+### 1.7.3
+
+* Add `ContinuableFuture.map`.
+
+* Refactoring `SQLBuilder/CQLBuilder`. 
+
+* Refactoring `CassandraExecutor.asyncXXX`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.2
 
 * Add `Jdbc.Dao`.

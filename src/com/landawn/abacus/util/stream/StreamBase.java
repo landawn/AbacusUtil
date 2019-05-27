@@ -86,6 +86,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
 
     static final Object NONE = new Object();
 
+    static final Runnable EMPTY_CLOSE_HANDLER = new Runnable() {
+        @Override
+        public void run() {
+            // do nothing.
+        }
+    };
+
     static final int MAX_THREAD_POOL_SIZE = 8192;
     // static final int MAX_THREAD_POOL_SIZE = Integer.MAX_VALUE;
     static final int MAX_THREAD_NUM_PER_OPERATION = 1024;
@@ -760,7 +767,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
             return;
         }
 
-        if (N.isNullOrEmpty(closeHandlers)) {
+        if (isEmptyCloseHandlers(closeHandlers)) {
             isClosed = true;
             return;
         }
@@ -770,9 +777,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         //        return;
         //    }
 
-        isClosed = true;
+        logger.info("Closing Stream");
 
-        logger.info("closing Stream");
+        isClosed = true;
 
         close(closeHandlers);
     }
@@ -1449,6 +1456,10 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     }
 
     static Runnable wrapCloseHandlers(final Runnable closeHandler) {
+        if (closeHandler == null || closeHandler == EMPTY_CLOSE_HANDLER) {
+            return EMPTY_CLOSE_HANDLER;
+        }
+
         return new Runnable() {
             private volatile boolean isClosed = false;
 
@@ -1469,12 +1480,33 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return EMPTY_CLOSE_HANDLER;
+        }
+
+        boolean allEmptyHandlers = true;
+
+        for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> s : c) {
+            if (!isEmptyCloseHandlers(s.closeHandlers)) {
+                allEmptyHandlers = false;
+                break;
+            }
+        }
+
+        if (allEmptyHandlers) {
+            return EMPTY_CLOSE_HANDLER;
+        }
+
         return new Runnable() {
             @Override
             public void run() {
                 RuntimeException runtimeException = null;
 
                 for (StreamBase<?, ?, ?, ?, ?, ?, ?, ?, ?> s : c) {
+                    if (isEmptyCloseHandlers(s.closeHandlers)) {
+                        continue;
+                    }
+
                     try {
                         s.close();
                     } catch (Exception throwable) {
@@ -1498,25 +1530,29 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
     }
 
     static Deque<Runnable> mergeCloseHandlers(final Deque<Runnable> closeHandlersA, final Deque<Runnable> closeHandlersB) {
-        if (N.isNullOrEmpty(closeHandlersA) && closeHandlersB instanceof LocalArrayDeque) {
+        if (isEmptyCloseHandlers(closeHandlersA) && closeHandlersB instanceof LocalArrayDeque) {
             return closeHandlersB;
-        } else if (closeHandlersA instanceof LocalArrayDeque && N.isNullOrEmpty(closeHandlersB)) {
+        } else if (closeHandlersA instanceof LocalArrayDeque && isEmptyCloseHandlers(closeHandlersB)) {
             return closeHandlersA;
-        } else if (N.isNullOrEmpty(closeHandlersA) && N.isNullOrEmpty(closeHandlersB)) {
+        } else if (isEmptyCloseHandlers(closeHandlersA) && isEmptyCloseHandlers(closeHandlersB)) {
             return null;
         }
 
         final Deque<Runnable> newCloseHandlers = new LocalArrayDeque<>();
 
-        if (N.notNullOrEmpty(closeHandlersA)) {
+        if (!isEmptyCloseHandlers(closeHandlersA)) {
             newCloseHandlers.addAll(closeHandlersA);
         }
 
-        if (N.notNullOrEmpty(closeHandlersB)) {
+        if (!isEmptyCloseHandlers(closeHandlersB)) {
             newCloseHandlers.addAll(closeHandlersB);
         }
 
         return newCloseHandlers;
+    }
+
+    static boolean isEmptyCloseHandlers(final Deque<Runnable> closeHandlers) {
+        return N.isNullOrEmpty(closeHandlers) || (closeHandlers.size() == 1 && closeHandlers.getFirst() == EMPTY_CLOSE_HANDLER);
     }
 
     static Object hashKey(Object obj) {

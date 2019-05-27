@@ -57,9 +57,9 @@ import com.landawn.abacus.util.NamingPolicy;
 import com.landawn.abacus.util.ObjectPool;
 import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.SQLBuilder;
-import com.landawn.abacus.util.SQLBuilder.RE;
-import com.landawn.abacus.util.SQLBuilder.RE2;
-import com.landawn.abacus.util.SQLBuilder.RE3;
+import com.landawn.abacus.util.SQLBuilder.PAC;
+import com.landawn.abacus.util.SQLBuilder.PLC;
+import com.landawn.abacus.util.SQLBuilder.PSC;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
 import com.landawn.abacus.util.StringUtil;
@@ -461,7 +461,7 @@ public final class SQLiteExecutor {
 
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof ContentValues) {
-                        if (parameterType.isAssignableFrom(Map.class) || N.isEntity(parameterType)) {
+                        if (Map.class.isAssignableFrom(parameterType) || N.isEntity(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, namingPolicy));
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod,
@@ -551,16 +551,20 @@ public final class SQLiteExecutor {
 
             switch (namingPolicy) {
                 case LOWER_CAMEL_CASE: {
+                    String propName = null;
+
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
-                        if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(entry.getKey())) {
+                        propName = ClassUtil.formalizePropName(entry.getKey());
+
+                        if (notNullOrEmptyIgnorePropNames && (ignoredPropNames.contains(entry.getKey()) || ignoredPropNames.contains(propName))) {
                             continue;
                         }
 
                         if (entry.getValue() == null) {
-                            result.putNull(entry.getKey());
+                            result.putNull(propName);
                         } else {
                             type = Type.valueOf(entry.getValue().getClass());
-                            type.set(result, entry.getKey(), entry.getValue());
+                            type.set(result, propName, entry.getValue());
                         }
                     }
 
@@ -1235,10 +1239,10 @@ public final class SQLiteExecutor {
     }
 
     public boolean exists(String tableName, Condition whereClause) {
-        final SP pair = select(tableName, SQLBuilder._1, whereClause);
-        final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
+        final SP sp = select(tableName, SQLBuilder._1, whereClause);
+        final Object[] parameters = N.isNullOrEmpty(sp.parameters) ? N.EMPTY_OBJECT_ARRAY : sp.parameters.toArray(new Object[sp.parameters.size()]);
 
-        return exists(pair.sql, parameters);
+        return exists(sp.sql, parameters);
     }
 
     /**
@@ -1264,12 +1268,20 @@ public final class SQLiteExecutor {
     }
 
     public int count(String tableName, Condition whereClause) {
-        final SP pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
-        final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
+        final SP sp = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
+        final Object[] parameters = N.isNullOrEmpty(sp.parameters) ? N.EMPTY_OBJECT_ARRAY : sp.parameters.toArray(new Object[sp.parameters.size()]);
 
-        return count(pair.sql, parameters);
+        return count(sp.sql, parameters);
     }
 
+    /**
+     * 
+     * @param sql
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final int count(String sql, Object... parameters) {
         return queryForSingleResult(int.class, sql, parameters).orElse(0);
@@ -1278,16 +1290,16 @@ public final class SQLiteExecutor {
     private SP select(String tableName, String selectColumnName, Condition whereClause) {
         switch (columnNamingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
-                return RE.select(selectColumnName).from(tableName).where(whereClause).pair();
+                return PSC.select(selectColumnName).from(tableName).where(whereClause).pair();
 
             case UPPER_CASE_WITH_UNDERSCORE:
-                return RE2.select(selectColumnName).from(tableName).where(whereClause).pair();
+                return PAC.select(selectColumnName).from(tableName).where(whereClause).pair();
 
             case LOWER_CAMEL_CASE:
-                return RE3.select(selectColumnName).from(tableName).where(whereClause).pair();
+                return PLC.select(selectColumnName).from(tableName).where(whereClause).pair();
 
             default:
-                return RE.select(selectColumnName).from(tableName).where(whereClause).pair();
+                return PSC.select(selectColumnName).from(tableName).where(whereClause).pair();
         }
     }
 
@@ -2048,12 +2060,15 @@ public final class SQLiteExecutor {
 
     private String formatName(String tableName) {
         switch (columnNamingPolicy) {
-            case LOWER_CAMEL_CASE:
-                return tableName;
             case LOWER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toLowerCaseWithUnderscore(tableName);
+
             case UPPER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toUpperCaseWithUnderscore(tableName);
+
+            case LOWER_CAMEL_CASE:
+                return ClassUtil.formalizePropName(tableName);
+
             default:
                 throw new IllegalArgumentException("Unsupported NamingPolicy: " + columnNamingPolicy);
         }

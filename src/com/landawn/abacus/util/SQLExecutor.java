@@ -16,7 +16,6 @@ package com.landawn.abacus.util;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -32,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -50,8 +47,6 @@ import com.landawn.abacus.DataSourceSelector;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.annotation.Id;
-import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
@@ -67,9 +62,9 @@ import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
 import com.landawn.abacus.util.JdbcUtil.PreparedQuery;
-import com.landawn.abacus.util.SQLBuilder.NE;
-import com.landawn.abacus.util.SQLBuilder.NE2;
-import com.landawn.abacus.util.SQLBuilder.NE3;
+import com.landawn.abacus.util.SQLBuilder.NAC;
+import com.landawn.abacus.util.SQLBuilder.NLC;
+import com.landawn.abacus.util.SQLBuilder.NSC;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.u.Nullable;
@@ -1333,7 +1328,7 @@ public class SQLExecutor implements Closeable {
     //    int update(final Connection conn, final EntityId entityId, final Map<String, Object> props) {
     //        final Pair2 pair = generateUpdateSQL(entityId, props);
     //
-    //        return update(conn, pair.sql, pair.parameters);
+    //        return update(conn, sp.sql, sp.parameters);
     //    }
     //
     //    private Pair2 generateUpdateSQL(final EntityId entityId, final Map<String, Object> props) {
@@ -1371,7 +1366,7 @@ public class SQLExecutor implements Closeable {
     //    int delete(final Connection conn, final EntityId entityId) {
     //        final Pair2 pair = generateDeleteSQL(entityId);
     //
-    //        return update(conn, pair.sql, pair.parameters);
+    //        return update(conn, sp.sql, sp.parameters);
     //    }
     //
     //    private Pair2 generateDeleteSQL(final EntityId entityId) {
@@ -1409,7 +1404,7 @@ public class SQLExecutor implements Closeable {
     //    boolean exists(final Connection conn, final EntityId entityId) {
     //        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
     //
-    //        return query(conn, pair.sql, StatementSetter.DEFAULT, EXISTS_RESULT_SET_EXTRACTOR, null, pair.parameters);
+    //        return query(conn, sp.sql, StatementSetter.DEFAULT, EXISTS_RESULT_SET_EXTRACTOR, null, sp.parameters);
     //    }
 
     @SafeVarargs
@@ -1422,11 +1417,28 @@ public class SQLExecutor implements Closeable {
         return query(conn, sql, StatementSetter.DEFAULT, EXISTS_RESULT_SET_EXTRACTOR, null, parameters);
     }
 
+    /**
+     * 
+     * @param sql
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final int count(final String sql, final Object... parameters) {
         return count(null, sql, parameters);
     }
 
+    /**
+     * 
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     * @deprecated may be misused and it's inefficient.
+     */
+    @Deprecated
     @SafeVarargs
     public final int count(final Connection conn, final String sql, final Object... parameters) {
         return query(conn, sql, StatementSetter.DEFAULT, COUNT_RESULT_SET_EXTRACTOR, null, parameters);
@@ -3180,7 +3192,7 @@ public class SQLExecutor implements Closeable {
      * @param isolationLevel
      * @return
      */
-    public SQLTransaction beginTransaction(IsolationLevel isolationLevel) {
+    public SQLTransaction beginTransaction(final IsolationLevel isolationLevel) {
         return beginTransaction(isolationLevel, false);
     }
 
@@ -3191,7 +3203,7 @@ public class SQLExecutor implements Closeable {
      * @param forUpdateOnly
      * @return
      */
-    public SQLTransaction beginTransaction(boolean forUpdateOnly) {
+    public SQLTransaction beginTransaction(final boolean forUpdateOnly) {
         return beginTransaction(IsolationLevel.DEFAULT, forUpdateOnly);
     }
 
@@ -3204,15 +3216,32 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     public SQLTransaction beginTransaction(IsolationLevel isolationLevel, boolean forUpdateOnly) {
+        return beginTransaction(isolationLevel, forUpdateOnly, null);
+    }
+
+    final Map<String, SQLTransaction> threadTransactionMap = new ConcurrentHashMap<>();
+
+    /**
+     * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
+     * DON'T close it again by calling the close method.
+     * 
+     * @param isolationLevel
+     * @param forUpdateOnly
+     * @param jdbcSettings
+     * @return
+     */
+    public SQLTransaction beginTransaction(final IsolationLevel isolationLevel, final boolean forUpdateOnly, final JdbcSettings jdbcSettings) {
         N.checkArgNotNull(isolationLevel, "isolationLevel");
 
-        isolationLevel = isolationLevel == IsolationLevel.DEFAULT ? _defaultIsolationLevel : isolationLevel;
+        final IsolationLevel isolation = isolationLevel == IsolationLevel.DEFAULT ? _defaultIsolationLevel : isolationLevel;
+        final DataSource ds = jdbcSettings != null && jdbcSettings.getQueryWithDataSource() != null
+                ? getDataSource(N.EMPTY_STRING, N.EMPTY_OBJECT_ARRAY, jdbcSettings) : _ds;
 
-        final String ttid = getTransactionThreadId();
+        final String ttid = getTransactionThreadId(ds);
         SQLTransaction transaction = threadTransactionMap.get(ttid);
 
         if (transaction == null) {
-            transaction = new SQLTransaction(this, isolationLevel);
+            transaction = new SQLTransaction(this, ds, isolation);
             threadTransactionMap.put(ttid, transaction);
 
             logger.info("Creating a new transaction(id={})", transaction.id());
@@ -3223,17 +3252,15 @@ public class SQLExecutor implements Closeable {
 
         logger.debug("Current active transactions: {}", threadTransactionMap.values());
 
-        transaction.incrementAndGetRef(isolationLevel, forUpdateOnly);
+        transaction.incrementAndGetRef(isolation, forUpdateOnly);
 
         return transaction;
     }
 
-    final Map<String, SQLTransaction> threadTransactionMap = new ConcurrentHashMap<>();
-
-    static String getTransactionThreadId() {
+    static String getTransactionThreadId(final DataSource ds) {
         final Thread currentThread = Thread.currentThread();
 
-        return currentThread.getName() + "_" + currentThread.getId();
+        return currentThread.getName() + "_" + currentThread.getId() + "_" + System.identityHashCode(ds);
     }
 
     public DBSequence getDBSequence(final String tableName, final String seqName) {
@@ -3373,13 +3400,9 @@ public class SQLExecutor implements Closeable {
             return conn;
         }
 
-        final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId());
+        final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId(ds));
 
         if (tran != null && (tran.isForUpdateOnly() == false || op != SQLOperation.SELECT)) {
-            if (ds != _ds) {
-                throw new IllegalArgumentException("Target DataSource is different from the DataSource where transaction is started");
-            }
-
             return tran.connection();
         }
 
@@ -3571,7 +3594,13 @@ public class SQLExecutor implements Closeable {
 
     protected void closeQuietly(final Connection localConn, final Connection inputConn, final DataSource ds) {
         if (inputConn == null) {
-            closeQuietly(localConn, ds);
+            final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId(ds));
+
+            if (tran != null && tran.connection() == localConn) {
+                // ignore.
+            } else {
+                closeQuietly(localConn, ds);
+            }
         }
     }
 
@@ -3751,8 +3780,8 @@ public class SQLExecutor implements Closeable {
      */
     public static final class Mapper<T> {
 
-        static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
-        static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
+        static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NSC._1);
+        static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NSC.COUNT_ALL);
 
         private final Class<T> targetClass;
         private final Type<T> targetType;
@@ -3775,32 +3804,7 @@ public class SQLExecutor implements Closeable {
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
 
-            final Set<String> idPropNames = new LinkedHashSet<>();
-
-            final Set<Field> allFields = new HashSet<>();
-
-            for (Class<?> superClass : ClassUtil.getAllSuperclasses(targetClass)) {
-                allFields.addAll(Array.asList(superClass.getDeclaredFields()));
-            }
-
-            allFields.addAll(Array.asList(targetClass.getDeclaredFields()));
-
-            for (Field field : allFields) {
-                if (ClassUtil.getPropGetMethod(targetClass, field.getName()) == null
-                        && ClassUtil.getPropGetMethod(targetClass, ClassUtil.formalizePropName(field.getName())) == null) {
-                    continue;
-                }
-
-                if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
-                    idPropNames.add(field.getName());
-                }
-            }
-
-            if (targetClass.isAnnotationPresent(Id.class)) {
-                String[] values = targetClass.getAnnotation(Id.class).value();
-                N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
-                idPropNames.addAll(Arrays.asList(values));
-            }
+            final Set<String> idPropNames = ClassUtil.getIdFieldNames(targetClass);
 
             N.checkArgNotNullOrEmpty(idPropNames, "Target class: " + ClassUtil.getCanonicalClassName(targetClass)
                     + " must at least has one id property annotated by @Id or @ReadOnlyId on field/method or class");
@@ -3918,9 +3922,9 @@ public class SQLExecutor implements Closeable {
         }
 
         public boolean exists(final Connection conn, final Condition whereCause) {
-            final SP pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
+            final SP sp = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
 
-            return sqlExecutor.exists(conn, pair.sql, pair.parameters.toArray());
+            return sqlExecutor.exists(conn, sp.sql, sp.parameters.toArray());
         }
 
         public int count(final Condition whereCause) {
@@ -3928,9 +3932,9 @@ public class SQLExecutor implements Closeable {
         }
 
         public int count(final Connection conn, final Condition whereCause) {
-            final SP pair = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
+            final SP sp = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
 
-            return sqlExecutor.count(conn, pair.sql, pair.parameters.toArray());
+            return sqlExecutor.count(conn, sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4021,8 +4025,8 @@ public class SQLExecutor implements Closeable {
             if (N.isNullOrEmpty(selectPropNames)) {
                 return sqlExecutor.gett(targetClass, conn, sql_get_by_id, id);
             } else {
-                final SP pair = prepareQuery(selectPropNames, idCond);
-                return sqlExecutor.gett(targetClass, conn, pair.sql, id);
+                final SP sp = prepareQuery(selectPropNames, idCond);
+                return sqlExecutor.gett(targetClass, conn, sp.sql, id);
             }
         }
 
@@ -4168,9 +4172,9 @@ public class SQLExecutor implements Closeable {
 
         public Optional<T> findFirst(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.findFirst(targetClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.findFirst(targetClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
@@ -4228,9 +4232,9 @@ public class SQLExecutor implements Closeable {
 
         public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames,
                 final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.findFirst(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.findFirst(conn, sp.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, sp.parameters.toArray());
         }
 
         public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
@@ -4250,7 +4254,7 @@ public class SQLExecutor implements Closeable {
 
         public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames,
                 final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
             final ResultExtractor<R> resultExtractor = new ResultExtractor<R>() {
                 @Override
@@ -4265,7 +4269,7 @@ public class SQLExecutor implements Closeable {
                 }
             };
 
-            return Optional.ofNullable(sqlExecutor.query(conn, pair.sql, StatementSetter.DEFAULT, resultExtractor, jdbcSettings, pair.parameters.toArray()));
+            return Optional.ofNullable(sqlExecutor.query(conn, sp.sql, StatementSetter.DEFAULT, resultExtractor, jdbcSettings, sp.parameters.toArray()));
         }
 
         public List<T> list(final Condition whereCause) {
@@ -4289,9 +4293,9 @@ public class SQLExecutor implements Closeable {
         }
 
         public List<T> list(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.list(targetClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.list(targetClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         public <R> List<R> list(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause) {
@@ -4377,9 +4381,9 @@ public class SQLExecutor implements Closeable {
 
         public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.list(conn, pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.list(conn, sp.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4404,9 +4408,9 @@ public class SQLExecutor implements Closeable {
          * @see SQLExecutor#listAll(Class, String, StatementSetter, JdbcSettings, Object...)
          */
         public List<T> listAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.listAll(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.listAll(targetClass, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         public <R> List<R> listAll(String selectPropName, final JdbcUtil.RecordGetter<R, RuntimeException> recordGetter, final Condition whereCause,
@@ -4435,9 +4439,9 @@ public class SQLExecutor implements Closeable {
 
         public <R> List<R> listAll(Collection<String> selectPropNames, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.listAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.listAll(sp.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4476,9 +4480,9 @@ public class SQLExecutor implements Closeable {
          * @return
          */
         public Stream<T> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.stream(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.stream(targetClass, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4609,9 +4613,9 @@ public class SQLExecutor implements Closeable {
          */
         public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.stream(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.stream(sp.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4642,9 +4646,9 @@ public class SQLExecutor implements Closeable {
          * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
          */
         public Stream<T> streamAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.streamAll(targetClass, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.streamAll(targetClass, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4721,9 +4725,9 @@ public class SQLExecutor implements Closeable {
          */
         public <R> Stream<R> streamAll(Collection<String> selectPropNames, final JdbcUtil.BiRecordGetter<R, RuntimeException> recordGetter,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.streamAll(pair.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.streamAll(sp.sql, StatementSetter.DEFAULT, recordGetter, jdbcSettings, sp.parameters.toArray());
         }
 
         public DataSet query(final Condition whereCause) {
@@ -4747,9 +4751,9 @@ public class SQLExecutor implements Closeable {
         }
 
         public DataSet query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.query(conn, pair.sql, StatementSetter.DEFAULT, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.query(conn, sp.sql, StatementSetter.DEFAULT, null, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4774,9 +4778,9 @@ public class SQLExecutor implements Closeable {
          * @see SQLExecutor#queryAll(String, StatementSetter, JdbcSettings, Object...)
          */
         public DataSet queryAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(selectPropNames, whereCause);
+            final SP sp = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.queryAll(pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.queryAll(sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         /**
@@ -4787,9 +4791,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalBoolean queryForBoolean(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForBoolean(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForBoolean(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4800,9 +4804,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalChar queryForChar(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForChar(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForChar(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4813,9 +4817,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalByte queryForByte(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForByte(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForByte(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4826,9 +4830,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalShort queryForShort(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForShort(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForShort(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4839,9 +4843,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalInt queryForInt(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForInt(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForInt(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4852,9 +4856,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalLong queryForLong(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForLong(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForLong(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4865,9 +4869,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalFloat queryForFloat(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForFloat(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForFloat(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4878,9 +4882,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public OptionalDouble queryForDouble(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForDouble(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForDouble(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4891,9 +4895,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public Nullable<BigDecimal> queryForBigDecimal(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForBigDecimal(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForBigDecimal(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4904,9 +4908,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public Nullable<String> queryForString(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForString(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForString(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4917,9 +4921,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public Nullable<java.sql.Date> queryForDate(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForDate(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForDate(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4930,9 +4934,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public Nullable<java.sql.Time> queryForTime(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForTime(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForTime(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -4943,9 +4947,9 @@ public class SQLExecutor implements Closeable {
          * @see Mapper#queryForSingleResult(Class, Connection, String, Condition, JdbcSettings)
          */
         public Nullable<java.sql.Timestamp> queryForTimestamp(final String selectPropName, final Condition whereCause) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForTimestamp(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.queryForTimestamp(sp.sql, sp.parameters.toArray());
         }
 
         /**
@@ -5026,9 +5030,9 @@ public class SQLExecutor implements Closeable {
          */
         public <V> Nullable<V> queryForSingleResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForSingleResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.queryForSingleResult(targetValueClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final String selectPropName, final Object id)
@@ -5058,9 +5062,9 @@ public class SQLExecutor implements Closeable {
 
         public <V> Nullable<V> queryForUniqueResult(final Class<V> targetValueClass, final Connection conn, final String selectPropName,
                 final Condition whereCause, final JdbcSettings jdbcSettings) throws DuplicatedResultException {
-            final SP pair = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
+            final SP sp = prepareQuery(Arrays.asList(selectPropName), whereCause, 1);
 
-            return sqlExecutor.queryForUniqueResult(targetValueClass, conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.queryForUniqueResult(targetValueClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
         private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
@@ -5077,27 +5081,27 @@ public class SQLExecutor implements Closeable {
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        sqlBuilder = NE.selectFrom(targetClass).where(whereCause);
+                        sqlBuilder = NSC.selectFrom(targetClass).where(whereCause);
                     } else {
-                        sqlBuilder = NE.select(selectPropNames).from(targetClass).where(whereCause);
+                        sqlBuilder = NSC.select(selectPropNames).from(targetClass).where(whereCause);
                     }
 
                     break;
 
                 case UPPER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        sqlBuilder = NE2.selectFrom(targetClass).where(whereCause);
+                        sqlBuilder = NAC.selectFrom(targetClass).where(whereCause);
                     } else {
-                        sqlBuilder = NE2.select(selectPropNames).from(targetClass).where(whereCause);
+                        sqlBuilder = NAC.select(selectPropNames).from(targetClass).where(whereCause);
                     }
 
                     break;
 
                 case LOWER_CAMEL_CASE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        sqlBuilder = NE3.selectFrom(targetClass).where(whereCause);
+                        sqlBuilder = NLC.selectFrom(targetClass).where(whereCause);
                     } else {
-                        sqlBuilder = NE3.select(selectPropNames).from(targetClass).where(whereCause);
+                        sqlBuilder = NLC.select(selectPropNames).from(targetClass).where(whereCause);
                     }
 
                     break;
@@ -5158,17 +5162,17 @@ public class SQLExecutor implements Closeable {
             }
 
             if (insertPropNames == null) {
-                final SP pair = prepareAdd(entity);
+                final SP sp = prepareAdd(entity);
 
-                final ID id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
+                final ID id = sqlExecutor.insert(conn, sp.sql, sp.parameters.toArray());
 
                 postAdd(entity, id);
 
                 return id;
             } else {
-                final SP pair = prepareAdd(insertPropNames);
+                final SP sp = prepareAdd(insertPropNames);
 
-                final ID id = sqlExecutor.insert(conn, pair.sql, entity);
+                final ID id = sqlExecutor.insert(conn, sp.sql, entity);
 
                 postAdd(entity, id);
 
@@ -5184,9 +5188,9 @@ public class SQLExecutor implements Closeable {
         public <ID> ID add(final Connection conn, final Map<String, Object> props) {
             N.checkArgNotNull(props);
 
-            final SP pair = prepareAdd(props);
+            final SP sp = prepareAdd(props);
 
-            return sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
+            return sqlExecutor.insert(conn, sp.sql, sp.parameters.toArray());
         }
 
         //        /**
@@ -5306,11 +5310,11 @@ public class SQLExecutor implements Closeable {
                 return new ArrayList<>();
             }
 
-            final SP pair = prepareAdd(entities.iterator().next());
+            final SP sp = prepareAdd(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final List<ID> ids = sqlExecutor.batchInsert(conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
+            final List<ID> ids = sqlExecutor.batchInsert(conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
 
             if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
                 int idx = 0;
@@ -5324,25 +5328,25 @@ public class SQLExecutor implements Closeable {
         }
 
         private SP prepareAdd(final Collection<String> insertPropNames) {
-            SP pair = null;
+            SP sp = null;
 
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    pair = NE.insert(insertPropNames).into(targetClass).pair();
+                    sp = NSC.insert(insertPropNames).into(targetClass).pair();
                     break;
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    pair = NE2.insert(insertPropNames).into(targetClass).pair();
+                    sp = NAC.insert(insertPropNames).into(targetClass).pair();
                     break;
 
                 case LOWER_CAMEL_CASE:
-                    pair = NE3.insert(insertPropNames).into(targetClass).pair();
+                    sp = NLC.insert(insertPropNames).into(targetClass).pair();
                     break;
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
-            return pair;
+            return sp;
         }
 
         private SP prepareAdd(final Object entity) {
@@ -5363,13 +5367,13 @@ public class SQLExecutor implements Closeable {
             } else {
                 switch (namingPolicy) {
                     case LOWER_CASE_WITH_UNDERSCORE:
-                        return NE.insert(entity).into(targetClass).pair();
+                        return NSC.insert(entity).into(targetClass).pair();
 
                     case UPPER_CASE_WITH_UNDERSCORE:
-                        return NE2.insert(entity).into(targetClass).pair();
+                        return NAC.insert(entity).into(targetClass).pair();
 
                     case LOWER_CAMEL_CASE:
-                        return NE3.insert(entity).into(targetClass).pair();
+                        return NLC.insert(entity).into(targetClass).pair();
 
                     default:
                         throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
@@ -5382,13 +5386,13 @@ public class SQLExecutor implements Closeable {
 
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    return NE.insert(props).into(targetClass).pair();
+                    return NSC.insert(props).into(targetClass).pair();
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    return NE2.insert(props).into(targetClass).pair();
+                    return NAC.insert(props).into(targetClass).pair();
 
                 case LOWER_CAMEL_CASE:
-                    return NE3.insert(props).into(targetClass).pair();
+                    return NLC.insert(props).into(targetClass).pair();
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
@@ -5509,9 +5513,9 @@ public class SQLExecutor implements Closeable {
                 return 0;
             }
 
-            final SP pair = prepareUpdate(entity, updatePropNames);
+            final SP sp = prepareUpdate(entity, updatePropNames);
 
-            final int updateCount = sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
+            final int updateCount = sqlExecutor.update(conn, sp.sql, sp.parameters.toArray());
 
             postUpdate(entity, updatePropNames);
 
@@ -5532,9 +5536,9 @@ public class SQLExecutor implements Closeable {
                 return 0;
             }
 
-            final SP pair = prepareUpdate(whereCause, props);
+            final SP sp = prepareUpdate(whereCause, props);
 
-            return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
+            return sqlExecutor.update(conn, sp.sql, sp.parameters.toArray());
         }
 
         //        /**
@@ -5720,11 +5724,11 @@ public class SQLExecutor implements Closeable {
                 return 0;
             }
 
-            final SP pair = prepareUpdate(entities.iterator().next(), updatePropNames);
+            final SP sp = prepareUpdate(entities.iterator().next(), updatePropNames);
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
+            final int updateCount = sqlExecutor.batchUpdate(conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
 
             if (N.firstNonNull(entities).orNull() instanceof DirtyMarker) {
                 for (Object entity : entities) {
@@ -5768,13 +5772,13 @@ public class SQLExecutor implements Closeable {
         private SP prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    return NE.update(targetClass).set(props).where(whereCause).pair();
+                    return NSC.update(targetClass).set(props).where(whereCause).pair();
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    return NE2.update(targetClass).set(props).where(whereCause).pair();
+                    return NAC.update(targetClass).set(props).where(whereCause).pair();
 
                 case LOWER_CAMEL_CASE:
-                    return NE3.update(targetClass).set(props).where(whereCause).pair();
+                    return NLC.update(targetClass).set(props).where(whereCause).pair();
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
@@ -5815,9 +5819,9 @@ public class SQLExecutor implements Closeable {
                 return sqlExecutor.update(conn, sql_delete_by_id, id);
             }
 
-            final SP pair = prepareDelete(whereCause);
+            final SP sp = prepareDelete(whereCause);
 
-            return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
+            return sqlExecutor.update(conn, sp.sql, sp.parameters.toArray());
         }
 
         //        /**
@@ -5964,21 +5968,21 @@ public class SQLExecutor implements Closeable {
         }
 
         private SP prepareDelete(final Condition whereCause) {
-            SP pair = null;
+            SP sp = null;
 
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    pair = NE.deleteFrom(targetClass).where(whereCause).pair();
+                    sp = NSC.deleteFrom(targetClass).where(whereCause).pair();
 
                     break;
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    pair = NE2.deleteFrom(targetClass).where(whereCause).pair();
+                    sp = NAC.deleteFrom(targetClass).where(whereCause).pair();
 
                     break;
 
                 case LOWER_CAMEL_CASE:
-                    pair = NE3.deleteFrom(targetClass).where(whereCause).pair();
+                    sp = NLC.deleteFrom(targetClass).where(whereCause).pair();
 
                     break;
 
@@ -5986,7 +5990,7 @@ public class SQLExecutor implements Closeable {
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
 
-            return pair;
+            return sp;
         }
 
         private void checkEntity(final Object entity) {
