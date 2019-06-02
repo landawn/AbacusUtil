@@ -2972,6 +2972,23 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator, final BinaryOperator<U> combiner) {
+        assertNotClosed();
+
+        try {
+            U result = identity;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = accumulator.apply(result, elements[i]);
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<? super R, ? super T> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 

@@ -2899,6 +2899,23 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator, final BinaryOperator<U> combiner) {
+        assertNotClosed();
+
+        try {
+            U result = identity;
+
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return result;
+        } finally {
+            close();
+        }
+    }
+
+    @Override
     public <R> R collect(Supplier<R> supplier, BiConsumer<? super R, ? super T> accumulator, BiConsumer<R, R> combiner) {
         assertNotClosed();
 

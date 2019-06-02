@@ -78,7 +78,7 @@ class PoolableConnection extends AbstractPoolable implements Connection {
             CachedStatmentKey id = stmt.getId();
 
             try {
-                stmt.clearParameters();
+                stmt.reset();
 
                 synchronized (cachedStatementPool) {
                     if (cachedStatementPool.containsKey(id)) {

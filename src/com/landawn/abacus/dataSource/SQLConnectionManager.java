@@ -46,6 +46,7 @@ import com.landawn.abacus.pool.PoolFactory;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.Configuration;
 import com.landawn.abacus.util.JdbcUtil;
+import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -184,9 +185,7 @@ public final class SQLConnectionManager extends AbstractConnectionManager {
             }
 
             if (conn == null) {
-                String msg = "Can not get connection. Max active connection is " + maxActive + ". Current active connection: " + xpool.size();
-                logger.warn(msg);
-                throw new RuntimeException(msg);
+                throw new RuntimeException("Can not get connection. Max active connection is " + maxActive + ". Current active connection: " + xpool.size());
             }
         }
 
@@ -376,7 +375,6 @@ public final class SQLConnectionManager extends AbstractConnectionManager {
             } catch (SQLException e) {
                 String msg = "Faied to create new connection for data source '" + url + "'." + " [Active connection number]: " + (xpool.size() + 1) + ". "
                         + AbacusException.getErrorMsg(e);
-                logger.error(msg, e);
                 throw new UncheckedSQLException(msg, e);
             }
         }
@@ -476,9 +474,7 @@ public final class SQLConnectionManager extends AbstractConnectionManager {
             try {
                 DriverManager.registerDriver((Driver) ClassUtil.forClass(driver).newInstance());
             } catch (Exception e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new RuntimeException(msg, e);
+                throw N.toRuntimeException(e);
             }
         }
 

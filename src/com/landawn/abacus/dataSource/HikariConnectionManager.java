@@ -31,7 +31,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * @author Haiyang Li
  */
 class HikariConnectionManager extends AbstractConnectionManager {
-    private static final Logger logger = LoggerFactory.getLogger(HikariConnectionManager.class);
+    static final Logger logger = LoggerFactory.getLogger(HikariConnectionManager.class);
 
     private final com.zaxxer.hikari.HikariDataSource ds;
 
@@ -74,9 +74,7 @@ class HikariConnectionManager extends AbstractConnectionManager {
         try {
             return ds.getConnection();
         } catch (SQLException e) {
-            String msg = AbacusException.getErrorMsg(e);
-            logger.warn(msg);
-            throw new UncheckedSQLException(msg, e);
+            throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
         }
     }
 
@@ -86,9 +84,7 @@ class HikariConnectionManager extends AbstractConnectionManager {
             try {
                 conn.close();
             } catch (SQLException e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new UncheckedSQLException(msg, e);
+                throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
             }
         }
     }

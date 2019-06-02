@@ -458,10 +458,10 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T> T get(final Class<T> targetClass, final int rowIndex, final int columnIndex) {
+    public <T> T get(final Class<T> targetType, final int rowIndex, final int columnIndex) {
         T rt = (T) _columnList.get(columnIndex).get(rowIndex);
 
-        return (rt == null) ? N.defaultValueOf(targetClass) : rt;
+        return (rt == null) ? N.defaultValueOf(targetType) : rt;
     }
 
     @Override
@@ -485,10 +485,10 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T> T get(final Class<T> targetClass, final int columnIndex) {
+    public <T> T get(final Class<T> targetType, final int columnIndex) {
         T rt = get(columnIndex);
 
-        return (rt == null) ? N.defaultValueOf(targetClass) : rt;
+        return (rt == null) ? N.defaultValueOf(targetType) : rt;
     }
 
     @SuppressWarnings("unchecked")
@@ -498,8 +498,8 @@ public class RowDataSet implements DataSet, Cloneable {
     }
 
     @Override
-    public <T> T get(final Class<T> targetClass, final String columnName) {
-        return get(targetClass, checkColumnName(columnName));
+    public <T> T get(final Class<T> targetType, final String columnName) {
+        return get(targetType, checkColumnName(columnName));
     }
 
     @Override

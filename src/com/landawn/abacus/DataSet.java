@@ -52,6 +52,7 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  * 
  * @see com.landawn.abacus.util.DataSetUtil
+ * @see com.landawn.abacus.util.Build.DataSetBuilder
  * @see com.landawn.abacus.util.JdbcUtil
  * @see com.landawn.abacus.util.CSVUtil
  * @see com.landawn.abacus.util.function.IntFunction
@@ -186,6 +187,8 @@ public interface DataSet {
     void swapRows(int rowIndexA, int rowIndexB);
 
     /**
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param rowIndex
      * @param columnIndex
@@ -194,12 +197,17 @@ public interface DataSet {
     <T> T get(int rowIndex, int columnIndex);
 
     /**
-     * @param targetClass
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
+     * 
+     * @param targetType
      * @param rowIndex
      * @param columnIndex
      * @return
+     * @deprecated may be misused because it implies there is an underline auto-conversion from column values to target return type but actually there is not.
      */
-    <T> T get(Class<T> targetClass, int rowIndex, int columnIndex);
+    @Deprecated
+    <T> T get(Class<T> targetType, int rowIndex, int columnIndex);
 
     /**
      *
@@ -217,22 +225,18 @@ public interface DataSet {
      */
     boolean isNull(int rowIndex, int columnIndex);
 
-    /**
+    /** 
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnIndex
      * @return
      */
     <T> T get(int columnIndex);
 
-    /**
-     *
-     * @param targetClass
-     * @param columnIndex
-     * @return
-     */
-    <T> T get(Class<T> targetClass, int columnIndex);
-
-    /**
+    /** 
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnName
      * @return
@@ -240,16 +244,35 @@ public interface DataSet {
     <T> T get(String columnName);
 
     /**
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      *
-     * @param targetClass
+     * @param targetType
+     * @param columnIndex
+     * @return
+     * @deprecated may be misused because it implies there is an underline auto-conversion from column values to target return type but actually there is not.
+     */
+    @Deprecated
+    <T> T get(Class<T> targetType, int columnIndex);
+
+    /** 
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
+     *
+     * @param targetType
      * @param columnName
      * @return
+     * @deprecated may be misused because it implies there is an underline auto-conversion from column values to target return type but actually there is not.
      */
-    <T> T get(Class<T> targetClass, String columnName);
+    @Deprecated
+    <T> T get(Class<T> targetType, String columnName);
 
     /**
      * Returns the value from the current row and specified column if the specified {@code columnIndex} is equal or bigger than zero, 
      * or the specified {@code defaultValue} otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      * 
      * @param columnIndex
      * @param defaultValue
@@ -262,6 +285,9 @@ public interface DataSet {
     /**
      * Returns the value from the current row and specified column if the specified {@code columnName} exists, 
      * or the specified {@code defaultValue} otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code T}.
+     * So the column values must be the type which is assignable to target type.
      * 
      * @param columnName
      * @param defaultValue
@@ -273,6 +299,9 @@ public interface DataSet {
 
     /**
      * Return default value (false) if the property is null.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Boolean}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnIndex
      * @return
@@ -281,6 +310,9 @@ public interface DataSet {
 
     /**
      * Return default value (false) if the property is null.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Boolean}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnName
      * @return
@@ -289,6 +321,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Character}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnIndex
      * @return
@@ -297,6 +332,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Character}.
+     * So the column values must be the type which is assignable to target type.
      *
      * @param columnName
      * @return
@@ -305,6 +343,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.byteValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Byte}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -313,6 +354,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.byteValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Byte}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return
@@ -321,6 +365,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.shortValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Short}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -329,6 +376,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.shortValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Short}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return
@@ -337,6 +387,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.intValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Integer}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -345,6 +398,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.intValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Integer}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return
@@ -353,6 +409,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.longValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Long}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -361,6 +420,9 @@ public interface DataSet {
 
     /**
      * Return default value (0) if the property is null. Return Number.longValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Long}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return
@@ -369,6 +431,9 @@ public interface DataSet {
 
     /**
      * Return default value (0f) if the property is null. Return Number.floatValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Float}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -377,6 +442,9 @@ public interface DataSet {
 
     /**
      * Return default value (0f) if the property is null. Return Number.floatValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Float}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return
@@ -385,6 +453,9 @@ public interface DataSet {
 
     /**
      * Return default value (0d) if the property is null. Return Number.doubleValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Double}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnIndex
      * @return
@@ -393,6 +464,9 @@ public interface DataSet {
 
     /**
      * Return default value (0d) if the property is null. Return Number.doubleValue() otherwise.
+     * <br />
+     * There is NO underline auto-conversion from column value to target type: {@code Double}.
+     * So the column values must be the type which is assignable to target type, or {@code Number}.
      *
      * @param columnName
      * @return

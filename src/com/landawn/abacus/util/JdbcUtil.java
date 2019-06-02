@@ -1716,16 +1716,16 @@ public final class JdbcUtil {
     }
 
     /**
-     * Don't cache or reuse the returned {@code BiRecordGetter} instance.
+     * Don't cache or reuse the returned {@code BiRowMapper} instance.
      * 
      * @param targetType Array/List/Map or Entity with getter/setter methods.
      * @return
-     * @deprecated replaced by {@code BiRecordGetter#to(Class)} in JDK 1.8 or above.
+     * @deprecated replaced by {@code BiRowMapper#to(Class)} in JDK 1.8 or above.
      */
     @Deprecated
-    public static <T> BiRecordGetter<T, RuntimeException> createBiRecordGetterByTargetClass(final Class<? extends T> targetClass) {
+    public static <T> BiRowMapper<T, RuntimeException> createBiRowMapperByTargetClass(final Class<? extends T> targetClass) {
         if (Object[].class.isAssignableFrom(targetClass)) {
-            return new BiRecordGetter<T, RuntimeException>() {
+            return new BiRowMapper<T, RuntimeException>() {
                 @Override
                 public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
                     final int columnCount = columnLabelList.size();
@@ -1739,7 +1739,7 @@ public final class JdbcUtil {
                 }
             };
         } else if (List.class.isAssignableFrom(targetClass)) {
-            return new BiRecordGetter<T, RuntimeException>() {
+            return new BiRowMapper<T, RuntimeException>() {
 
                 private final boolean isListOrArrayList = targetClass.equals(List.class) || targetClass.equals(ArrayList.class);
 
@@ -1756,7 +1756,7 @@ public final class JdbcUtil {
                 }
             };
         } else if (Map.class.isAssignableFrom(targetClass)) {
-            return new BiRecordGetter<T, RuntimeException>() {
+            return new BiRowMapper<T, RuntimeException>() {
                 private final boolean isMapOrHashMap = targetClass.equals(Map.class) || targetClass.equals(HashMap.class);
                 private final boolean isLinkedHashMap = targetClass.equals(LinkedHashMap.class);
 
@@ -1774,7 +1774,7 @@ public final class JdbcUtil {
                 }
             };
         } else if (N.isEntity(targetClass)) {
-            return new BiRecordGetter<T, RuntimeException>() {
+            return new BiRowMapper<T, RuntimeException>() {
                 private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
                 private volatile String[] columnLabels = null;
                 private volatile Method[] propSetters;
@@ -1795,7 +1795,7 @@ public final class JdbcUtil {
 
                     if (columnTypes == null || propSetters == null) {
                         final EntityInfo entityInfo = ParserUtil.getEntityInfo(targetClass);
-                        final Map<String, String> column2FieldNameMap = getField2ColumnNameMap(targetClass);
+                        final Map<String, String> column2FieldNameMap = getColumn2FieldNameMap(targetClass);
 
                         propSetters = new Method[columnCount];
                         columnTypes = new Type[columnCount];
@@ -1846,7 +1846,7 @@ public final class JdbcUtil {
                 }
             };
         } else {
-            return new BiRecordGetter<T, RuntimeException>() {
+            return new BiRowMapper<T, RuntimeException>() {
                 private final Type<? extends T> targetType = N.typeOf(targetClass);
                 private int columnCount = 0;
 
@@ -1854,7 +1854,7 @@ public final class JdbcUtil {
                 public T apply(ResultSet rs, List<String> columnLabelList) throws SQLException {
                     if (columnCount != 1 && (columnCount = columnLabelList.size()) != 1) {
                         throw new IllegalArgumentException(
-                                "Type: " + targetClass + " doesn't support retrieving value from multiple columns: " + columnLabelList);
+                                "It's not supported to retrieve value from multiple columns: " + columnLabelList + " for type: " + targetClass);
                     }
 
                     return targetType.get(rs, 1);
@@ -3058,7 +3058,7 @@ public final class JdbcUtil {
             final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws UncheckedSQLException, E, E2 {
 
         final Iterator<Object[]> iter = new ObjIterator<Object[]>() {
-            private final JdbcUtil.BiRecordGetter<Object[], RuntimeException> biFunc = BiRecordGetter.TO_ARRAY;
+            private final JdbcUtil.BiRowMapper<Object[], RuntimeException> biFunc = BiRowMapper.TO_ARRAY;
             private List<String> columnLabels = null;
             private boolean hasNext;
 
@@ -3242,7 +3242,7 @@ public final class JdbcUtil {
 
     private static final Map<Class<?>, Map<String, String>> column2FieldNameMapPool = new ConcurrentHashMap<>();
 
-    static Map<String, String> getField2ColumnNameMap(Class<?> entityClass) {
+    static Map<String, String> getColumn2FieldNameMap(Class<?> entityClass) {
         Map<String, String> result = column2FieldNameMapPool.get(entityClass);
 
         if (result == null) {
@@ -3570,19 +3570,6 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q setTime(int parameterIndex, java.sql.Time x) throws SQLException {
-            stmt.setTime(parameterIndex, x);
-
-            return (Q) this;
-        }
-
-        /**
-         * 
-         * @param parameterIndex starts from 1, not 0.
-         * @param x
-         * @return
-         * @throws SQLException
-         */
         public Q setDate(int parameterIndex, java.sql.Date x) throws SQLException {
             stmt.setDate(parameterIndex, x);
 
@@ -3596,8 +3583,61 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
+        public Q setDate(int parameterIndex, java.util.Date x) throws SQLException {
+            stmt.setDate(parameterIndex, x == null ? null : x instanceof java.sql.Date ? (java.sql.Date) x : new java.sql.Date(x.getTime()));
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setTime(int parameterIndex, java.sql.Time x) throws SQLException {
+            stmt.setTime(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setTime(int parameterIndex, java.util.Date x) throws SQLException {
+            stmt.setTime(parameterIndex, x == null ? null : x instanceof java.sql.Time ? (java.sql.Time) x : new java.sql.Time(x.getTime()));
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
         public Q setTimestamp(int parameterIndex, java.sql.Timestamp x) throws SQLException {
             stmt.setTimestamp(parameterIndex, x);
+
+            return (Q) this;
+        }
+
+        /**
+         * 
+         * @param parameterIndex starts from 1, not 0.
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public Q setTimestamp(int parameterIndex, java.util.Date x) throws SQLException {
+            stmt.setTimestamp(parameterIndex,
+                    x == null ? null : x instanceof java.sql.Timestamp ? (java.sql.Timestamp) x : new java.sql.Timestamp(x.getTime()));
 
             return (Q) this;
         }
@@ -4560,7 +4600,7 @@ public final class JdbcUtil {
         private <T> T get(Class<T> targetClass, ResultSet rs) throws SQLException {
             final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
-            return BiRecordGetter.to(targetClass).apply(rs, columnLabels);
+            return BiRowMapper.to(targetClass).apply(rs, columnLabels);
         }
 
         public DataSet query() throws SQLException {
@@ -4602,26 +4642,26 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param recordGetter
+         * @param rowMapper
          * @return
          * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Optional<T> get(RecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
-            return Optional.ofNullable(gett(recordGetter));
+        public <T, E extends Exception> Optional<T> get(RowMapper<T, E> rowMapper) throws DuplicatedResultException, SQLException, E {
+            return Optional.ofNullable(gett(rowMapper));
         }
 
         /**
          * 
-         * @param recordGetter
+         * @param rowMapper
          * @return
          * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> Optional<T> get(BiRecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
-            return Optional.ofNullable(gett(recordGetter));
+        public <T, E extends Exception> Optional<T> get(BiRowMapper<T, E> rowMapper) throws DuplicatedResultException, SQLException, E {
+            return Optional.ofNullable(gett(rowMapper));
         }
 
         /**
@@ -4654,19 +4694,19 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param recordGetter
+         * @param rowMapper
          * @return
          * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> T gett(RecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T, E extends Exception> T gett(RowMapper<T, E> rowMapper) throws DuplicatedResultException, SQLException, E {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    final T result = Objects.requireNonNull(recordGetter.apply(rs));
+                    final T result = Objects.requireNonNull(rowMapper.apply(rs));
 
                     if (rs.next()) {
                         throw new DuplicatedResultException("There are more than one record found by the query");
@@ -4684,19 +4724,19 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param recordGetter
+         * @param rowMapper
          * @return
          * @throws DuplicatedResultException If there are more than one record found by the query
          * @throws SQLException
          * @throws E
          */
-        public <T, E extends Exception> T gett(BiRecordGetter<T, E> recordGetter) throws DuplicatedResultException, SQLException, E {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T, E extends Exception> T gett(BiRowMapper<T, E> rowMapper) throws DuplicatedResultException, SQLException, E {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    final T result = Objects.requireNonNull(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs)));
+                    final T result = Objects.requireNonNull(rowMapper.apply(rs, JdbcUtil.getColumnLabelList(rs)));
 
                     if (rs.next()) {
                         throw new DuplicatedResultException("There are more than one record found by the query");
@@ -4733,27 +4773,27 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> Optional<T> findFirst(RecordGetter<T, E> recordGetter) throws SQLException, E {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T, E extends Exception> Optional<T> findFirst(RowMapper<T, E> rowMapper) throws SQLException, E {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
-                return rs.next() ? Optional.of(recordGetter.apply(rs)) : Optional.<T> empty();
+                return rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final RowFilter<E> recordFilter, RowMapper<T, E2> rowMapper)
                 throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordGetter, "recordGetter");
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
-                        return Optional.of(recordGetter.apply(rs));
+                        return Optional.of(rowMapper.apply(rs));
                     }
                 }
 
@@ -4763,21 +4803,21 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> Optional<T> findFirst(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T, E extends Exception> Optional<T> findFirst(BiRowMapper<T, E> rowMapper) throws SQLException, E {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
-                return rs.next() ? Optional.of(recordGetter.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Optional.<T> empty();
+                return rs.next() ? Optional.of(rowMapper.apply(rs, JdbcUtil.getColumnLabelList(rs))) : Optional.<T> empty();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> Optional<T> findFirst(final BiRowFilter<E> recordFilter, BiRowMapper<T, E2> rowMapper)
                 throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordGetter, "recordGetter");
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
@@ -4785,7 +4825,7 @@ public final class JdbcUtil {
 
                 while (rs.next()) {
                     if (recordFilter.test(rs, columnLabels)) {
-                        return Optional.of(recordGetter.apply(rs, columnLabels));
+                        return Optional.of(rowMapper.apply(rs, columnLabels));
                     }
                 }
 
@@ -4796,30 +4836,30 @@ public final class JdbcUtil {
         }
 
         public <T> List<T> list(final Class<T> targetClass) throws SQLException {
-            return list(BiRecordGetter.to(targetClass));
+            return list(BiRowMapper.to(targetClass));
         }
 
         public <T> List<T> list(final Class<T> targetClass, int maxResult) throws SQLException {
-            return list(BiRecordGetter.to(targetClass), maxResult);
+            return list(BiRowMapper.to(targetClass), maxResult);
         }
 
-        public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter) throws SQLException, E {
-            return list(recordGetter, Integer.MAX_VALUE);
+        public <T, E extends Exception> List<T> list(RowMapper<T, E> rowMapper) throws SQLException, E {
+            return list(rowMapper, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception> List<T> list(RecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
-            return list(RecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
+        public <T, E extends Exception> List<T> list(RowMapper<T, E> rowMapper, int maxResult) throws SQLException, E {
+            return list(RowFilter.ALWAYS_TRUE, rowMapper, maxResult);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final RowFilter<E> recordFilter, RowMapper<T, E2> rowMapper)
                 throws SQLException, E, E2 {
-            return list(recordFilter, recordGetter, Integer.MAX_VALUE);
+            return list(recordFilter, rowMapper, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(final RecordPredicate<E> recordFilter, RecordGetter<T, E2> recordGetter,
-                int maxResult) throws SQLException, E, E2 {
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final RowFilter<E> recordFilter, RowMapper<T, E2> rowMapper, int maxResult)
+                throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordGetter, "recordGetter");
+            checkArgNotNull(rowMapper, "rowMapper");
             checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
@@ -4828,7 +4868,7 @@ public final class JdbcUtil {
 
                 while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs)) {
-                        result.add(recordGetter.apply(rs));
+                        result.add(rowMapper.apply(rs));
                         maxResult--;
                     }
                 }
@@ -4839,23 +4879,23 @@ public final class JdbcUtil {
             }
         }
 
-        public <T, E extends Exception> List<T> list(BiRecordGetter<T, E> recordGetter) throws SQLException, E {
-            return list(recordGetter, Integer.MAX_VALUE);
+        public <T, E extends Exception> List<T> list(BiRowMapper<T, E> rowMapper) throws SQLException, E {
+            return list(rowMapper, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception> List<T> list(BiRecordGetter<T, E> recordGetter, int maxResult) throws SQLException, E {
-            return list(BiRecordPredicate.ALWAYS_TRUE, recordGetter, maxResult);
+        public <T, E extends Exception> List<T> list(BiRowMapper<T, E> rowMapper, int maxResult) throws SQLException, E {
+            return list(BiRowFilter.ALWAYS_TRUE, rowMapper, maxResult);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter)
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRowFilter<E> recordFilter, BiRowMapper<T, E2> rowMapper)
                 throws SQLException, E, E2 {
-            return list(recordFilter, recordGetter, Integer.MAX_VALUE);
+            return list(recordFilter, rowMapper, Integer.MAX_VALUE);
         }
 
-        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRecordPredicate<E> recordFilter, BiRecordGetter<T, E2> recordGetter,
-                int maxResult) throws SQLException, E, E2 {
+        public <T, E extends Exception, E2 extends Exception> List<T> list(final BiRowFilter<E> recordFilter, BiRowMapper<T, E2> rowMapper, int maxResult)
+                throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordGetter, "recordGetter");
+            checkArgNotNull(rowMapper, "rowMapper");
             checkArg(maxResult >= 0, "'maxResult' can' be negative: " + maxResult);
             assertNotClosed();
 
@@ -4865,7 +4905,7 @@ public final class JdbcUtil {
 
                 while (maxResult > 0 && rs.next()) {
                     if (recordFilter.test(rs, columnLabels)) {
-                        result.add(recordGetter.apply(rs, columnLabels));
+                        result.add(rowMapper.apply(rs, columnLabels));
                         maxResult--;
                     }
                 }
@@ -4877,11 +4917,11 @@ public final class JdbcUtil {
         }
 
         public <T> ExceptionalStream<T, SQLException> stream(final Class<T> targetClass) throws SQLException {
-            return stream(BiRecordGetter.to(targetClass));
+            return stream(BiRowMapper.to(targetClass));
         }
 
-        public <T> ExceptionalStream<T, SQLException> stream(final RecordGetter<T, RuntimeException> recordGetter) throws SQLException {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T> ExceptionalStream<T, SQLException> stream(final RowMapper<T, RuntimeException> rowMapper) throws SQLException {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             final ExceptionalIterator<T, SQLException> lazyIter = ExceptionalIterator
@@ -4917,7 +4957,7 @@ public final class JdbcUtil {
 
                                             hasNext = false;
 
-                                            return recordGetter.apply(resultSet);
+                                            return rowMapper.apply(resultSet);
                                         }
 
                                         @Override
@@ -4974,8 +5014,8 @@ public final class JdbcUtil {
             });
         }
 
-        public <T> ExceptionalStream<T, SQLException> stream(final BiRecordGetter<T, RuntimeException> recordGetter) throws SQLException {
-            checkArgNotNull(recordGetter, "recordGetter");
+        public <T> ExceptionalStream<T, SQLException> stream(final BiRowMapper<T, RuntimeException> rowMapper) throws SQLException {
+            checkArgNotNull(rowMapper, "rowMapper");
             assertNotClosed();
 
             final ExceptionalIterator<T, SQLException> lazyIter = ExceptionalIterator
@@ -5016,7 +5056,7 @@ public final class JdbcUtil {
                                                 columnLabels = JdbcUtil.getColumnLabelList(resultSet);
                                             }
 
-                                            return recordGetter.apply(resultSet, columnLabels);
+                                            return rowMapper.apply(resultSet, columnLabels);
                                         }
 
                                         @Override
@@ -5089,26 +5129,26 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void ifExists(final RecordConsumer<E> recordConsumer) throws SQLException, E {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+        public <E extends Exception> void ifExists(final RowConsumer<E> rowConsumer) throws SQLException, E {
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    recordConsumer.accept(rs);
+                    rowConsumer.accept(rs);
                 }
             } finally {
                 closeAfterExecutionIfAllowed();
             }
         }
 
-        public <E extends Exception> void ifExists(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+        public <E extends Exception> void ifExists(final BiRowConsumer<E> rowConsumer) throws SQLException, E {
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
+                    rowConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
                 }
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -5117,21 +5157,21 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param recordConsumer
+         * @param rowConsumer
          * @param orElseAction
          * @throws SQLException
          * @throws E
          * @throws E2
          */
-        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final RecordConsumer<E> recordConsumer, Try.Runnable<E2> orElseAction)
+        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final RowConsumer<E> rowConsumer, Try.Runnable<E2> orElseAction)
                 throws SQLException, E, E2 {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(rowConsumer, "rowConsumer");
             checkArgNotNull(orElseAction, "orElseAction");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    recordConsumer.accept(rs);
+                    rowConsumer.accept(rs);
                 } else {
                     orElseAction.run();
                 }
@@ -5142,21 +5182,21 @@ public final class JdbcUtil {
 
         /**
          * 
-         * @param recordConsumer
+         * @param rowConsumer
          * @param orElseAction
          * @throws SQLException
          * @throws E
          * @throws E2
          */
-        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final BiRecordConsumer<E> recordConsumer, Try.Runnable<E2> orElseAction)
+        public <E extends Exception, E2 extends Exception> void ifExistsOrElse(final BiRowConsumer<E> rowConsumer, Try.Runnable<E2> orElseAction)
                 throws SQLException, E, E2 {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(rowConsumer, "rowConsumer");
             checkArgNotNull(orElseAction, "orElseAction");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 if (rs.next()) {
-                    recordConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
+                    rowConsumer.accept(rs, JdbcUtil.getColumnLabelList(rs));
                 } else {
                     orElseAction.run();
                 }
@@ -5189,7 +5229,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> int count(final RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> int count(final RowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5208,7 +5248,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> int count(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> int count(final BiRowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5228,7 +5268,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean anyMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean anyMatch(final RowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5245,7 +5285,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean anyMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean anyMatch(final BiRowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5264,7 +5304,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean allMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean allMatch(final RowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5281,7 +5321,7 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean allMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean allMatch(final BiRowFilter<E> recordFilter) throws SQLException, E {
             checkArgNotNull(recordFilter, "recordFilter");
             assertNotClosed();
 
@@ -5300,22 +5340,22 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> boolean noneMatch(final RecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean noneMatch(final RowFilter<E> recordFilter) throws SQLException, E {
             return anyMatch(recordFilter) == false;
         }
 
-        public <E extends Exception> boolean noneMatch(final BiRecordPredicate<E> recordFilter) throws SQLException, E {
+        public <E extends Exception> boolean noneMatch(final BiRowFilter<E> recordFilter) throws SQLException, E {
             return anyMatch(recordFilter) == false;
         }
 
-        public <E extends Exception> void forEach(final RecordConsumer<E> recordConsumer) throws SQLException, E {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+        public <E extends Exception> void forEach(final RowConsumer<E> rowConsumer) throws SQLException, E {
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
 
                 while (rs.next()) {
-                    recordConsumer.accept(rs);
+                    rowConsumer.accept(rs);
                 }
 
             } finally {
@@ -5323,17 +5363,17 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception, E2 extends Exception> void forEach(final RecordPredicate<E> recordFilter, final RecordConsumer<E2> recordConsumer)
+        public <E extends Exception, E2 extends Exception> void forEach(final RowFilter<E> recordFilter, final RowConsumer<E2> rowConsumer)
                 throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
 
                 while (rs.next()) {
                     if (recordFilter.test(rs)) {
-                        recordConsumer.accept(rs);
+                        rowConsumer.accept(rs);
                     }
                 }
             } finally {
@@ -5341,15 +5381,15 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception> void forEach(final BiRecordConsumer<E> recordConsumer) throws SQLException, E {
-            checkArgNotNull(recordConsumer, "recordConsumer");
+        public <E extends Exception> void forEach(final BiRowConsumer<E> rowConsumer) throws SQLException, E {
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
                 final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
 
                 while (rs.next()) {
-                    recordConsumer.accept(rs, columnLabels);
+                    rowConsumer.accept(rs, columnLabels);
                 }
 
             } finally {
@@ -5357,10 +5397,10 @@ public final class JdbcUtil {
             }
         }
 
-        public <E extends Exception, E2 extends Exception> void forEach(final BiRecordPredicate<E> recordFilter, final BiRecordConsumer<E2> recordConsumer)
+        public <E extends Exception, E2 extends Exception> void forEach(final BiRowFilter<E> recordFilter, final BiRowConsumer<E2> rowConsumer)
                 throws SQLException, E, E2 {
             checkArgNotNull(recordFilter, "recordFilter");
-            checkArgNotNull(recordConsumer, "recordConsumer");
+            checkArgNotNull(rowConsumer, "rowConsumer");
             assertNotClosed();
 
             try (ResultSet rs = executeQuery()) {
@@ -5368,7 +5408,7 @@ public final class JdbcUtil {
 
                 while (rs.next()) {
                     if (recordFilter.test(rs, columnLabels)) {
-                        recordConsumer.accept(rs, columnLabels);
+                        rowConsumer.accept(rs, columnLabels);
                     }
                 }
 
@@ -5390,14 +5430,14 @@ public final class JdbcUtil {
          * 
          * @return
          */
-        public <T> Optional<T> insert() throws SQLException {
+        public <ID> Optional<ID> insert() throws SQLException {
             assertNotClosed();
 
             try {
                 stmt.executeUpdate();
 
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
-                    return rs.next() ? Optional.of((T) JdbcUtil.getColumnValue(rs, 1)) : Optional.<T> empty();
+                    return rs.next() ? Optional.of((ID) JdbcUtil.getColumnValue(rs, 1)) : Optional.<ID> empty();
                 }
             } finally {
                 closeAfterExecutionIfAllowed();
@@ -5409,7 +5449,7 @@ public final class JdbcUtil {
          * 
          * @return
          */
-        public <T> List<T> batchInsert() throws SQLException {
+        public <ID> List<ID> batchInsert() throws SQLException {
             assertNotClosed();
 
             try {
@@ -5419,14 +5459,69 @@ public final class JdbcUtil {
             }
         }
 
-        private <T> List<T> executeBatchInsert() throws SQLException {
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Collection<T> batchParameters,
+                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
+            return batchInsert(batchSize, batchParameters.iterator(), paramSetter);
+        }
+
+        /**
+         * Generally, this method should be executed in transaction.
+         * 
+         * @param batchSize
+         * @param batchParameters
+         * @param paramSetter
+         * @return
+         * @throws SQLException
+         * @throws E
+         */
+        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Iterator<T> batchParameters,
+                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
+            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
+            checkArgNotNull(paramSetter, "paramSetter");
+
+            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
+            final List<ID> result = new ArrayList<>();
+
+            try {
+                long cnt = 0;
+
+                while (iter.hasNext()) {
+                    paramSetter.accept((Q) this, iter.next());
+                    addBatch();
+
+                    if (++cnt % batchSize == 0) {
+                        result.addAll(this.<ID> executeBatchInsert());
+                    }
+                }
+
+                if (cnt % batchSize != 0) {
+                    result.addAll(this.<ID> executeBatchInsert());
+                }
+            } finally {
+                closeAfterExecutionIfAllowed();
+            }
+
+            return result;
+        }
+
+        private <ID> List<ID> executeBatchInsert() throws SQLException {
             stmt.executeBatch();
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
-                final List<T> result = new ArrayList<>();
+                final List<ID> result = new ArrayList<>();
 
                 while (rs.next()) {
-                    result.add((T) JdbcUtil.getColumnValue(rs, 1));
+                    result.add((ID) JdbcUtil.getColumnValue(rs, 1));
                 }
 
                 return result;
@@ -5452,14 +5547,6 @@ public final class JdbcUtil {
                 return executeBatchUpdate();
             } finally {
                 closeAfterExecutionIfAllowed();
-            }
-        }
-
-        private int[] executeBatchUpdate() throws SQLException {
-            try {
-                return stmt.executeBatch();
-            } finally {
-                stmt.clearBatch();
             }
         }
 
@@ -5541,59 +5628,12 @@ public final class JdbcUtil {
             return result >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
         }
 
-        /**
-         * Generally, this method should be executed in transaction.
-         * 
-         * @param batchSize
-         * @param batchParameters
-         * @param paramSetter
-         * @return
-         * @throws SQLException
-         * @throws E
-         */
-        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Collection<T> batchParameters,
-                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
-            return batchInsert(batchSize, batchParameters.iterator(), paramSetter);
-        }
-
-        /**
-         * Generally, this method should be executed in transaction.
-         * 
-         * @param batchSize
-         * @param batchParameters
-         * @param paramSetter
-         * @return
-         * @throws SQLException
-         * @throws E
-         */
-        public <T, ID, E extends Exception> List<ID> batchInsert(final int batchSize, final Iterator<T> batchParameters,
-                BiParametersSetter<? super Q, ? super T, E> paramSetter) throws SQLException, E {
-            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
-            checkArgNotNull(paramSetter, "paramSetter");
-
-            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
-            final List<ID> result = new ArrayList<>();
-
+        private int[] executeBatchUpdate() throws SQLException {
             try {
-                long cnt = 0;
-
-                while (iter.hasNext()) {
-                    paramSetter.accept((Q) this, iter.next());
-                    addBatch();
-
-                    if (++cnt % batchSize == 0) {
-                        result.addAll(this.<ID> executeBatchInsert());
-                    }
-                }
-
-                if (cnt % batchSize != 0) {
-                    result.addAll(this.<ID> executeBatchInsert());
-                }
+                return stmt.executeBatch();
             } finally {
-                closeAfterExecutionIfAllowed();
+                stmt.clearBatch();
             }
-
-            return result;
         }
 
         public boolean execute() throws SQLException {
@@ -5963,20 +6003,38 @@ public final class JdbcUtil {
             return (Q) this;
         }
 
-        public Q setTime(String parameterName, java.sql.Time x) throws SQLException {
-            stmt.setTime(parameterName, x);
-
-            return (Q) this;
-        }
-
         public Q setDate(String parameterName, java.sql.Date x) throws SQLException {
             stmt.setDate(parameterName, x);
 
             return (Q) this;
         }
 
+        public Q setDate(String parameterName, java.util.Date x) throws SQLException {
+            stmt.setDate(parameterName, x == null ? null : x instanceof java.sql.Date ? (java.sql.Date) x : new java.sql.Date(x.getTime()));
+
+            return (Q) this;
+        }
+
+        public Q setTime(String parameterName, java.sql.Time x) throws SQLException {
+            stmt.setTime(parameterName, x);
+
+            return (Q) this;
+        }
+
+        public Q setTime(String parameterName, java.util.Date x) throws SQLException {
+            stmt.setTime(parameterName, x == null ? null : x instanceof java.sql.Time ? (java.sql.Time) x : new java.sql.Time(x.getTime()));
+
+            return (Q) this;
+        }
+
         public Q setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
             stmt.setTimestamp(parameterName, x);
+
+            return (Q) this;
+        }
+
+        public Q setTimestamp(String parameterName, java.util.Date x) throws SQLException {
+            stmt.setTimestamp(parameterName, x == null ? null : x instanceof java.sql.Timestamp ? (java.sql.Timestamp) x : new java.sql.Timestamp(x.getTime()));
 
             return (Q) this;
         }
@@ -7285,94 +7343,94 @@ public final class JdbcUtil {
     }
 
     /**
-     * Don't use {@code RecordGetter} in {@link PreparedQuery#list(RecordGetter)} or any place where multiple records will be retrieved by it, if column labels/count are used in {@link RecordGetter#apply(ResultSet)}.
-     * Consider using {@code BiRecordGetter} instead because it's more efficient to retrieve multiple records when column labels/count are used.
+     * Don't use {@code RowMapper} in {@link PreparedQuery#list(RowMapper)} or any place where multiple records will be retrieved by it, if column labels/count are used in {@link RowMapper#apply(ResultSet)}.
+     * Consider using {@code BiRowMapper} instead because it's more efficient to retrieve multiple records when column labels/count are used.
      * 
      * @author haiyangl
      *
      * @param <T>
      * @param <E>
      */
-    public static interface RecordGetter<T, E extends Exception> {
+    public static interface RowMapper<T, E extends Exception> {
 
-        public static final RecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new RecordGetter<Boolean, RuntimeException>() {
+        public static final RowMapper<Boolean, RuntimeException> GET_BOOLEAN = new RowMapper<Boolean, RuntimeException>() {
             @Override
             public Boolean apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getBoolean(1);
             }
         };
 
-        public static final RecordGetter<Byte, RuntimeException> GET_BYTE = new RecordGetter<Byte, RuntimeException>() {
+        public static final RowMapper<Byte, RuntimeException> GET_BYTE = new RowMapper<Byte, RuntimeException>() {
             @Override
             public Byte apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getByte(1);
             }
         };
 
-        public static final RecordGetter<Short, RuntimeException> GET_SHORT = new RecordGetter<Short, RuntimeException>() {
+        public static final RowMapper<Short, RuntimeException> GET_SHORT = new RowMapper<Short, RuntimeException>() {
             @Override
             public Short apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getShort(1);
             }
         };
 
-        public static final RecordGetter<Integer, RuntimeException> GET_INT = new RecordGetter<Integer, RuntimeException>() {
+        public static final RowMapper<Integer, RuntimeException> GET_INT = new RowMapper<Integer, RuntimeException>() {
             @Override
             public Integer apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getInt(1);
             }
         };
 
-        public static final RecordGetter<Long, RuntimeException> GET_LONG = new RecordGetter<Long, RuntimeException>() {
+        public static final RowMapper<Long, RuntimeException> GET_LONG = new RowMapper<Long, RuntimeException>() {
             @Override
             public Long apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getLong(1);
             }
         };
 
-        public static final RecordGetter<Float, RuntimeException> GET_FLOAT = new RecordGetter<Float, RuntimeException>() {
+        public static final RowMapper<Float, RuntimeException> GET_FLOAT = new RowMapper<Float, RuntimeException>() {
             @Override
             public Float apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getFloat(1);
             }
         };
 
-        public static final RecordGetter<Double, RuntimeException> GET_DOUBLE = new RecordGetter<Double, RuntimeException>() {
+        public static final RowMapper<Double, RuntimeException> GET_DOUBLE = new RowMapper<Double, RuntimeException>() {
             @Override
             public Double apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getDouble(1);
             }
         };
 
-        public static final RecordGetter<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new RecordGetter<BigDecimal, RuntimeException>() {
+        public static final RowMapper<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new RowMapper<BigDecimal, RuntimeException>() {
             @Override
             public BigDecimal apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getBigDecimal(1);
             }
         };
 
-        public static final RecordGetter<String, RuntimeException> GET_STRING = new RecordGetter<String, RuntimeException>() {
+        public static final RowMapper<String, RuntimeException> GET_STRING = new RowMapper<String, RuntimeException>() {
             @Override
             public String apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getString(1);
             }
         };
 
-        public static final RecordGetter<Date, RuntimeException> GET_DATE = new RecordGetter<Date, RuntimeException>() {
+        public static final RowMapper<Date, RuntimeException> GET_DATE = new RowMapper<Date, RuntimeException>() {
             @Override
             public Date apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getDate(1);
             }
         };
 
-        public static final RecordGetter<Time, RuntimeException> GET_TIME = new RecordGetter<Time, RuntimeException>() {
+        public static final RowMapper<Time, RuntimeException> GET_TIME = new RowMapper<Time, RuntimeException>() {
             @Override
             public Time apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getTime(1);
             }
         };
 
-        public static final RecordGetter<Timestamp, RuntimeException> GET_TIMESTAMP = new RecordGetter<Timestamp, RuntimeException>() {
+        public static final RowMapper<Timestamp, RuntimeException> GET_TIMESTAMP = new RowMapper<Timestamp, RuntimeException>() {
             @Override
             public Timestamp apply(final ResultSet rs) throws SQLException, RuntimeException {
                 return rs.getTimestamp(1);
@@ -7390,11 +7448,11 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <L, R> RecordGetter<Pair<L, R>, RuntimeException> toPair(final Class<L> leftType, final Class<R> rightType) {
+        //public static <L, R> RowMapper<Pair<L, R>, RuntimeException> toPair(final Class<L> leftType, final Class<R> rightType) {
         //    N.checkArgNotNull(leftType, "leftType");
         //    N.checkArgNotNull(rightType, "rightType");
         //
-        //    return new RecordGetter<Pair<L, R>, RuntimeException>() {
+        //    return new RowMapper<Pair<L, R>, RuntimeException>() {
         //        private final Type<L> leftT = N.typeOf(leftType);
         //        private final Type<R> rightT = N.typeOf(rightType);
         //
@@ -7415,13 +7473,13 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <L, M, R> RecordGetter<Triple<L, M, R>, RuntimeException> toTriple(final Class<L> leftType, final Class<M> middleType,
+        //public static <L, M, R> RowMapper<Triple<L, M, R>, RuntimeException> toTriple(final Class<L> leftType, final Class<M> middleType,
         //        final Class<R> rightType) {
         //    N.checkArgNotNull(leftType, "leftType");
         //    N.checkArgNotNull(middleType, "middleType");
         //    N.checkArgNotNull(rightType, "rightType");
         //
-        //    return new RecordGetter<Triple<L, M, R>, RuntimeException>() {
+        //    return new RowMapper<Triple<L, M, R>, RuntimeException>() {
         //        private final Type<L> leftT = N.typeOf(leftType);
         //        private final Type<M> middleT = N.typeOf(middleType);
         //        private final Type<R> rightT = N.typeOf(rightType);
@@ -7442,11 +7500,11 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2> RecordGetter<Tuple2<T1, T2>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2) {
+        //public static <T1, T2> RowMapper<Tuple2<T1, T2>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
         //
-        //    return new RecordGetter<Tuple2<T1, T2>, RuntimeException>() {
+        //    return new RowMapper<Tuple2<T1, T2>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //
@@ -7467,13 +7525,13 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2, T3> RecordGetter<Tuple3<T1, T2, T3>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //public static <T1, T2, T3> RowMapper<Tuple3<T1, T2, T3>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
         //        final Class<T3> type3) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
         //    N.checkArgNotNull(type3, "type3");
         //
-        //    return new RecordGetter<Tuple3<T1, T2, T3>, RuntimeException>() {
+        //    return new RowMapper<Tuple3<T1, T2, T3>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //        private final Type<T3> t3 = N.typeOf(type3);
@@ -7496,14 +7554,14 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2, T3, T4> RecordGetter<Tuple4<T1, T2, T3, T4>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //public static <T1, T2, T3, T4> RowMapper<Tuple4<T1, T2, T3, T4>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
         //        final Class<T3> type3, final Class<T4> type4) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
         //    N.checkArgNotNull(type3, "type3");
         //    N.checkArgNotNull(type4, "type4");
         //
-        //    return new RecordGetter<Tuple4<T1, T2, T3, T4>, RuntimeException>() {
+        //    return new RowMapper<Tuple4<T1, T2, T3, T4>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //        private final Type<T3> t3 = N.typeOf(type3);
@@ -7528,7 +7586,7 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2, T3, T4, T5> RecordGetter<Tuple5<T1, T2, T3, T4, T5>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
+        //public static <T1, T2, T3, T4, T5> RowMapper<Tuple5<T1, T2, T3, T4, T5>, RuntimeException> toTuple(final Class<T1> type1, final Class<T2> type2,
         //        final Class<T3> type3, final Class<T4> type4, final Class<T5> type5) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
@@ -7536,7 +7594,7 @@ public final class JdbcUtil {
         //    N.checkArgNotNull(type4, "type4");
         //    N.checkArgNotNull(type5, "type5");
         //
-        //    return new RecordGetter<Tuple5<T1, T2, T3, T4, T5>, RuntimeException>() {
+        //    return new RowMapper<Tuple5<T1, T2, T3, T4, T5>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //        private final Type<T3> t3 = N.typeOf(type3);
@@ -7563,7 +7621,7 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2, T3, T4, T5, T6> RecordGetter<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException> toTuple(final Class<T1> type1,
+        //public static <T1, T2, T3, T4, T5, T6> RowMapper<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException> toTuple(final Class<T1> type1,
         //        final Class<T2> type2, final Class<T3> type3, final Class<T4> type4, final Class<T5> type5, final Class<T6> type6) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
@@ -7572,7 +7630,7 @@ public final class JdbcUtil {
         //    N.checkArgNotNull(type5, "type5");
         //    N.checkArgNotNull(type6, "type6");
         //
-        //    return new RecordGetter<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException>() {
+        //    return new RowMapper<Tuple6<T1, T2, T3, T4, T5, T6>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //        private final Type<T3> t3 = N.typeOf(type3);
@@ -7601,7 +7659,7 @@ public final class JdbcUtil {
         // * @deprecated
         // */
         //@Deprecated
-        //public static <T1, T2, T3, T4, T5, T6, T7> RecordGetter<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException> toTuple(final Class<T1> type1,
+        //public static <T1, T2, T3, T4, T5, T6, T7> RowMapper<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException> toTuple(final Class<T1> type1,
         //        final Class<T2> type2, final Class<T3> type3, final Class<T4> type4, final Class<T5> type5, final Class<T6> type6, final Class<T7> type7) {
         //    N.checkArgNotNull(type1, "type1");
         //    N.checkArgNotNull(type2, "type2");
@@ -7611,7 +7669,7 @@ public final class JdbcUtil {
         //    N.checkArgNotNull(type6, "type6");
         //    N.checkArgNotNull(type7, "type7");
         //
-        //    return new RecordGetter<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException>() {
+        //    return new RowMapper<Tuple7<T1, T2, T3, T4, T5, T6, T7>, RuntimeException>() {
         //        private final Type<T1> t1 = N.typeOf(type1);
         //        private final Type<T2> t2 = N.typeOf(type2);
         //        private final Type<T3> t3 = N.typeOf(type3);
@@ -7628,92 +7686,92 @@ public final class JdbcUtil {
         //}
     }
 
-    public static interface BiRecordGetter<T, E extends Exception> {
+    public static interface BiRowMapper<T, E extends Exception> {
 
-        public static final BiRecordGetter<Boolean, RuntimeException> GET_BOOLEAN = new BiRecordGetter<Boolean, RuntimeException>() {
+        public static final BiRowMapper<Boolean, RuntimeException> GET_BOOLEAN = new BiRowMapper<Boolean, RuntimeException>() {
             @Override
             public Boolean apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getBoolean(1);
             }
         };
 
-        public static final BiRecordGetter<Byte, RuntimeException> GET_BYTE = new BiRecordGetter<Byte, RuntimeException>() {
+        public static final BiRowMapper<Byte, RuntimeException> GET_BYTE = new BiRowMapper<Byte, RuntimeException>() {
             @Override
             public Byte apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getByte(1);
             }
         };
 
-        public static final BiRecordGetter<Short, RuntimeException> GET_SHORT = new BiRecordGetter<Short, RuntimeException>() {
+        public static final BiRowMapper<Short, RuntimeException> GET_SHORT = new BiRowMapper<Short, RuntimeException>() {
             @Override
             public Short apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getShort(1);
             }
         };
 
-        public static final BiRecordGetter<Integer, RuntimeException> GET_INT = new BiRecordGetter<Integer, RuntimeException>() {
+        public static final BiRowMapper<Integer, RuntimeException> GET_INT = new BiRowMapper<Integer, RuntimeException>() {
             @Override
             public Integer apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getInt(1);
             }
         };
 
-        public static final BiRecordGetter<Long, RuntimeException> GET_LONG = new BiRecordGetter<Long, RuntimeException>() {
+        public static final BiRowMapper<Long, RuntimeException> GET_LONG = new BiRowMapper<Long, RuntimeException>() {
             @Override
             public Long apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getLong(1);
             }
         };
 
-        public static final BiRecordGetter<Float, RuntimeException> GET_FLOAT = new BiRecordGetter<Float, RuntimeException>() {
+        public static final BiRowMapper<Float, RuntimeException> GET_FLOAT = new BiRowMapper<Float, RuntimeException>() {
             @Override
             public Float apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getFloat(1);
             }
         };
 
-        public static final BiRecordGetter<Double, RuntimeException> GET_DOUBLE = new BiRecordGetter<Double, RuntimeException>() {
+        public static final BiRowMapper<Double, RuntimeException> GET_DOUBLE = new BiRowMapper<Double, RuntimeException>() {
             @Override
             public Double apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getDouble(1);
             }
         };
 
-        public static final BiRecordGetter<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new BiRecordGetter<BigDecimal, RuntimeException>() {
+        public static final BiRowMapper<BigDecimal, RuntimeException> GET_BIG_DECIMAL = new BiRowMapper<BigDecimal, RuntimeException>() {
             @Override
             public BigDecimal apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getBigDecimal(1);
             }
         };
 
-        public static final BiRecordGetter<String, RuntimeException> GET_STRING = new BiRecordGetter<String, RuntimeException>() {
+        public static final BiRowMapper<String, RuntimeException> GET_STRING = new BiRowMapper<String, RuntimeException>() {
             @Override
             public String apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getString(1);
             }
         };
 
-        public static final BiRecordGetter<Date, RuntimeException> GET_DATE = new BiRecordGetter<Date, RuntimeException>() {
+        public static final BiRowMapper<Date, RuntimeException> GET_DATE = new BiRowMapper<Date, RuntimeException>() {
             @Override
             public Date apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getDate(1);
             }
         };
 
-        public static final BiRecordGetter<Time, RuntimeException> GET_TIME = new BiRecordGetter<Time, RuntimeException>() {
+        public static final BiRowMapper<Time, RuntimeException> GET_TIME = new BiRowMapper<Time, RuntimeException>() {
             @Override
             public Time apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getTime(1);
             }
         };
 
-        public static final BiRecordGetter<Timestamp, RuntimeException> GET_TIMESTAMP = new BiRecordGetter<Timestamp, RuntimeException>() {
+        public static final BiRowMapper<Timestamp, RuntimeException> GET_TIMESTAMP = new BiRowMapper<Timestamp, RuntimeException>() {
             @Override
             public Timestamp apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 return rs.getTimestamp(1);
             }
         };
-        public static final BiRecordGetter<Object[], RuntimeException> TO_ARRAY = new BiRecordGetter<Object[], RuntimeException>() {
+        public static final BiRowMapper<Object[], RuntimeException> TO_ARRAY = new BiRowMapper<Object[], RuntimeException>() {
             @Override
             public Object[] apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 final int columnCount = columnLabels.size();
@@ -7727,7 +7785,7 @@ public final class JdbcUtil {
             }
         };
 
-        public static final BiRecordGetter<List<Object>, RuntimeException> TO_LIST = new BiRecordGetter<List<Object>, RuntimeException>() {
+        public static final BiRowMapper<List<Object>, RuntimeException> TO_LIST = new BiRowMapper<List<Object>, RuntimeException>() {
             @Override
             public List<Object> apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 final int columnCount = columnLabels.size();
@@ -7741,7 +7799,7 @@ public final class JdbcUtil {
             }
         };
 
-        public static final BiRecordGetter<Map<String, Object>, RuntimeException> TO_MAP = new BiRecordGetter<Map<String, Object>, RuntimeException>() {
+        public static final BiRowMapper<Map<String, Object>, RuntimeException> TO_MAP = new BiRowMapper<Map<String, Object>, RuntimeException>() {
             @Override
             public Map<String, Object> apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 final int columnCount = columnLabels.size();
@@ -7755,7 +7813,7 @@ public final class JdbcUtil {
             }
         };
 
-        public static final BiRecordGetter<Map<String, Object>, RuntimeException> TO_LINKED_HASH_MAP = new BiRecordGetter<Map<String, Object>, RuntimeException>() {
+        public static final BiRowMapper<Map<String, Object>, RuntimeException> TO_LINKED_HASH_MAP = new BiRowMapper<Map<String, Object>, RuntimeException>() {
             @Override
             public Map<String, Object> apply(final ResultSet rs, final List<String> columnLabels) throws SQLException, RuntimeException {
                 final int columnCount = columnLabels.size();
@@ -7772,50 +7830,50 @@ public final class JdbcUtil {
         T apply(ResultSet rs, List<String> columnLabels) throws SQLException, E;
 
         /**
-         * Don't cache or reuse the returned {@code BiRecordGetter} instance.
+         * Don't cache or reuse the returned {@code BiRowMapper} instance.
          * 
          * @param targetType Array/List/Map or Entity with getter/setter methods.
          * @return
          */
-        public static <T> BiRecordGetter<T, RuntimeException> to(Class<? extends T> targetClass) {
-            return JdbcUtil.createBiRecordGetterByTargetClass(targetClass);
+        public static <T> BiRowMapper<T, RuntimeException> to(Class<? extends T> targetClass) {
+            return JdbcUtil.createBiRowMapperByTargetClass(targetClass);
         }
     }
 
     /**
-     * Don't use {@code RecordConsumer} in {@link PreparedQuery#forEach(RecordConsumer)} or any place where multiple records will be consumed by it, if column labels/count are used in {@link RecordConsumer#accept(ResultSet)}.
-     * Consider using {@code BiRecordConsumer} instead because it's more efficient to consume multiple records when column labels/count are used.
+     * Don't use {@code RowConsumer} in {@link PreparedQuery#forEach(RowConsumer)} or any place where multiple records will be consumed by it, if column labels/count are used in {@link RowConsumer#accept(ResultSet)}.
+     * Consider using {@code BiRowConsumer} instead because it's more efficient to consume multiple records when column labels/count are used.
      * 
      * @author haiyangl
      *
      * @param <E>
      */
-    public static interface RecordConsumer<E extends Exception> {
+    public static interface RowConsumer<E extends Exception> {
         void accept(ResultSet rs) throws SQLException, E;
     }
 
-    public static interface BiRecordConsumer<E extends Exception> {
+    public static interface BiRowConsumer<E extends Exception> {
         void accept(ResultSet rs, List<String> columnLabels) throws SQLException, E;
     }
 
     /**
-     * Don't use {@code RecordPredicate} in {@link PreparedQuery#list(RecordPredicate, RecordGetter)}, {@link PreparedQuery#forEach(RecordPredicate, RecordConsumer)}  or any place where multiple records will be tested by it, if column labels/count are used in {@link RecordPredicate#test(ResultSet)}.
-     * Consider using {@code BiRecordConsumer} instead because it's more efficient to test multiple records when column labels/count are used.
+     * Don't use {@code RowFilter} in {@link PreparedQuery#list(RowFilter, RowMapper)}, {@link PreparedQuery#forEach(RowFilter, RowConsumer)}  or any place where multiple records will be tested by it, if column labels/count are used in {@link RowFilter#test(ResultSet)}.
+     * Consider using {@code BiRowConsumer} instead because it's more efficient to test multiple records when column labels/count are used.
      * 
      * 
      * @author haiyangl
      *
      * @param <E>
      */
-    public static interface RecordPredicate<E extends Exception> {
-        public static final RecordPredicate<RuntimeException> ALWAYS_TRUE = new RecordPredicate<RuntimeException>() {
+    public static interface RowFilter<E extends Exception> {
+        public static final RowFilter<RuntimeException> ALWAYS_TRUE = new RowFilter<RuntimeException>() {
             @Override
             public boolean test(ResultSet rs) throws SQLException, RuntimeException {
                 return true;
             }
         };
 
-        public static final RecordPredicate<RuntimeException> ALWAYS_FALSE = new RecordPredicate<RuntimeException>() {
+        public static final RowFilter<RuntimeException> ALWAYS_FALSE = new RowFilter<RuntimeException>() {
             @Override
             public boolean test(ResultSet rs) throws SQLException, RuntimeException {
                 return false;
@@ -7825,15 +7883,15 @@ public final class JdbcUtil {
         boolean test(ResultSet rs) throws SQLException, E;
     }
 
-    public static interface BiRecordPredicate<E extends Exception> {
-        public static final BiRecordPredicate<RuntimeException> ALWAYS_TRUE = new BiRecordPredicate<RuntimeException>() {
+    public static interface BiRowFilter<E extends Exception> {
+        public static final BiRowFilter<RuntimeException> ALWAYS_TRUE = new BiRowFilter<RuntimeException>() {
             @Override
             public boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, RuntimeException {
                 return true;
             }
         };
 
-        public static final BiRecordPredicate<RuntimeException> ALWAYS_FALSE = new BiRecordPredicate<RuntimeException>() {
+        public static final BiRowFilter<RuntimeException> ALWAYS_FALSE = new BiRowFilter<RuntimeException>() {
             @Override
             public boolean test(ResultSet rs, List<String> columnLabels) throws SQLException, RuntimeException {
                 return false;
@@ -7848,7 +7906,7 @@ public final class JdbcUtil {
      * It's a gift from nature and created by thoughts.
      * 
      * <br />
-     * Note: Setting parameters by 'ParametersSetter' or Retrieving result/record by 'ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter' is disabled.
+     * Note: Setting parameters by 'ParametersSetter' or Retrieving result/record by 'ResultExtractor/BiResultExtractor/RowMapper/BiRowMapper' is disabled.
      * 
      * <br />
      * 
@@ -7860,7 +7918,7 @@ public final class JdbcUtil {
      * 
      * <li>SQL parameters can be set through input method parameters(by multiple parameters or a {@code Collection}), or by {@code JdbcUtil.ParametersSetter<PreparedQuery/PreparedCallabeQuery...>}.</li>
      * 
-     * <li>{@code ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter} can be specified by the last parameter of the method.</li>
+     * <li>{@code ResultExtractor/BiResultExtractor/RowMapper/BiRowMapper} can be specified by the last parameter of the method.</li>
      * 
      * <li>The return type of the method must be same as the return type of {@code ResultExtractor/BiResultExtractor} if it's specified by the last parameter of the method.</li>
      * 
@@ -7872,27 +7930,27 @@ public final class JdbcUtil {
      * <li>Which underline {@code PreparedQuery/PreparedCallableQuery} method to call for SQL methods/operations annotated with {@code @Select/@NamedSelect}: 
      * <ul>
      *   <li>If {@code ResultExtractor/BiResultExtractor} is specified by the last parameter of the method, {@code PreparedQuery#query(ResultExtractor/BiResultExtractor)} will be called.</li>
-     *   <li>Or else if {@code RecordGetter/BiRecordGetter} is specified by the last parameter of the method:</li>
+     *   <li>Or else if {@code RowMapper/BiRowMapper} is specified by the last parameter of the method:</li>
      *      <ul>
-     *          <li>If the return type of the method is {@code List} and one of below conditions is matched, {@code PreparedQuery#list(RecordGetter/BiRecordGetter)} will be called:</li>
+     *          <li>If the return type of the method is {@code List} and one of below conditions is matched, {@code PreparedQuery#list(RowMapper/BiRowMapper)} will be called:</li>
      *          <ul>
      *              <li>The return type of the method is raw {@code List} without parameterized type, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}.</li>
      *          </ul>
      *          <ul>
-     *              <li>The last parameter type is raw {@code RecordGetter/BiRecordGetter} without parameterized type, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}.</li>
+     *              <li>The last parameter type is raw {@code RowMapper/BiRowMapper} without parameterized type, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}.</li>
      *          </ul>
      *          <ul>
-     *              <li>The return type of the method is generic {@code List} with parameterized type and The last parameter type is generic {@code RecordGetter/BiRecordGetter} with parameterized types, but They're not same.</li>
+     *              <li>The return type of the method is generic {@code List} with parameterized type and The last parameter type is generic {@code RowMapper/BiRowMapper} with parameterized types, but They're not same.</li>
      *          </ul>
      *      </ul>
      *      <ul>
-     *          <li>Or else if the return type of the method is {@code ExceptionalStream/Stream}, {@code PreparedQuery#stream(RecordGetter/BiRecordGetter)} will be called.</li>
+     *          <li>Or else if the return type of the method is {@code ExceptionalStream/Stream}, {@code PreparedQuery#stream(RowMapper/BiRowMapper)} will be called.</li>
      *      </ul>
      *      <ul>
-     *          <li>Or else if the return type of the method is {@code Optional}, {@code PreparedQuery#findFirst(RecordGetter/BiRecordGetter)} will be called.</li>
+     *          <li>Or else if the return type of the method is {@code Optional}, {@code PreparedQuery#findFirst(RowMapper/BiRowMapper)} will be called.</li>
      *      </ul>
      *      <ul>
-     *          <li>Or else, {@code PreparedQuery#findFirst(RecordGetter/BiRecordGetter).orNull()} will be called.</li>
+     *          <li>Or else, {@code PreparedQuery#findFirst(RowMapper/BiRowMapper).orNull()} will be called.</li>
      *      </ul>
      *   <li>Or else:</li>
      *      <ul>
@@ -7948,17 +8006,17 @@ public final class JdbcUtil {
      * @see PreparedQuery#queryForSingleResult(Class)
      * @see PreparedQuery#queryForSingleNonNull(Class)
      * @see PreparedQuery#findFirst(Class)
-     * @see PreparedQuery#findFirst(RecordGetter)
-     * @see PreparedQuery#findFirst(BiRecordGetter)
+     * @see PreparedQuery#findFirst(RowMapper)
+     * @see PreparedQuery#findFirst(BiRowMapper)
      * @see PreparedQuery#list(Class)
-     * @see PreparedQuery#list(RecordGetter)
-     * @see PreparedQuery#list(BiRecordGetter)
+     * @see PreparedQuery#list(RowMapper)
+     * @see PreparedQuery#list(BiRowMapper)
      * @see PreparedQuery#query()
      * @see PreparedQuery#query(ResultExtractor)
      * @see PreparedQuery#query(BiResultExtractor)
      * @see PreparedQuery#stream(Class)
-     * @see PreparedQuery#stream(RecordGetter)
-     * @see PreparedQuery#stream(BiRecordGetter)
+     * @see PreparedQuery#stream(RowMapper)
+     * @see PreparedQuery#stream(BiRowMapper)
      * 
      * @since 1.8
      */
@@ -8088,9 +8146,9 @@ public final class JdbcUtil {
 
                             if (paramLen > 0
                                     && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
-                                            || RecordGetter.class.isAssignableFrom(lastParamType) || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
+                                            || RowMapper.class.isAssignableFrom(lastParamType) || BiRowMapper.class.isAssignableFrom(lastParamType))) {
                                 throw new UnsupportedOperationException(
-                                        "Retrieving result/record by 'ResultExtractor/BiResultExtractor/RecordGetter/BiRecordGetter' is disabled. Can't use it in method: "
+                                        "Retrieving result/record by 'ResultExtractor/BiResultExtractor/RowMapper/BiRowMapper' is disabled. Can't use it in method: "
                                                 + m.getName());
                             }
 
@@ -8147,9 +8205,9 @@ public final class JdbcUtil {
                                                     (Collection) args[0]), args);
                                         }
                                     };
-                                } else if (paramLen > 0 && (ResultExtractor.class.isAssignableFrom(lastParamType)
-                                        || BiResultExtractor.class.isAssignableFrom(lastParamType) || RecordGetter.class.isAssignableFrom(lastParamType)
-                                        || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
+                                } else if (paramLen > 0
+                                        && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
+                                                || RowMapper.class.isAssignableFrom(lastParamType) || BiRowMapper.class.isAssignableFrom(lastParamType))) {
                                     if (paramLen == 1) {
                                         // Getting ClassCastException. Not sure why query result is being casted Dao. It seems there is a bug in JDk compiler. 
                                         //       call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, returnGeneratedKeys),
@@ -8424,40 +8482,40 @@ public final class JdbcUtil {
         final boolean isListQuery = isListQuery(method);
 
         if (paramLen > 0 && (ResultExtractor.class.isAssignableFrom(lastParamType) || BiResultExtractor.class.isAssignableFrom(lastParamType)
-                || RecordGetter.class.isAssignableFrom(lastParamType) || BiRecordGetter.class.isAssignableFrom(lastParamType))) {
-            if (RecordGetter.class.isAssignableFrom(lastParamType)) {
+                || RowMapper.class.isAssignableFrom(lastParamType) || BiRowMapper.class.isAssignableFrom(lastParamType))) {
+            if (RowMapper.class.isAssignableFrom(lastParamType)) {
                 if (isListQuery) {
-                    return (preparedQuery, args) -> (R) preparedQuery.list((RecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.list((RowMapper) args[paramLen - 1]);
                 } else if (Optional.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RowMapper) args[paramLen - 1]);
                 } else if (ExceptionalStream.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream((RecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((RowMapper) args[paramLen - 1]);
                 } else if (Stream.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream((RecordGetter) args[paramLen - 1]).unchecked();
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((RowMapper) args[paramLen - 1]).unchecked();
                 } else {
                     if (Nullable.class.isAssignableFrom(returnType)) {
-                        throw new UnsupportedOperationException("The return type of method: " + method.getName() + " can't be: " + returnType
-                                + " when RecordGetter/BiRecordGetter is specified");
+                        throw new UnsupportedOperationException(
+                                "The return type of method: " + method.getName() + " can't be: " + returnType + " when RowMapper/BiRowMapper is specified");
                     }
 
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RecordGetter) args[paramLen - 1]).orNull();
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RowMapper) args[paramLen - 1]).orNull();
                 }
-            } else if (BiRecordGetter.class.isAssignableFrom(lastParamType)) {
+            } else if (BiRowMapper.class.isAssignableFrom(lastParamType)) {
                 if (isListQuery) {
-                    return (preparedQuery, args) -> (R) preparedQuery.list((BiRecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.list((BiRowMapper) args[paramLen - 1]);
                 } else if (Optional.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRowMapper) args[paramLen - 1]);
                 } else if (ExceptionalStream.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRecordGetter) args[paramLen - 1]);
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRowMapper) args[paramLen - 1]);
                 } else if (Stream.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRecordGetter) args[paramLen - 1]).unchecked();
+                    return (preparedQuery, args) -> (R) preparedQuery.stream((BiRowMapper) args[paramLen - 1]).unchecked();
                 } else {
                     if (Nullable.class.isAssignableFrom(returnType)) {
-                        throw new UnsupportedOperationException("The return type of method: " + method.getName() + " can't be: " + returnType
-                                + " when RecordGetter/BiRecordGetter is specified");
+                        throw new UnsupportedOperationException(
+                                "The return type of method: " + method.getName() + " can't be: " + returnType + " when RowMapper/BiRowMapper is specified");
                     }
 
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRecordGetter) args[paramLen - 1]).orNull();
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRowMapper) args[paramLen - 1]).orNull();
                 }
             } else {
                 if (method.getGenericParameterTypes()[paramLen - 1] instanceof ParameterizedType) {
@@ -8481,9 +8539,9 @@ public final class JdbcUtil {
         } else if (DataSet.class.isAssignableFrom(returnType)) {
             return (preparedQuery, args) -> (R) preparedQuery.query();
         } else if (N.isEntity(returnType)) {
-            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(returnType)).orNull();
+            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRowMapper.to(returnType)).orNull();
         } else if (Map.class.isAssignableFrom(returnType)) {
-            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(returnType)).orNull();
+            return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRowMapper.to(returnType)).orNull();
         } else if (isListQuery) {
             final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
             final Class<?> eleType = parameterizedReturnType.getActualTypeArguments()[0] instanceof Class
@@ -8492,9 +8550,9 @@ public final class JdbcUtil {
 
             if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
-                return (preparedQuery, args) -> (R) preparedQuery.list(BiRecordGetter.to(eleType));
+                return (preparedQuery, args) -> (R) preparedQuery.list(BiRowMapper.to(eleType));
             } else {
-                final RecordGetter recardGetter = rs -> N.typeOf(eleType).get(rs, 1);
+                final RowMapper recardGetter = rs -> N.typeOf(eleType).get(rs, 1);
                 return (preparedQuery, args) -> (R) preparedQuery.list(recardGetter);
             }
         } else if (Optional.class.isAssignableFrom(returnType) || Nullable.class.isAssignableFrom(returnType)) {
@@ -8507,9 +8565,9 @@ public final class JdbcUtil {
             if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
                 if (Nullable.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) Nullable.from(preparedQuery.findFirst(BiRecordGetter.to(eleType)));
+                    return (preparedQuery, args) -> (R) Nullable.from(preparedQuery.findFirst(BiRowMapper.to(eleType)));
                 } else {
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRecordGetter.to(eleType));
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRowMapper.to(eleType));
                 }
             } else {
                 if (Nullable.class.isAssignableFrom(returnType)) {
@@ -8544,9 +8602,9 @@ public final class JdbcUtil {
             if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
                 if (ExceptionalStream.class.isAssignableFrom(returnType)) {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream(BiRecordGetter.to(eleType));
+                    return (preparedQuery, args) -> (R) preparedQuery.stream(BiRowMapper.to(eleType));
                 } else {
-                    return (preparedQuery, args) -> (R) preparedQuery.stream(BiRecordGetter.to(eleType)).unchecked();
+                    return (preparedQuery, args) -> (R) preparedQuery.stream(BiRowMapper.to(eleType)).unchecked();
                 }
             } else {
                 if (ExceptionalStream.class.isAssignableFrom(returnType)) {
@@ -8581,11 +8639,10 @@ public final class JdbcUtil {
             if (method.getGenericReturnType() instanceof ParameterizedType) {
                 final ParameterizedType parameterizedReturnType = (ParameterizedType) method.getGenericReturnType();
 
-                if (paramLen > 0
-                        && (RecordGetter.class.isAssignableFrom(paramTypes[paramLen - 1]) || BiRecordGetter.class.isAssignableFrom(paramTypes[paramLen - 1]))
+                if (paramLen > 0 && (RowMapper.class.isAssignableFrom(paramTypes[paramLen - 1]) || BiRowMapper.class.isAssignableFrom(paramTypes[paramLen - 1]))
                         && method.getGenericParameterTypes()[paramLen - 1] instanceof ParameterizedType) {
 
-                    // if the return type of the method is same as the return type of RecordGetter/BiRecordGetter parameter, return false;
+                    // if the return type of the method is same as the return type of RowMapper/BiRowMapper parameter, return false;
                     return !parameterizedReturnType.equals(((ParameterizedType) method.getGenericParameterTypes()[paramLen - 1]).getActualTypeArguments()[0]);
                 }
             }

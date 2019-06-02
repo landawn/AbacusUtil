@@ -39,7 +39,7 @@ import net.spy.memcached.transcoders.Transcoder;
  * @author Haiyang Li
  */
 public class SpyMemcached<T> extends AbstractDistributedCacheClient<T> {
-    private static final Logger logger = LoggerFactory.getLogger(SpyMemcached.class);
+    static final Logger logger = LoggerFactory.getLogger(SpyMemcached.class);
     private MemcachedClient mc;
 
     public SpyMemcached(final String serverUrl) {
@@ -218,9 +218,7 @@ public class SpyMemcached<T> extends AbstractDistributedCacheClient<T> {
         try {
             return new net.spy.memcached.MemcachedClient(connFactory, AddrUtil.getAddressList(serverUrl));
         } catch (IOException e) {
-            String msg = "Failed to create Memcached client.";
-            logger.warn(msg, e);
-            throw new UncheckedIOException(msg, e);
+            throw new UncheckedIOException("Failed to create Memcached client.", e);
         }
     }
 }

@@ -23,10 +23,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(value = RetentionPolicy.CLASS)
 @Target(value = { ElementType.METHOD, ElementType.TYPE })
-
-/**
- *
- */
 public @interface SequentialOnly {
 
 }

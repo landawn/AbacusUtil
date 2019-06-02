@@ -743,6 +743,21 @@ public final class N {
         }
     }
 
+    public static <E extends Throwable> boolean mayCausedBy(Throwable e, final Class<E> exceptionClass) {
+        N.checkArgNotNull(e, "e");
+        N.checkArgNotNull(exceptionClass, "exceptionClass");
+
+        while (e != null) {
+            if (exceptionClass.isAssignableFrom(e.getClass())) {
+                return true;
+            }
+
+            e = e.getCause();
+        }
+
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     private static <T> T invoke(final Constructor<T> c, final Object... args)
             throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

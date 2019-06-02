@@ -1,3 +1,12 @@
+### 1.7.4
+
+* Add `Stream.reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner)`.
+
+* Rename `JdbcUtil.RecordGetter/RecordConsumer/RecordPredicate` to `RowMapper/RowConsumer/RowFilter`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.3
 
 * Add `ContinuableFuture.map`.

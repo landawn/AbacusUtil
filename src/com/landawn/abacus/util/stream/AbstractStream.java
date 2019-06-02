@@ -538,10 +538,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final R init, final BiFunction<R, ? super T, R> op) {
+    public <U> Stream<U> collapse(final BiPredicate<? super T, ? super T> collapsible, final U init, final BiFunction<U, ? super T, U> op) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return newStream(new ObjIteratorEx<R>() {
+        return newStream(new ObjIteratorEx<U>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -551,8 +551,8 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public R next() {
-                R res = op.apply(init, hasNext ? next : (next = iter.next()));
+            public U next() {
+                U res = op.apply(init, hasNext ? next : (next = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(next, (next = iter.next()))) {
@@ -659,11 +659,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator) {
+    public <U> Stream<U> scan(final U init, final BiFunction<U, ? super T, U> accumulator) {
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return newStream(new ObjIteratorEx<R>() {
-            private R res = init;
+        return newStream(new ObjIteratorEx<U>() {
+            private U res = init;
 
             @Override
             public boolean hasNext() {
@@ -671,23 +671,23 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public R next() {
+            public U next() {
                 return (res = accumulator.apply(res, iter.next()));
             }
         }, false, null);
     }
 
     @Override
-    public <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator, boolean initIncluded) {
+    public <U> Stream<U> scan(final U init, final BiFunction<U, ? super T, U> accumulator, boolean initIncluded) {
         if (initIncluded == false) {
             return scan(init, accumulator);
         }
 
         final ObjIteratorEx<T> iter = iteratorEx();
 
-        return newStream(new ObjIteratorEx<R>() {
+        return newStream(new ObjIteratorEx<U>() {
             private boolean isFirst = true;
-            private R res = init;
+            private U res = init;
 
             @Override
             public boolean hasNext() {
@@ -695,7 +695,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public R next() {
+            public U next() {
                 if (isFirst) {
                     isFirst = false;
                     return init;

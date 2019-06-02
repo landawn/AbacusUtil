@@ -2817,6 +2817,69 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
+    public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator, final BinaryOperator<U> combiner) {
+        assertNotClosed();
+
+        if (maxThreadNum <= 1) {
+            return super.reduce(identity, accumulator, combiner);
+        }
+
+        final List<ContinuableFuture<U>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Callable<U>() {
+                @Override
+                public U call() {
+                    U result = identity;
+                    T next = null;
+
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    next = elements.next();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            result = accumulator.apply(result, next);
+                        }
+                    } catch (Exception e) {
+                        setError(eHolder, e);
+                    }
+
+                    return result;
+                }
+            }));
+        }
+
+        if (eHolder.value() != null) {
+            close();
+            throw N.toRuntimeException(eHolder.value());
+        }
+
+        U result = (U) NONE;
+
+        try {
+            for (ContinuableFuture<U> future : futureList) {
+                if (result == NONE) {
+                    result = future.get();
+                } else {
+                    result = combiner.apply(result, future.get());
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        } finally {
+            close();
+        }
+
+        return result == NONE ? identity : result;
+    }
+
+    @Override
     public <R> R collect(final Supplier<R> supplier, final BiConsumer<? super R, ? super T> accumulator, final BiConsumer<R, R> combiner) {
         assertNotClosed();
 

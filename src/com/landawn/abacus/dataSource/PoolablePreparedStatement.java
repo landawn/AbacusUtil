@@ -1358,6 +1358,7 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
      */
     @Override
     public void setFetchDirection(int direction) throws SQLException {
+        this.fetchDirection = internalStmt.getFetchDirection();
         internalStmt.setFetchDirection(direction);
     }
 
@@ -1370,6 +1371,7 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
      */
     @Override
     public void setFetchSize(int rows) throws SQLException {
+        this.fetchSize = internalStmt.getFetchSize();
         internalStmt.setFetchSize(rows);
     }
 
@@ -1382,6 +1384,7 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
      */
     @Override
     public void setMaxFieldSize(int max) throws SQLException {
+        this.maxFieldSize = internalStmt.getMaxFieldSize();
         internalStmt.setMaxFieldSize(max);
     }
 
@@ -1394,7 +1397,21 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
      */
     @Override
     public void setMaxRows(int max) throws SQLException {
+        this.maxRows = internalStmt.getMaxRows();
         internalStmt.setMaxRows(max);
+    }
+
+    /**
+     * Method setQueryTimeout.
+     * 
+     * @param seconds
+     * @throws SQLException
+     * @see java.sql.Statement#setQueryTimeout(int)
+     */
+    @Override
+    public void setQueryTimeout(int seconds) throws SQLException {
+        this.queryTimeout = internalStmt.getQueryTimeout();
+        internalStmt.setQueryTimeout(seconds);
     }
 
     /**
@@ -1407,18 +1424,6 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
     @Override
     public void setPoolable(boolean poolable) throws SQLException {
         internalStmt.setPoolable(poolable);
-    }
-
-    /**
-     * Method setQueryTimeout.
-     * 
-     * @param seconds
-     * @throws SQLException
-     * @see java.sql.Statement#setQueryTimeout(int)
-     */
-    @Override
-    public void setQueryTimeout(int seconds) throws SQLException {
-        internalStmt.setQueryTimeout(seconds);
     }
 
     /**
@@ -1486,6 +1491,38 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
         return internalStmt.isCloseOnCompletion();
+    }
+
+    private int fetchSize = -1;
+    private int fetchDirection = -1;
+    private int maxRows = -1;
+    private int maxFieldSize = -1;
+    private int queryTimeout = -1;
+
+    protected void reset() throws SQLException {
+        //    internalStmt.clearParameters();
+        //    internalStmt.clearBatch();
+        //    internalStmt.clearWarnings();
+
+        if (fetchSize != -1) {
+            internalStmt.setFetchSize(fetchSize);
+        }
+
+        if (fetchDirection != -1) {
+            internalStmt.setFetchDirection(fetchDirection);
+        }
+
+        if (maxRows != -1) {
+            internalStmt.setMaxRows(maxRows);
+        }
+
+        if (maxFieldSize != -1) {
+            internalStmt.setMaxFieldSize(maxFieldSize);
+        }
+
+        if (queryTimeout != -1) {
+            internalStmt.setQueryTimeout(queryTimeout);
+        }
     }
 
     static class ResultSetProxy implements ResultSet {

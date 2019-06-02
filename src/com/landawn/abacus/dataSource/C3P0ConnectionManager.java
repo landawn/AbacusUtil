@@ -39,7 +39,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 class C3P0ConnectionManager extends AbstractConnectionManager {
-    private static final Logger logger = LoggerFactory.getLogger(C3P0ConnectionManager.class);
+    static final Logger logger = LoggerFactory.getLogger(C3P0ConnectionManager.class);
 
     private final DataSource ds;
     private final com.mchange.v2.c3p0.ComboPooledDataSource cpds;
@@ -101,9 +101,7 @@ class C3P0ConnectionManager extends AbstractConnectionManager {
         try {
             return cpds.getNumConnections();
         } catch (SQLException e) {
-            String msg = AbacusException.getErrorMsg(e);
-            logger.warn(msg);
-            throw new UncheckedSQLException(msg, e);
+            throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
         }
     }
 
@@ -112,9 +110,7 @@ class C3P0ConnectionManager extends AbstractConnectionManager {
         try {
             return ds.getConnection();
         } catch (SQLException e) {
-            String msg = AbacusException.getErrorMsg(e);
-            logger.warn(msg);
-            throw new UncheckedSQLException(msg, e);
+            throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
         }
     }
 
@@ -124,9 +120,7 @@ class C3P0ConnectionManager extends AbstractConnectionManager {
             try {
                 conn.close();
             } catch (SQLException e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new UncheckedSQLException(msg, e);
+                throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
             }
         }
     }

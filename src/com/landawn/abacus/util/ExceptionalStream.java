@@ -42,7 +42,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
-import com.landawn.abacus.util.JdbcUtil.BiRecordGetter;
+import com.landawn.abacus.util.JdbcUtil.BiRowMapper;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
@@ -55,6 +55,7 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
+import com.landawn.abacus.util.stream.SequentialOnly;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -64,6 +65,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
+@SequentialOnly
 public class ExceptionalStream<T, E extends Exception> implements AutoCloseable {
     static final Logger logger = LoggerFactory.getLogger(ExceptionalStream.class);
 
@@ -537,16 +539,16 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(targetClass, "targetClass");
         N.checkArgNotNull(resultSet, "resultSet");
 
-        final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
-            private final BiRecordGetter<T, RuntimeException> biRecordGetter = BiRecordGetter.to(targetClass);
+        final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
+            private final BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
 
             @Override
             public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
-                return biRecordGetter.apply(resultSet, columnLabels);
+                return biRowMapper.apply(resultSet, columnLabels);
             }
         };
 
-        return rows(resultSet, recordGetter);
+        return rows(resultSet, rowMapper);
     }
 
     /**
@@ -578,14 +580,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
      * @param resultSet
-     * @param recordGetter
+     * @param rowMapper
      * @return
      * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> recordGetter)
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> rowMapper)
             throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(recordGetter, "recordGetter");
+        N.checkArgNotNull(rowMapper, "rowMapper");
 
         final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
             private boolean hasNext;
@@ -607,7 +609,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
 
                 hasNext = false;
 
-                return recordGetter.apply(resultSet);
+                return rowMapper.apply(resultSet);
             }
 
             @Override
@@ -629,14 +631,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
      * 
      * @param resultSet
-     * @param recordGetter
+     * @param rowMapper
      * @return
      * @throws UncheckedSQLException 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> recordGetter) throws UncheckedSQLException {
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(recordGetter, "recordGetter");
+        N.checkArgNotNull(rowMapper, "rowMapper");
 
         final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
             private List<String> columnLabels = null;
@@ -663,7 +665,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     columnLabels = JdbcUtil.getColumnLabelList(resultSet);
                 }
 
-                return recordGetter.apply(resultSet, columnLabels);
+                return rowMapper.apply(resultSet, columnLabels);
             }
 
             @Override
@@ -1412,14 +1414,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, closeHandlers);
     }
 
-    public <R> ExceptionalStream<R, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final R init,
-            final Try.BiFunction<R, ? super T, R, ? extends E> op) {
+    public <U> ExceptionalStream<U, E> collapse(final Try.BiPredicate<? super T, ? super T, ? extends E> collapsible, final U init,
+            final Try.BiFunction<U, ? super T, U, ? extends E> op) {
         checkArgNotNull(collapsible, "collapsible");
         checkArgNotNull(op, "accumulator");
 
         final ExceptionalIterator<T, E> iter = elements;
 
-        return newStream(new ExceptionalIterator<R, E>() {
+        return newStream(new ExceptionalIterator<U, E>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -1429,8 +1431,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             @Override
-            public R next() throws E {
-                R res = op.apply(init, hasNext ? next : (next = iter.next()));
+            public U next() throws E {
+                U res = op.apply(init, hasNext ? next : (next = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(next, (next = iter.next()))) {
@@ -1514,6 +1516,76 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 }
 
                 return finisher.apply(container);
+            }
+        }, closeHandlers);
+    }
+
+    public ExceptionalStream<T, E> scan(final Try.BiFunction<? super T, ? super T, T, E> accumulator) {
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<T, E>() {
+            private T res = null;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() throws E {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() throws E {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, closeHandlers);
+    }
+
+    public <U> ExceptionalStream<U, E> scan(final U init, final Try.BiFunction<U, ? super T, U, E> accumulator) {
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<U, E>() {
+            private U res = init;
+
+            @Override
+            public boolean hasNext() throws E {
+                return iter.hasNext();
+            }
+
+            @Override
+            public U next() throws E {
+                return (res = accumulator.apply(res, iter.next()));
+            }
+        }, closeHandlers);
+    }
+
+    public <U> ExceptionalStream<U, E> scan(final U init, final Try.BiFunction<U, ? super T, U, E> accumulator, final boolean initIncluded) {
+        if (initIncluded == false) {
+            return scan(init, accumulator);
+        }
+
+        final ExceptionalIterator<T, E> iter = elements;
+
+        return newStream(new ExceptionalIterator<U, E>() {
+            private boolean isFirst = true;
+            private U res = init;
+
+            @Override
+            public boolean hasNext() throws E {
+                return isFirst || iter.hasNext();
+            }
+
+            @Override
+            public U next() throws E {
+                if (isFirst) {
+                    isFirst = false;
+                    return init;
+                }
+
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, closeHandlers);
     }
@@ -2872,23 +2944,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
-    public T reduce(T identity, Try.BinaryOperator<T, ? extends E> accumulator) throws E {
-        checkArgNotNull(accumulator, "accumulator");
-        assertNotClosed();
-
-        try {
-            T result = identity;
-
-            while (elements.hasNext()) {
-                result = accumulator.apply(result, elements.next());
-            }
-
-            return result;
-        } finally {
-            close();
-        }
-    }
-
     public Optional<T> reduce(Try.BinaryOperator<T, ? extends E> accumulator) throws E {
         checkArgNotNull(accumulator, "accumulator");
         assertNotClosed();
@@ -2905,6 +2960,23 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             }
 
             return Optional.of(result);
+        } finally {
+            close();
+        }
+    }
+
+    public <U> U reduce(final U identity, final Try.BiFunction<U, ? super T, U, E> accumulator) throws E {
+        checkArgNotNull(accumulator, "accumulator");
+        assertNotClosed();
+
+        try {
+            U result = identity;
+
+            while (elements.hasNext()) {
+                result = accumulator.apply(result, elements.next());
+            }
+
+            return result;
         } finally {
             close();
         }

@@ -1376,18 +1376,18 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <R, E extends Exception, E2 extends Exception> List<R> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible, final R init,
-            final Try.BiFunction<? super R, ? super T, R, E2> op) throws E, E2 {
+    public <U, E extends Exception, E2 extends Exception> List<U> collapse(final Try.BiPredicate<? super T, ? super T, E> collapsible, final U init,
+            final Try.BiFunction<? super U, ? super T, U, E2> op) throws E, E2 {
         N.checkArgNotNull(collapsible);
         N.checkArgNotNull(op);
 
-        final List<R> result = new ArrayList<>();
+        final List<U> result = new ArrayList<>();
         final Iterator<T> iter = iterator();
         boolean hasNext = false;
         T next = null;
 
         while (hasNext || iter.hasNext()) {
-            R res = op.apply(init, hasNext ? next : (next = iter.next()));
+            U res = op.apply(init, hasNext ? next : (next = iter.next()));
 
             while ((hasNext = iter.hasNext())) {
                 if (collapsible.test(next, (next = iter.next()))) {
@@ -1545,7 +1545,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param accumulator the accumulation function
      * @return
      */
-    public <R, E extends Exception> List<R> scan(final R init, final Try.BiFunction<? super R, ? super T, R, E> accumulator) throws E {
+    public <U, E extends Exception> List<U> scan(final U init, final Try.BiFunction<? super U, ? super T, U, E> accumulator) throws E {
         return scan(init, accumulator, false);
     }
 
@@ -1557,17 +1557,17 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @throws E
      */
-    public <R, E extends Exception> List<R> scan(final R init, final Try.BiFunction<? super R, ? super T, R, E> accumulator, boolean initIncluded) throws E {
+    public <U, E extends Exception> List<U> scan(final U init, final Try.BiFunction<? super U, ? super T, U, E> accumulator, boolean initIncluded) throws E {
         N.checkArgNotNull(accumulator);
 
-        final List<R> result = new ArrayList<>();
+        final List<U> result = new ArrayList<>();
 
         if (initIncluded) {
             result.add(init);
         }
 
         final Iterator<T> iter = iterator();
-        R next = init;
+        U next = init;
 
         while (iter.hasNext()) {
             result.add((next = accumulator.apply(next, iter.next())));
@@ -1638,7 +1638,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param accumulator
      * @return
      */
-    public <E extends Exception> T reduce(T identity, Try.BinaryOperator<T, E> accumulator) throws E {
+    public <U, E extends Exception> U reduce(final U identity, final Try.BiFunction<U, ? super T, U, E> accumulator) throws E {
         N.checkArgNotNull(accumulator);
 
         if (isEmpty()) {
@@ -1646,7 +1646,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         final Iterator<T> iter = iterator();
-        T result = identity;
+        U result = identity;
 
         while (iter.hasNext()) {
             result = accumulator.apply(result, iter.next());
@@ -1696,12 +1696,35 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return collector.finisher().apply(result);
     }
 
+    public <A, R> R collect(final java.util.stream.Collector<? super T, A, R> collector) {
+        N.checkArgNotNull(collector);
+
+        final java.util.function.BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final A result = collector.supplier().get();
+
+        for (T e : coll) {
+            accumulator.accept(result, e);
+        }
+
+        return collector.finisher().apply(result);
+    }
+
     public <A, R, RR, E extends Exception> RR collectThenApply(final Collector<T, A, R> downstream, final Try.Function<? super R, ? extends RR, E> mapper)
             throws E {
         return mapper.apply(collect(downstream));
     }
 
+    public <A, R, RR, E extends Exception> RR collectThenApply(final java.util.stream.Collector<T, A, R> downstream,
+            final Try.Function<? super R, ? extends RR, E> mapper) throws E {
+        return mapper.apply(collect(downstream));
+    }
+
     public <A, R, E extends Exception> void collectThenAccept(final Collector<T, A, R> downstream, final Try.Consumer<? super R, E> consumer) throws E {
+        consumer.accept(collect(downstream));
+    }
+
+    public <A, R, E extends Exception> void collectThenAccept(final java.util.stream.Collector<T, A, R> downstream, final Try.Consumer<? super R, E> consumer)
+            throws E {
         consumer.accept(collect(downstream));
     }
 

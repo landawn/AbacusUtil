@@ -96,7 +96,6 @@ public class SQLDataSource extends AbstractDataSource implements com.landawn.aba
             databaseProductVersion = metaData.getDatabaseProductVersion();
             defaultConnectionIsolation = conn.getTransactionIsolation();
         } catch (SQLException e) {
-            logger.warn(AbacusException.getErrorMsg(e));
             throw new UncheckedSQLException(e);
         } finally {
             close(conn);
@@ -148,7 +147,6 @@ public class SQLDataSource extends AbstractDataSource implements com.landawn.aba
             databaseProductVersion = metaData.getDatabaseProductVersion();
             defaultConnectionIsolation = conn.getTransactionIsolation();
         } catch (SQLException e) {
-            logger.warn(AbacusException.getErrorMsg(e));
             throw new UncheckedSQLException(e);
         } finally {
             close(conn);
@@ -216,9 +214,7 @@ public class SQLDataSource extends AbstractDataSource implements com.landawn.aba
             try {
                 return (ConnectionManager) ClassUtil.forClass(provider).getConstructor(Map.class).newInstance(props);
             } catch (Exception e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new RuntimeException(msg, e);
+                throw N.toRuntimeException(e);
             }
         }
     }

@@ -60,7 +60,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 abstract class AbstractConnectionManager implements ConnectionManager {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConnectionManager.class);
+    static final Logger logger = LoggerFactory.getLogger(AbstractConnectionManager.class);
 
     protected final Map<String, String> properties;
     protected final Properties connectionProperties;
@@ -253,9 +253,7 @@ abstract class AbstractConnectionManager implements ConnectionManager {
 
             return (DataSource) ctx.lookup(jndiName);
         } catch (NamingException e) {
-            String msg = "Failed to bind to JNDI: " + jndiName + ". " + AbacusException.getErrorMsg(e);
-            logger.warn(msg);
-            throw new UncheckedException(msg, e);
+            throw new UncheckedException("Failed to bind to JNDI: " + jndiName + ". " + AbacusException.getErrorMsg(e), e);
         }
     }
 

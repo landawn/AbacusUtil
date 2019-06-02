@@ -177,7 +177,6 @@ public class JavaExecutionServlet extends AbstractHttpServlet {
             flush(os);
         } catch (IOException e) {
             String msg = "Failed to execute task on server: " + IOUtil.HOST_NAME;
-            logger.error(msg, e);
             throw new UncheckedIOException(msg, e);
         } finally {
             IOUtil.close(os);

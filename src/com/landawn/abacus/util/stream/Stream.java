@@ -657,7 +657,7 @@ public abstract class Stream<T>
     public abstract Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction);
 
     @SequentialOnly
-    public abstract <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final R init, final BiFunction<R, ? super T, R> op);
+    public abstract <U> Stream<U> collapse(final BiPredicate<? super T, ? super T> collapsible, final U init, final BiFunction<U, ? super T, U> op);
 
     @SequentialOnly
     public abstract <R> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Supplier<R> supplier,
@@ -745,7 +745,7 @@ public abstract class Stream<T>
      * @return the new stream which has the extract same size as this stream.
      */
     @SequentialOnly
-    public abstract <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator);
+    public abstract <U> Stream<U> scan(final U init, final BiFunction<U, ? super T, U> accumulator);
 
     /**
      * 
@@ -755,7 +755,7 @@ public abstract class Stream<T>
      * @return
      */
     @SequentialOnly
-    public abstract <R> Stream<R> scan(final R init, final BiFunction<? super R, ? super T, R> accumulator, final boolean initIncluded);
+    public abstract <U> Stream<U> scan(final U init, final BiFunction<U, ? super T, U> accumulator, final boolean initIncluded);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -1879,6 +1879,9 @@ public abstract class Stream<T>
     public abstract Optional<T> reduce(BinaryOperator<T> accumulator);
 
     @ParallelSupported
+    public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
+
+    @ParallelSupported
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<? super R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     @ParallelSupported
@@ -2353,6 +2356,11 @@ public abstract class Stream<T>
     @SequentialOnly
     public abstract java.util.stream.Stream<T> toJdkStream();
 
+    /**
+     * Remember to close this Stream after the iteration is done, if required.
+     * 
+     * @return
+     */
     @SequentialOnly
     @Override
     public ObjIterator<T> iterator() {

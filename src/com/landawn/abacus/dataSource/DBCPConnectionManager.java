@@ -31,6 +31,7 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -39,7 +40,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * @author Haiyang Li
  */
 class DBCPConnectionManager extends AbstractConnectionManager {
-    private static final Logger logger = LoggerFactory.getLogger(DBCPConnectionManager.class);
+    static final Logger logger = LoggerFactory.getLogger(DBCPConnectionManager.class);
 
     private final DataSource ds;
     private final org.apache.commons.dbcp.BasicDataSource bds;
@@ -54,9 +55,7 @@ class DBCPConnectionManager extends AbstractConnectionManager {
             try {
                 bds = (org.apache.commons.dbcp.BasicDataSource) org.apache.commons.dbcp.BasicDataSourceFactory.createDataSource(new Properties());
             } catch (Exception e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new RuntimeException(msg, e);
+                throw N.toRuntimeException(e);
             }
 
             bds.setDriverClassName(properties.get(DRIVER));
@@ -101,9 +100,7 @@ class DBCPConnectionManager extends AbstractConnectionManager {
         try {
             return ds.getConnection();
         } catch (SQLException e) {
-            String msg = AbacusException.getErrorMsg(e);
-            logger.warn(msg);
-            throw new UncheckedSQLException(msg, e);
+            throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
         }
     }
 
@@ -113,9 +110,7 @@ class DBCPConnectionManager extends AbstractConnectionManager {
             try {
                 conn.close();
             } catch (SQLException e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new UncheckedSQLException(msg, e);
+                throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
             }
         }
     }
@@ -131,9 +126,7 @@ class DBCPConnectionManager extends AbstractConnectionManager {
             try {
                 bds.close();
             } catch (SQLException e) {
-                String msg = AbacusException.getErrorMsg(e);
-                logger.warn(msg);
-                throw new UncheckedSQLException(msg, e);
+                throw new UncheckedSQLException(AbacusException.getErrorMsg(e), e);
             }
         }
     }

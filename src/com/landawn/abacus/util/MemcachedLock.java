@@ -28,7 +28,7 @@ import com.landawn.abacus.logging.LoggerFactory;
  * @author Haiyang Li
  */
 public final class MemcachedLock<K, V> {
-    private static final Logger logger = LoggerFactory.getLogger(MemcachedLock.class);
+    static final Logger logger = LoggerFactory.getLogger(MemcachedLock.class);
 
     private final SpyMemcached<V> mc;
 
@@ -54,9 +54,7 @@ public final class MemcachedLock<K, V> {
         try {
             return mc.add(key, value, liveTime);
         } catch (Exception e) {
-            String msg = "Failed to lock target with key: " + key;
-            logger.warn(msg, e);
-            throw new AbacusException(msg, e);
+            throw new AbacusException("Failed to lock target with key: " + key, e);
         }
     }
 
@@ -74,9 +72,7 @@ public final class MemcachedLock<K, V> {
         try {
             return mc.delete(toKey(target));
         } catch (Exception e) {
-            String msg = "Failed to unlock with key: " + target;
-            logger.warn(msg, e);
-            throw new AbacusException(msg, e);
+            throw new AbacusException("Failed to unlock with key: " + target, e);
         }
     }
 
