@@ -471,10 +471,10 @@ class IteratorStream<T> extends AbstractStream<T> {
                                 (prev = (elements.hasNext() ? elements.next() : null)));
 
                     } else if (increment == 2) {
-                        return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                        return mapper.apply(prev == NONE ? elements.next() : prev, elements.hasNext() ? elements.next() : null,
                                 (prev = (elements.hasNext() ? elements.next() : null)));
                     } else {
-                        return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
+                        return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null,
                                 (prev = (elements.hasNext() ? elements.next() : null)));
                     }
                 }
@@ -2352,10 +2352,11 @@ class IteratorStream<T> extends AbstractStream<T> {
         assertNotClosed();
 
         try {
-            T prev = (T) NONE;
+            boolean isFirst = true;
+            T prev = null;
 
             while (elements.hasNext()) {
-                if (increment > windowSize && prev != NONE) {
+                if (increment > windowSize && isFirst == false) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
@@ -2365,15 +2366,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                     if (elements.hasNext() == false) {
                         break;
                     }
-
-                    prev = (T) NONE;
                 }
 
                 if (increment == 1) {
-                    action.accept(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                    action.accept(isFirst ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
                 } else {
-                    action.accept(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                    action.accept(elements.next(), elements.hasNext() ? elements.next() : null);
                 }
+
+                isFirst = false;
             }
         } finally {
             close();
@@ -2387,11 +2388,12 @@ class IteratorStream<T> extends AbstractStream<T> {
         assertNotClosed();
 
         try {
-            T prev = (T) NONE;
-            T prev2 = (T) NONE;
+            boolean isFirst = true;
+            T prev = null;
+            T prev2 = null;
 
             while (elements.hasNext()) {
-                if (increment > windowSize && prev != NONE) {
+                if (increment > windowSize && isFirst == false) {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
@@ -2401,21 +2403,20 @@ class IteratorStream<T> extends AbstractStream<T> {
                     if (elements.hasNext() == false) {
                         break;
                     }
-
-                    prev = (T) NONE;
                 }
 
                 if (increment == 1) {
-                    action.accept(prev2 == NONE ? elements.next() : prev2, (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                    action.accept(isFirst ? elements.next() : prev2, (prev2 = (isFirst ? (elements.hasNext() ? elements.next() : null) : prev)),
                             (prev = (elements.hasNext() ? elements.next() : null)));
 
                 } else if (increment == 2) {
-                    action.accept(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                    action.accept(isFirst ? elements.next() : prev, elements.hasNext() ? elements.next() : null,
                             (prev = (elements.hasNext() ? elements.next() : null)));
                 } else {
-                    action.accept(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
+                    action.accept(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
                 }
+
+                isFirst = false;
             }
         } finally {
             close();

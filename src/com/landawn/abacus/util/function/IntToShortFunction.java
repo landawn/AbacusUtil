@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface IntToShortFunction {
 
-   static final IntToShortFunction DEFAULT = new IntToShortFunction() {
+    static final IntToShortFunction DEFAULT = new IntToShortFunction() {
         @Override
         public short applyAsShort(int value) {
             return (short) value;

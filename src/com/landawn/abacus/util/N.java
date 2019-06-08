@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015, Haiyang Li.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -82,6 +82,7 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.annotation.NullSafe;
 import com.landawn.abacus.core.EntityUtil;
 import com.landawn.abacus.core.MapEntity;
@@ -129,6 +130,15 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @author Haiyang Li
  *
  * @version $Revision: 0.8 $ 07/03/10
+ *
+ * @see com.landawn.abacus.util.IOUtil
+ * @see com.landawn.abacus.util.StringUtil
+ * @see com.landawn.abacus.util.Iterables
+ * @see com.landawn.abacus.util.Iterators
+ * @see com.landawn.abacus.util.Maps
+ * @see com.landawn.abacus.util.Primitives
+ * @see com.landawn.abacus.util.Array
+ * @see com.landawn.abacus.util.Seq
  */
 public final class N {
     private static final AsyncExecutor asyncExecutor = new AsyncExecutor(32, 256, 300L, TimeUnit.SECONDS);
@@ -368,7 +378,7 @@ public final class N {
         CLASS_EMPTY_ARRAY.put(Object.class, N.EMPTY_OBJECT_ARRAY);
     }
 
-    // ...    
+    // ...
     static final Map<Class<?>, Integer> CLASS_TYPE_ENUM = new HashMap<>();
 
     static {
@@ -743,21 +753,6 @@ public final class N {
         }
     }
 
-    public static <E extends Throwable> boolean mayCausedBy(Throwable e, final Class<E> exceptionClass) {
-        N.checkArgNotNull(e, "e");
-        N.checkArgNotNull(exceptionClass, "exceptionClass");
-
-        while (e != null) {
-            if (exceptionClass.isAssignableFrom(e.getClass())) {
-                return true;
-            }
-
-            e = e.getCause();
-        }
-
-        return false;
-    }
-
     @SuppressWarnings("unchecked")
     private static <T> T invoke(final Constructor<T> c, final Object... args)
             throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -882,7 +877,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initialCapacity
      * @return
      */
@@ -899,7 +894,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initialCapacity
      * @return
      */
@@ -956,7 +951,7 @@ public final class N {
 
     /**
      * Constructs an empty array deque with an initial capacity sufficient to hold the specified number of elements.
-     * 
+     *
      * @param numElements lower bound on initial capacity of the deque.
      * @return
      */
@@ -966,7 +961,7 @@ public final class N {
 
     /**
      * Constructs a deque containing the elements of the specified collection, in the order they are returned by the collection's iterator.
-     * 
+     *
      * @param c
      * @return
      */
@@ -987,7 +982,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initialCapacity
      * @return
      */
@@ -1021,7 +1016,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initialCapacity
      * @return
      */
@@ -1073,7 +1068,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initialCapacity
      * @return
      */
@@ -1090,7 +1085,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param initCapacity the initial capacity of new HashSet
      * @return
      */
@@ -1286,7 +1281,7 @@ public final class N {
 
     /**
      * Converts a list of row(which can be: Map/Entity) into a <code>DataSet</code>.
-     * 
+     *
      * @param rows list of row which can be: Map/Entity.
      */
     public static <T> DataSet newDataSet(final Collection<T> rows) {
@@ -1295,7 +1290,7 @@ public final class N {
 
     /**
      * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
-     * 
+     *
      * @param columnNames
      * @param rows list of row which can be: Map/Entity or Array/Collection if {@code columnNames} is null or empty.
      * @return
@@ -1521,7 +1516,7 @@ public final class N {
     //    }
 
     //    /**
-    //     * 
+    //     *
     //     * @param arrayClass
     //     * @param c
     //     * @return
@@ -1537,7 +1532,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param a
     //     * @return
     //     * @deprecated replaced by {@code N#toList(Object[])}
@@ -1556,7 +1551,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param a
     //     * @return
     //     * @deprecated replaced by {@code N#toSet(Object[])}
@@ -1596,7 +1591,7 @@ public final class N {
     //    }
 
     /**
-     * 
+     *
      * @param map keys are column names, values are columns
      * @return
      */
@@ -1634,7 +1629,7 @@ public final class N {
 
     /**
      * Returns an empty array if the specified collection is null or empty.
-     * 
+     *
      * @param c
      * @return
      */
@@ -3628,7 +3623,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param targetType
     //     * @param obj
     //     * @return
@@ -3644,7 +3639,7 @@ public final class N {
      * {@code targetClass}. Default value of {@code targetClass} is returned if
      * {@code sourceObject} is null. An instance of {@code targetClass} is returned if
      * convert successfully
-     * 
+     *
      * @param obj
      * @param targetClass
      * @return
@@ -4193,7 +4188,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetClass
      * @param entity
      * @param ignoreUnknownProperty
@@ -4295,7 +4290,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param sourceEntity
      * @param targetEntity
      * @param ignoreUnknownProperty
@@ -4433,7 +4428,7 @@ public final class N {
 
     /**
      * Returns an empty {@code List} that is immutable.
-     * 
+     *
      * @return
      * @see Collections#emptyList()
      */
@@ -4443,7 +4438,7 @@ public final class N {
 
     /**
      * Returns an empty {@code Set} that is immutable.
-     * 
+     *
      * @return
      * @see Collections#emptySet()
      */
@@ -4473,7 +4468,7 @@ public final class N {
 
     /**
      * Returns an empty {@code Map} that is immutable.
-     * 
+     *
      * @return
      * @see Collections#emptyMap()
      */
@@ -4503,7 +4498,7 @@ public final class N {
 
     /**
      * Returns an empty {@code Iterator} that is immutable.
-     * 
+     *
      * @return
      * @see Collections#emptyIterator()
      */
@@ -4513,7 +4508,7 @@ public final class N {
 
     /**
      * Returns an empty {@code ListIterator} that is immutable.
-     * 
+     *
      * @return
      * @see Collections#emptyListIterator()
      */
@@ -4821,7 +4816,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param s
      * @return
      */
@@ -4831,7 +4826,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4841,7 +4836,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4851,7 +4846,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4861,7 +4856,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4871,7 +4866,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4881,7 +4876,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4891,7 +4886,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4901,7 +4896,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4911,7 +4906,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param a
      * @return
      */
@@ -4921,7 +4916,7 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param c
      * @return
      */
@@ -4931,13 +4926,14 @@ public final class N {
 
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
-     * 
+     *
      * @param m
      * @return
      */
     public static int size(final Map<?, ?> m) {
         return m == null ? 0 : m.size();
-    }
+    } 
+
 
     /**
      * Returns an immutable empty list if the specified List is <code>null</code>, otherwise itself is returned.
@@ -5157,7 +5153,7 @@ public final class N {
         return (entityId == null) || (entityId.isEmpty());
     }
 
-    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
+    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
     public static boolean isNullOrEmptyOrBlank(final CharSequence s) {
         if (N.isNullOrEmpty(s)) {
             return true;
@@ -5256,7 +5252,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param index
      * @param length
      * @throws IndexOutOfBoundsException
@@ -5268,7 +5264,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param fromIndex
      * @param toIndex
      * @param length
@@ -5281,7 +5277,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param fromIndex
      * @param size
      * @param length
@@ -5591,7 +5587,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5610,7 +5606,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5629,7 +5625,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5648,7 +5644,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5667,7 +5663,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5686,7 +5682,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5705,7 +5701,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5724,7 +5720,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5743,7 +5739,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5762,7 +5758,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5781,7 +5777,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5800,7 +5796,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is {@code null} or empty, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is {@code null} or empty.
@@ -5840,7 +5836,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -5859,7 +5855,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -5878,7 +5874,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is not negative, and throws {@code IllegalArgumentException} if it is.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -5897,7 +5893,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -5916,7 +5912,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -5935,7 +5931,7 @@ public final class N {
 
     /**
      * Checks if the specified {@code arg} is positive, and throws {@code IllegalArgumentException} if it is not.
-     * 
+     *
      * @param arg
      * @param argNameOrErrorMsg
      * @throws IllegalArgumentException if the specified {@code arg} is negative.
@@ -6440,7 +6436,7 @@ public final class N {
     /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -6456,7 +6452,7 @@ public final class N {
     /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -6477,10 +6473,10 @@ public final class N {
         return N.compare(a3, b3);
     }
 
-    /** 
+    /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -6509,7 +6505,7 @@ public final class N {
     /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -6542,7 +6538,7 @@ public final class N {
     /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -6579,7 +6575,7 @@ public final class N {
     /**
      * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5), (a6, b6), (a7, b7)</code> until they're not equal.
      * <code>0</code> is returned if all of the pairs of values are equal.
-     * 
+     *
      * @param a1
      * @param b1
      * @param a2
@@ -7184,7 +7180,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7222,7 +7218,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7260,7 +7256,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7298,7 +7294,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7336,7 +7332,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7374,7 +7370,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7412,7 +7408,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7450,7 +7446,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7488,7 +7484,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -7551,7 +7547,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndexA
      * @param b
@@ -9640,7 +9636,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param pair
      * @throws NullPointerExceptoin if the specified {@code pair} is {@code null}.
      */
@@ -9649,7 +9645,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param pair
      * @param predicate
      * @return
@@ -9666,8 +9662,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param triple 
+     *
+     * @param triple
      * @throws NullPointerExceptoin if the specified {@code pair} is {@code null}.
      */
     public static <T, M> void swap(final Triple<T, M, T> triple) {
@@ -9677,7 +9673,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param triple
      * @param predicate
      * @return
@@ -9817,7 +9813,7 @@ public final class N {
 
     /**
      * Fill the properties of the entity with random values.
-     * 
+     *
      * @param entity an entity object with getter/setter method
      */
     public static void fill(Object entity) {
@@ -9869,7 +9865,7 @@ public final class N {
 
     /**
      * Fill the properties of the entity with random values.
-     * 
+     *
      * @param entityClass entity class with getter/setter methods
      * @return
      */
@@ -9887,7 +9883,7 @@ public final class N {
 
     /**
      * Fill the properties of the entity with random values.
-     * 
+     *
      * @param entityClass entity class with getter/setter methods
      * @param count
      * @return
@@ -9918,13 +9914,13 @@ public final class N {
 
     /**
      * Repeats the elements in the specified Collection one by one.
-     * 
+     *
      * <pre>
      * <code>
      * Seq.nRepeat(N.asList(1, 2, 3), 2) => [1, 1, 2, 2, 3, 3]
      * </code>
      * </pre>
-     * 
+     *
      * @param c
      * @param n
      * @return
@@ -9975,13 +9971,13 @@ public final class N {
 
     /**
      * Repeats the elements in the specified Collection one by one till reach the specified size.
-     * 
+     *
      * <pre>
      * <code>
      * Seq.nRepeatToSize(N.asList(1, 2, 3), 5) => [1, 1, 2, 2, 3]
      * </code>
      * </pre>
-     * 
+     *
      * @param c
      * @param size
      * @return
@@ -10013,13 +10009,13 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * <pre>
      * <code>
      * Seq.repeatToSize(N.asList(1, 2, 3), 5) => [1, 2, 3, 1, 2]
      * </code>
      * </pre>
-     * 
+     *
      * @param c
      * @param size
      * @return
@@ -10577,7 +10573,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10632,7 +10628,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10687,7 +10683,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10742,7 +10738,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10797,13 +10793,13 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * <pre>
      * <code>
      * int[] a = { 0, 1, 2, 3, 4, 5 };
      * N.copyOfRange(a, 1, 5, 1)); // [1, 2, 3, 4]
      * N.copyOfRange(a, 1, 5, 2); // [1, 3]
-     * 
+     *
      * N.copyOfRange(a, 5, 1, -1); // [5, 4, 3, 2]
      * N.copyOfRange(a, 5, 1, -2); // [5, 3]
      * N.copyOfRange(a, 5, -1, -1); // [5, 4, 3, 2, 1, 0]
@@ -10863,7 +10859,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10918,7 +10914,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -10973,7 +10969,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -11024,7 +11020,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -11053,7 +11049,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param original
      * @param from
      * @param to
@@ -11104,7 +11100,7 @@ public final class N {
 
     /**
      * Copy all the elements in <code>original</code>, through <code>to</code>-<code>from</code>, by <code>step</code>.
-     * 
+     *
      * @param c
      * @param from
      * @param to
@@ -11148,7 +11144,7 @@ public final class N {
      * Create an array list by initializing its elements data with the specified array <code>a</code>.
      * The returned list may share the same elements with the specified array <code>a</code>.
      * That's to say any change on the List/Array will affect the Array/List.
-     * 
+     *
      * @param a
      * @return
      */
@@ -11216,7 +11212,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11230,7 +11226,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11244,7 +11240,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11258,7 +11254,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11272,7 +11268,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11286,7 +11282,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11300,7 +11296,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11314,7 +11310,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11328,7 +11324,7 @@ public final class N {
 
     /**
      * Clone the original array. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11342,7 +11338,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11362,7 +11358,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11382,7 +11378,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11402,7 +11398,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11422,7 +11418,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11442,7 +11438,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11462,7 +11458,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11482,7 +11478,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11502,7 +11498,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11522,7 +11518,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11542,7 +11538,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11562,7 +11558,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11582,7 +11578,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11602,7 +11598,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11622,7 +11618,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11642,7 +11638,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11662,7 +11658,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -11682,7 +11678,7 @@ public final class N {
 
     /**
      * Clone the original array and its sub arrays. <code>null</code> is returned if the input array is <code>null</code>.
-     * 
+     *
      * @param original
      * @return
      */
@@ -12122,23 +12118,23 @@ public final class N {
     public static void bucketSort(final char[] a) {
         M.bucketSort(a);
     }
-    
+
     public static void bucketSort(final char[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
-    
+
     public static void bucketSort(final byte[] a) {
         M.bucketSort(a);
     }
-    
+
     public static void bucketSort(final byte[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
-    
+
     public static void bucketSort(final short[] a) {
         M.bucketSort(a);
     }
-    
+
     public static void bucketSort(final short[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
@@ -12178,7 +12174,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     *   
+     *
      * @param a
      */
     public static void bucketSort(final Object[] a) {
@@ -12187,7 +12183,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param a the elements in the array must implements the <code>Comparable</code> interface.
      * @param fromIndex
      * @param toIndex
@@ -12202,7 +12198,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -12214,7 +12210,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param c
      */
     public static <T extends Comparable<T>> void bucketSort(final List<T> c) {
@@ -12223,7 +12219,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -12234,7 +12230,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param c
      * @param cmp
      */
@@ -12244,7 +12240,7 @@ public final class N {
 
     /**
      * Note: All the objects with same value will be replaced with first element with the same value.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -13450,9 +13446,9 @@ public final class N {
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
-     * Note: This is NOT a replacement of traditional for loop statement. 
+     * Note: This is NOT a replacement of traditional for loop statement.
      * The traditional for loop is still recommended in regular programming.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -13538,9 +13534,9 @@ public final class N {
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      *
-     * Note: This is NOT a replacement of traditional for loop statement. 
+     * Note: This is NOT a replacement of traditional for loop statement.
      * The traditional for loop is still recommended in regular programming.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -13988,10 +13984,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14045,10 +14041,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14102,10 +14098,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14159,10 +14155,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14216,10 +14212,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14273,10 +14269,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14330,10 +14326,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14388,10 +14384,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14448,7 +14444,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14581,7 +14577,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -14704,11 +14700,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex,
@@ -14742,11 +14738,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -14798,11 +14794,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final Try.ToCharFunction<? super T, E> func)
@@ -14836,11 +14832,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -14892,11 +14888,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final Try.ToByteFunction<? super T, E> func)
@@ -14930,11 +14926,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -14986,11 +14982,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex,
@@ -15024,11 +15020,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15080,11 +15076,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
@@ -15118,11 +15114,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15174,11 +15170,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
@@ -15212,11 +15208,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15268,11 +15264,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex,
@@ -15306,11 +15302,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15362,11 +15358,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex,
@@ -15400,11 +15396,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15456,11 +15452,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> map(final T[] a, final int fromIndex, final int toIndex,
@@ -15494,11 +15490,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15551,7 +15547,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -15592,7 +15588,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -15650,11 +15646,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> flatMap(final T[] a, final int fromIndex, final int toIndex,
@@ -15692,11 +15688,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> flatMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -15753,7 +15749,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -15797,7 +15793,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -15857,7 +15853,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param func
      * @param func2
@@ -15905,7 +15901,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param func
      * @param func2
@@ -15956,11 +15952,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> flattMap(final T[] a, final int fromIndex, final int toIndex,
@@ -15997,11 +15993,11 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param func 
+     * @param func
      * @return
      */
     public static <T, R, E extends Exception> List<R> flattMap(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -16058,7 +16054,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16102,7 +16098,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16153,7 +16149,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16162,7 +16158,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16198,7 +16194,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16207,7 +16203,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16267,7 +16263,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16276,7 +16272,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16312,7 +16308,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16321,7 +16317,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16381,7 +16377,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16390,7 +16386,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16426,7 +16422,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16435,7 +16431,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16495,7 +16491,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16504,7 +16500,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16540,7 +16536,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16549,7 +16545,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16609,7 +16605,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16618,7 +16614,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16648,7 +16644,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16657,7 +16653,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16687,7 +16683,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      */
@@ -16696,7 +16692,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16732,7 +16728,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      */
@@ -16741,7 +16737,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -16802,10 +16798,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -16821,10 +16817,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16851,10 +16847,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -16870,10 +16866,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16900,10 +16896,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -16919,10 +16915,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16949,10 +16945,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -16968,10 +16964,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -16998,10 +16994,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -17017,10 +17013,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17047,10 +17043,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -17066,10 +17062,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17096,10 +17092,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -17115,10 +17111,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17145,10 +17141,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -17164,10 +17160,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17194,10 +17190,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param filter
      * @return
@@ -17213,10 +17209,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17243,10 +17239,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @param filter
      * @return
@@ -17262,10 +17258,10 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -17665,7 +17661,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param a
      * @param n
      * @return
@@ -17676,7 +17672,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param a
      * @param n
      * @param cmp
@@ -17688,7 +17684,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17701,7 +17697,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17767,7 +17763,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param c
      * @param n
      * @return
@@ -17778,7 +17774,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param c
      * @param n
      * @param cmp
@@ -17790,7 +17786,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -17803,7 +17799,7 @@ public final class N {
 
     /**
      * The present order is kept in the result list.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -17918,7 +17914,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -17929,7 +17925,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17942,7 +17938,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -17953,7 +17949,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17966,7 +17962,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -17977,7 +17973,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -17990,7 +17986,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18001,7 +17997,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18014,7 +18010,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18025,7 +18021,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18038,7 +18034,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18049,7 +18045,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18062,7 +18058,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18073,7 +18069,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18086,7 +18082,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18097,7 +18093,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18110,7 +18106,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @return
      */
@@ -18125,7 +18121,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18153,7 +18149,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @return
      */
@@ -18168,7 +18164,7 @@ public final class N {
     /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -18216,10 +18212,10 @@ public final class N {
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param keyMapper don't change value of the input parameter.
      * @return
@@ -18234,10 +18230,10 @@ public final class N {
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18266,10 +18262,10 @@ public final class N {
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @param keyMapper don't change value of the input parameter.
      * @return
@@ -18284,10 +18280,10 @@ public final class N {
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>.
-     * 
+     *
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -18342,7 +18338,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18369,7 +18365,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18400,7 +18396,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18427,7 +18423,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18458,7 +18454,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18485,7 +18481,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18516,7 +18512,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18543,7 +18539,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18574,7 +18570,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18601,7 +18597,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18632,7 +18628,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18659,7 +18655,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18690,7 +18686,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18717,7 +18713,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18748,7 +18744,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18775,7 +18771,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18806,7 +18802,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param size
      * @return
@@ -18833,7 +18829,7 @@ public final class N {
     /**
      * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -18864,7 +18860,7 @@ public final class N {
     /**
      * Returns consecutive sub lists of a collection, each of the same size (the final list may be smaller).
      * or an empty List if the specified collection is null or empty. The order of elements in the original collection is kept
-     * 
+     *
      * @param c
      * @param size
      * @return
@@ -18884,7 +18880,7 @@ public final class N {
     /**
      * Returns consecutive sub lists of a collection, each of the same size (the final list may be smaller).
      * or an empty List if the specified collection is null or empty. The order of elements in the original collection is kept
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -18937,7 +18933,7 @@ public final class N {
     /**
      * Returns consecutive substring of the specified string, each of the same length (the final list may be smaller),
      * or an empty array if the specified string is null or empty.
-     * 
+     *
      * @param str
      * @param size
      * @return
@@ -18976,7 +18972,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -18991,7 +18987,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19006,7 +19002,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19021,7 +19017,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19037,17 +19033,17 @@ public final class N {
 
     /**
      * Returns a new array with all the elements in <code>b</code> removed by occurrences.
-     * 
+     *
      * <pre>
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
      * int[] c = retainAll(a, b); // The elements c in a will b: [1, 2, 2].
-     * 
+     *
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
      * int[] c = intersection(a, b); // The elements c in a will b: [1, 2].
      * </pre>
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19062,7 +19058,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19077,7 +19073,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19092,7 +19088,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19107,7 +19103,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19131,7 +19127,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19183,7 +19179,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19200,7 +19196,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19217,7 +19213,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19234,7 +19230,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19252,17 +19248,17 @@ public final class N {
 
     /**
      * Returns a new array with all the elements in <code>b</code> removed by occurrences.
-     * 
+     *
      * <pre>
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
      * int[] c = removeAll(a, b); // The elements c in a will b: [0, 3].
-     * 
+     *
      * int[] a = {0, 1, 2, 2, 3};
      * int[] b = {2, 5, 1};
      * int[] c = difference(a, b); // The elements c in a will b: [0, 2, 3].
      * </pre>
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19279,7 +19275,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19296,7 +19292,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19313,7 +19309,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19330,7 +19326,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19356,7 +19352,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19383,7 +19379,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19400,7 +19396,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19417,7 +19413,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19434,7 +19430,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19456,7 +19452,7 @@ public final class N {
      * int[] b = {2, 5, 1};
      * int[] c = symmetricDifference(a, b); // The elements c in a will b: [0, 2, 3, 5].
      * </pre>
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19474,7 +19470,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19491,7 +19487,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19508,7 +19504,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19525,7 +19521,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19562,7 +19558,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param b
      * @return
@@ -19625,8 +19621,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19685,8 +19681,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19745,8 +19741,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19805,8 +19801,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19865,8 +19861,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19925,8 +19921,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -19985,8 +19981,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -20045,8 +20041,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      */
     @SafeVarargs
@@ -20106,8 +20102,8 @@ public final class N {
     }
 
     /**
-     * 
-     * @param aa 
+     *
+     * @param aa
      * @return
      * @throws NullPointerException if the specified <code>aa</code> is <code>null</code>.
      */
@@ -22677,7 +22673,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22705,7 +22701,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22733,7 +22729,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22761,7 +22757,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22789,7 +22785,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22817,7 +22813,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22845,7 +22841,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22873,7 +22869,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22901,7 +22897,7 @@ public final class N {
 
     /**
      * Deletes the values from {@code fromIndex} to {@code toIndex}.
-     * 
+     *
      * @param a
      * @param fromIndex
      * @param toIndex
@@ -22929,7 +22925,7 @@ public final class N {
 
     /**
      * Returns {@code true} if the {@code List} is updated when {@code fromIndex < toIndex}, otherwise {@code false} is returned when {@code fromIndex == toIndex}.
-     * 
+     *
      * @param c
      * @param fromIndex
      * @param toIndex
@@ -23549,7 +23545,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23572,7 +23568,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23595,7 +23591,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23618,7 +23614,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23641,7 +23637,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23664,7 +23660,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23687,7 +23683,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23710,7 +23706,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -23733,7 +23729,7 @@ public final class N {
 
     /**
      * Returns a new array with removes all the occurrences of specified elements from <code>a</code>
-     * 
+     *
      * @param a
      * @param elements
      * @return
@@ -25331,7 +25327,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>char</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25347,7 +25343,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>byte</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25363,7 +25359,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>short</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25379,7 +25375,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>int</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25395,7 +25391,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>long</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25411,7 +25407,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>float</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25425,7 +25421,7 @@ public final class N {
      * <p>
      * Gets the minimum of three <code>double</code> values.
      * </p>
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25753,7 +25749,7 @@ public final class N {
 
     /**
      * Returns the minimum element in the collection.
-     * 
+     *
      * @param c
      * @param from
      * @param to
@@ -25981,7 +25977,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>char</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -25995,7 +25991,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>byte</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26009,7 +26005,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>short</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26023,7 +26019,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>int</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26037,7 +26033,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>long</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26051,7 +26047,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>float</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26063,7 +26059,7 @@ public final class N {
 
     /**
      * Gets the maximum of three <code>double</code> values.
-     * 
+     *
      * @param a
      * @param b
      * @param c
@@ -26387,7 +26383,7 @@ public final class N {
 
     /**
      * Returns the maximum element in the collection.
-     * 
+     *
      * @param c
      * @param from
      * @param to
@@ -26514,12 +26510,12 @@ public final class N {
         return result;
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26533,12 +26529,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26552,12 +26548,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26571,12 +26567,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26590,12 +26586,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26609,12 +26605,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26632,12 +26628,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26655,12 +26651,12 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -26668,12 +26664,12 @@ public final class N {
         return (T) median(a, b, c, NATURAL_ORDER);
     }
 
-    /** 
+    /**
      * Gets the median of three values.
      *
-     * @param a 
-     * @param b 
-     * @param c 
+     * @param a
+     * @param b
+     * @param c
      * @return the median of the values
      * @see #median(int...)
      */
@@ -27024,7 +27020,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27037,7 +27033,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27054,7 +27050,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27067,7 +27063,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27084,7 +27080,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27097,7 +27093,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27114,7 +27110,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27127,7 +27123,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27144,7 +27140,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27157,7 +27153,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27174,7 +27170,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27187,7 +27183,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27204,7 +27200,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27217,7 +27213,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27234,7 +27230,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @return the kth largest element.
@@ -27247,7 +27243,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27264,7 +27260,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param k
      * @param cmp
@@ -27278,7 +27274,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @param from
      * @param to
@@ -27296,7 +27292,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param k
      * @return the kth largest element.
@@ -27309,7 +27305,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param from
      * @param to
@@ -27326,7 +27322,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param k
      * @param cmp
@@ -27340,7 +27336,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param from
      * @param to
@@ -27359,7 +27355,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27379,7 +27375,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27399,7 +27395,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27419,7 +27415,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27439,7 +27435,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27459,7 +27455,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27479,7 +27475,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27499,7 +27495,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27519,7 +27515,7 @@ public final class N {
 
     /**
      * Returns the elements at: <code>Percentage</code> * length of the specified array.
-     * 
+     *
      * @param sortedArray
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
@@ -27615,7 +27611,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @return
@@ -27625,7 +27621,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param config
@@ -27636,7 +27632,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @return
@@ -27646,7 +27642,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param config
@@ -27657,7 +27653,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @return
@@ -27667,7 +27663,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param config
@@ -27678,7 +27674,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @return
@@ -27688,7 +27684,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param config
@@ -27699,7 +27695,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param fromIndex
@@ -27711,7 +27707,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param json
      * @param fromIndex
@@ -27805,7 +27801,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @return
@@ -27815,7 +27811,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @param config
@@ -27826,7 +27822,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @return
@@ -27836,7 +27832,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @param config
@@ -27847,7 +27843,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @return
@@ -27857,7 +27853,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @param config
@@ -27868,7 +27864,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @return
@@ -27878,7 +27874,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
      * @param xml
      * @param config
@@ -28059,6 +28055,23 @@ public final class N {
         }
     }
 
+    @Beta
+    public static <E extends Throwable> boolean mayCausedBy(Throwable e, final Class<E> exceptionClass) {
+        N.checkArgNotNull(e, "e");
+        N.checkArgNotNull(exceptionClass, "exceptionClass");
+
+        while (e != null) {
+            if (exceptionClass.isAssignableFrom(e.getClass())) {
+                return true;
+            }
+
+            e = e.getCause();
+        }
+
+        return false;
+    }
+
+
     public static void sleep(final long timeoutInMillis) {
         if (timeoutInMillis <= 0) {
             return;
@@ -28089,10 +28102,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeoutInMillis
      */
     public static void sleepUninterruptibly(final long timeoutInMillis) {
@@ -28128,10 +28141,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeoutInMillis
      */
     public static void sleepUninterruptibly(final long timeout, final TimeUnit unit) {
@@ -28165,14 +28178,14 @@ public final class N {
         }
     }
 
-    /** 
+    /**
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param cmd
      */
     public static void runUninterruptibly(final Try.Runnable<InterruptedException> cmd) {
@@ -28200,10 +28213,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeoutInMillis
      * @param cmd
      */
@@ -28237,10 +28250,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeout
      * @param unit
      * @param cmd
@@ -28276,10 +28289,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param cmd
      * @return
      */
@@ -28306,10 +28319,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeoutInMillis
      * @param cmd
      * @return
@@ -28343,10 +28356,10 @@ public final class N {
      * Note: Copied from Google Guava under Apache License v2.0
      * <br />
      * <br />
-     * 
+     *
      * If a thread is interrupted during such a call, the call continues to block until the result is available or the
      * timeout elapses, and only then re-interrupts the thread.
-     * 
+     *
      * @param timeout
      * @param unit
      * @param cmd
@@ -28379,7 +28392,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param obj
      * @return the input <code>obj</code>
      */
@@ -28397,7 +28410,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param format
      * @param args
      * @return the input <code>args</code>
@@ -28414,7 +28427,7 @@ public final class N {
      *
      * @param value the long value
      * @return the argument as an int
-     * @throws ArithmeticException if the {@code argument} overflows an int 
+     * @throws ArithmeticException if the {@code argument} overflows an int
      */
     public static int toIntExact(long value) {
         if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
@@ -28427,7 +28440,7 @@ public final class N {
     /**
      * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can not be assigned to {@code targetType}.
      * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
-     * 
+     *
      * @param val
      * @param targetType
      * @return
@@ -28443,7 +28456,7 @@ public final class N {
 
     /**
      * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
-     * 
+     *
      * @param cmd
      * @return
      */
@@ -28457,7 +28470,7 @@ public final class N {
 
     /**
      * Returns a {@code Nullable} with the value returned by {@code func.apply(init)} or an empty {@code Nullable} if exception happens.
-     * 
+     *
      * @param init
      * @param func
      * @return
@@ -28471,9 +28484,9 @@ public final class N {
     }
 
     /**
-     * Returns a {@code Nullable} with value got from the specified {@code supplier} if {@code b} is {@code true}, 
+     * Returns a {@code Nullable} with value got from the specified {@code supplier} if {@code b} is {@code true},
      * otherwise returns an empty {@code Nullable} if {@code b} is false.
-     * 
+     *
      * @param b
      * @param supplier
      * @return
@@ -28488,9 +28501,9 @@ public final class N {
     }
 
     /**
-     * Returns a {@code Nullable} with value returned by {@code func.apply(init)} if {@code b} is {@code true}, 
+     * Returns a {@code Nullable} with value returned by {@code func.apply(init)} if {@code b} is {@code true},
      * otherwise returns an empty {@code Nullable} if {@code b} is false.
-     * 
+     *
      * @param b
      * @param init
      * @param func
@@ -28506,7 +28519,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param b
      * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
      * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
@@ -28527,7 +28540,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param b
      * @param init
      * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
@@ -28549,7 +28562,7 @@ public final class N {
     }
 
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28558,7 +28571,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28567,7 +28580,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28576,7 +28589,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28585,7 +28598,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28594,7 +28607,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28603,7 +28616,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28612,7 +28625,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28621,7 +28634,7 @@ public final class N {
     //    }
     //
     //    /**
-    //     * 
+    //     *
     //     * @param value
     //     * @return
     //     */
@@ -28630,7 +28643,7 @@ public final class N {
     //    }
 
     /**
-     * 
+     *
      * @param a
      * @return
      * @see Iterators#concat(Object[]...)
@@ -28641,7 +28654,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param a
      * @return
      * @see Iterators#concat(Collection)
@@ -28652,7 +28665,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @return
      * @see Iterators#concatt(Collection)
@@ -28671,7 +28684,7 @@ public final class N {
 
     /**
      * Returns {@code true} if the two specified arrays have no elements in common.
-     * 
+     *
      * @param a
      * @param b
      * @return {@code true} if the two specified arrays have no elements in common.
@@ -28928,7 +28941,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param unzip the second parameter is an output parameter.
      * @return
@@ -28954,7 +28967,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param unzip the second parameter is an output parameter.
      * @param supplier
@@ -28981,7 +28994,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param unzip the second parameter is an output parameter.
      * @return
@@ -29009,7 +29022,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param c
      * @param unzip the second parameter is an output parameter.
      * @param supplier

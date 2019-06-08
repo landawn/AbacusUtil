@@ -217,7 +217,7 @@ public final class Profiler {
         final PrintStream ps = System.out;
         final long startTimeInMillis = System.currentTimeMillis();
         final long startTimeInNano = System.nanoTime();
-        for (int threadIndex = 0; threadIndex < threadNum; threadIndex++) {
+        for (int threadIndex = 0; threadIndex < (suspended ? 1 : threadNum); threadIndex++) {
             final Object arg = (N.isNullOrEmpty(args)) ? null : ((args.size() == 1) ? args.get(0) : args.get(threadIndex));
             threadCounter.incrementAndGet();
             asyncExecutor.execute(new Runnable() {
@@ -244,7 +244,7 @@ public final class Profiler {
     private static void runLoops(final Object instance, final String methodName, final Method method, final Object arg, final Method setUpForMethod,
             final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int loopNum, final long loopDelay,
             final List<LoopStatistics> loopStatisticsList, final PrintStream ps) {
-        for (int loopIndex = 0; loopIndex < loopNum; loopIndex++) {
+        for (int loopIndex = 0; loopIndex < (suspended ? 1 : loopNum); loopIndex++) {
             if (setUpForLoop != null) {
                 try {
                     setUpForLoop.invoke(instance);
@@ -334,6 +334,12 @@ public final class Profiler {
     private static void gc() {
         Runtime.getRuntime().gc();
         N.sleep(3000);
+    }
+
+    private static boolean suspended = false;
+
+    static void suspend(boolean yesOrNo) {
+        suspended = yesOrNo;
     }
 
     /**

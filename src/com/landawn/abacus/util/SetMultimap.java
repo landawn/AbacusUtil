@@ -164,8 +164,8 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return multimap;
     }
 
-    public static <T, K, X extends Exception> SetMultimap<K, T> from(final Collection<? extends T> c,
-            final Try.Function<? super T, ? extends K, X> keyMapper) throws X {
+    public static <T, K, X extends Exception> SetMultimap<K, T> from(final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyMapper)
+            throws X {
         N.checkArgNotNull(keyMapper);
 
         final SetMultimap<K, T> multimap = N.newSetMultimap(N.initHashCapacity(c == null ? 0 : c.size()));
@@ -339,7 +339,8 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     @Deprecated
-    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<? extends M> multimapSupplier) {
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map,
+            final IntFunction<? extends M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }
 

@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface DoubleToLongFunction extends java.util.function.DoubleToLongFunction {
 
-   static final DoubleToLongFunction DEFAULT = new DoubleToLongFunction() {
+    static final DoubleToLongFunction DEFAULT = new DoubleToLongFunction() {
         @Override
         public long applyAsLong(double value) {
             return (long) value;

@@ -1,3 +1,10 @@
+### 1.7.5
+
+* Change quotation char for column alias from ' to " in `SQLBuilder`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.4
 
 * Add `Stream.reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner)`.

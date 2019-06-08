@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface IntToFloatFunction {
 
-   static final IntToFloatFunction DEFAULT = new IntToFloatFunction() {
+    static final IntToFloatFunction DEFAULT = new IntToFloatFunction() {
         @Override
         public float applyAsFloat(int value) {
             return value;

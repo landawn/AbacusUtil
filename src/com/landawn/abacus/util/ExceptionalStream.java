@@ -36,6 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
@@ -1120,6 +1121,141 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 return ExceptionalStream.of(mapper.apply(t));
             }
         });
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(Try.BiFunction<? super T, ? super T, R, E> mapper) {
+        return slidingMap(mapper, 1);
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(Try.BiFunction<? super T, ? super T, R, E> mapper, int increment) {
+        return slidingMap(mapper, increment, false);
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(final Try.BiFunction<? super T, ? super T, R, E> mapper, final int increment, final boolean ignoreNotPaired) {
+        final int windowSize = 2;
+
+        checkArgPositive(increment, "increment");
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            @SuppressWarnings("unchecked")
+            private final T NONE = (T) N.NULL_MASK;
+            private T prev = NONE;
+            private T _1 = NONE;
+
+            @Override
+            public boolean hasNext() throws E {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = NONE;
+                }
+
+                if (ignoreNotPaired && _1 == NONE && elements.hasNext()) {
+                    _1 = elements.next();
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(_1, (prev = elements.next()));
+                    _1 = increment == 1 ? prev : NONE;
+                    return res;
+                } else {
+                    if (increment == 1) {
+                        return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                    } else {
+                        return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                    }
+                }
+            }
+        }, closeHandlers);
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(Try.TriFunction<? super T, ? super T, ? super T, R, E> mapper) {
+        return slidingMap(mapper, 1);
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(Try.TriFunction<? super T, ? super T, ? super T, R, E> mapper, int increment) {
+        return slidingMap(mapper, increment, false);
+    }
+
+    public <R> ExceptionalStream<R, E> slidingMap(final Try.TriFunction<? super T, ? super T, ? super T, R, E> mapper, final int increment,
+            final boolean ignoreNotPaired) {
+        final int windowSize = 3;
+
+        checkArgPositive(increment, "increment");
+
+        return newStream(new ExceptionalIterator<R, E>() {
+            @SuppressWarnings("unchecked")
+            private final T NONE = (T) N.NULL_MASK;
+            private T prev = NONE;
+            private T prev2 = NONE;
+            private T _1 = NONE;
+            private T _2 = NONE;
+
+            @Override
+            public boolean hasNext() throws E {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = NONE;
+                }
+
+                if (ignoreNotPaired) {
+                    if (_1 == NONE && elements.hasNext()) {
+                        _1 = elements.next();
+                    }
+
+                    if (_2 == NONE && elements.hasNext()) {
+                        _2 = elements.next();
+                    }
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() throws E {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(_1, _2, (prev = elements.next()));
+                    _1 = increment == 1 ? _2 : (increment == 2 ? prev : NONE);
+                    _2 = increment == 1 ? prev : NONE;
+                    return res;
+                } else {
+                    if (increment == 1) {
+                        return mapper.apply(prev2 == NONE ? elements.next() : prev2,
+                                (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+
+                    } else if (increment == 2) {
+                        return mapper.apply(prev == NONE ? elements.next() : prev, elements.hasNext() ? elements.next() : null,
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+                    } else {
+                        return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null,
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+                    }
+                }
+            }
+        }, closeHandlers);
     }
 
     /**
@@ -2249,6 +2385,90 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }
     }
 
+    public void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E {
+        forEachPair(action, 1);
+    }
+
+    public void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
+        final int windowSize = 2;
+        checkArgPositive(increment, "increment");
+        assertNotClosed();
+
+        try {
+            boolean isFirst = true;
+            T prev = null;
+
+            while (elements.hasNext()) {
+                if (increment > windowSize && isFirst == false) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    if (elements.hasNext() == false) {
+                        break;
+                    }
+                }
+
+                if (increment == 1) {
+                    action.accept(isFirst ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    action.accept(elements.next(), elements.hasNext() ? elements.next() : null);
+                }
+
+                isFirst = false;
+            }
+        } finally {
+            close();
+        }
+    }
+
+    public void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action) throws E {
+        forEachTriple(action, 1);
+    }
+
+    public void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
+        final int windowSize = 3;
+        checkArgPositive(increment, "increment");
+        assertNotClosed();
+
+        try {
+            boolean isFirst = true;
+            T prev = null;
+            T prev2 = null;
+
+            while (elements.hasNext()) {
+                if (increment > windowSize && isFirst == false) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    if (elements.hasNext() == false) {
+                        break;
+                    }
+                }
+
+                if (increment == 1) {
+                    action.accept(isFirst ? elements.next() : prev2, (prev2 = (isFirst ? (elements.hasNext() ? elements.next() : null) : prev)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+
+                } else if (increment == 2) {
+                    action.accept(isFirst ? elements.next() : prev, elements.hasNext() ? elements.next() : null,
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    action.accept(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
+                }
+
+                isFirst = false;
+            }
+        } finally {
+            close();
+        }
+    }
+
     public Optional<T> min(Comparator<? super T> comparator) throws E {
         assertNotClosed();
 
@@ -3283,6 +3503,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param action a terminal operation should be called.
      * @return
      */
+    @Beta
     public ContinuableFuture<Void> asyncRun(final Try.Consumer<? super ExceptionalStream<T, E>, E> action) {
         checkArgNotNull(action, "action");
 
@@ -3300,6 +3521,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param executor
      * @return
      */
+    @Beta
     public ContinuableFuture<Void> asyncRun(final Try.Consumer<? super ExceptionalStream<T, E>, E> action, final Executor executor) {
         checkArgNotNull(action, "action");
         checkArgNotNull(executor, "executor");
@@ -3317,6 +3539,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param action a terminal operation should be called.
      * @return
      */
+    @Beta
     public <R> ContinuableFuture<R> asyncCall(final Try.Function<? super ExceptionalStream<T, E>, R, E> action) {
         checkArgNotNull(action, "action");
 
@@ -3334,6 +3557,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param executor
      * @return
      */
+    @Beta
     public <R> ContinuableFuture<R> asyncCall(final Try.Function<? super ExceptionalStream<T, E>, R, E> action, final Executor executor) {
         checkArgNotNull(action, "action");
         checkArgNotNull(executor, "executor");

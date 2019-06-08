@@ -29,6 +29,10 @@ public class Timed<T> {
         this.timeInMillis = timeInMillis;
     }
 
+    public static <T> Timed<T> of(T value) {
+        return new Timed<>(value, System.currentTimeMillis());
+    }
+
     public static <T> Timed<T> of(T value, long timeInMillis) {
         return new Timed<>(value, timeInMillis);
     }

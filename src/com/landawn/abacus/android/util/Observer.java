@@ -146,7 +146,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * 
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -156,7 +156,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * 
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -183,7 +183,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         /**
          * 
          * @return
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -197,7 +197,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         /**
          * 
          * @param keyMapper
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -212,7 +212,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * @param map
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -222,7 +222,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * @param map
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -233,7 +233,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         /**
          * @param timespan
          * @param unit
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -245,7 +245,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          * @param timespan
          * @param unit
          * @param count
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -257,7 +257,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          * @param timespan
          * @param timeskip
          * @param unit
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -270,7 +270,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          * @param timeskip
          * @param unit
          * @param count
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -281,7 +281,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         /**
          * @param action
          * 
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -291,7 +291,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * 
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override
@@ -301,7 +301,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         /**
          * 
-         * @deprecated
+         * @deprecated Unsupported operation.
          */
         @Deprecated
         @Override

@@ -447,13 +447,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 if (elements.hasNext()) {
                                     if (increment == 1) {
                                         first = isFirst.isTrue() ? elements.next() : prev.value();
-                                        second = elements.hasNext() ? elements.next() : null;
+                                        second = elements.hasNext() ? elements.next() : NONE;
 
                                         prev.setValue(second);
 
                                     } else {
                                         first = elements.next();
-                                        second = elements.hasNext() ? elements.next() : null;
+                                        second = elements.hasNext() ? elements.next() : NONE;
                                     }
                                 }
 
@@ -525,21 +525,21 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                 if (elements.hasNext()) {
                                     if (increment == 1) {
                                         first = isFirst.isTrue() ? elements.next() : prev2.value();
-                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
-                                        third = elements.hasNext() ? elements.next() : null;
+                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : NONE) : prev.value();
+                                        third = elements.hasNext() ? elements.next() : NONE;
 
                                         prev2.setValue(second);
                                         prev.setValue(third);
                                     } else if (increment == 2) {
                                         first = isFirst.isTrue() ? elements.next() : prev.value();
-                                        second = elements.hasNext() ? elements.next() : null;
-                                        third = elements.hasNext() ? elements.next() : null;
+                                        second = elements.hasNext() ? elements.next() : NONE;
+                                        third = elements.hasNext() ? elements.next() : NONE;
 
                                         prev.setValue(third);
                                     } else {
                                         first = elements.next();
-                                        second = elements.hasNext() ? elements.next() : null;
-                                        third = elements.hasNext() ? elements.next() : null;
+                                        second = elements.hasNext() ? elements.next() : NONE;
+                                        third = elements.hasNext() ? elements.next() : NONE;
                                     }
                                 }
 

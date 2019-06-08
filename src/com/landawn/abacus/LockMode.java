@@ -132,53 +132,53 @@ public enum LockMode {
      */
     public static LockMode valueOf(int intValue) {
         switch (intValue) {
-        case 1:
-            return R;
+            case 1:
+                return R;
 
-        case 2:
-            return A;
+            case 2:
+                return A;
 
-        case 4:
-            return U;
+            case 4:
+                return U;
 
-        case 8:
-            return D;
+            case 8:
+                return D;
 
-        case 3:
-            return RA;
+            case 3:
+                return RA;
 
-        case 5:
-            return RU;
+            case 5:
+                return RU;
 
-        case 9:
-            return RD;
+            case 9:
+                return RD;
 
-        case 6:
-            return AU;
+            case 6:
+                return AU;
 
-        case 10:
-            return AD;
+            case 10:
+                return AD;
 
-        case 12:
-            return UD;
+            case 12:
+                return UD;
 
-        case 7:
-            return RAU;
+            case 7:
+                return RAU;
 
-        case 11:
-            return RAD;
+            case 11:
+                return RAD;
 
-        case 13:
-            return RUD;
+            case 13:
+                return RUD;
 
-        case 14:
-            return AUD;
+            case 14:
+                return AUD;
 
-        case 15:
-            return RAUD;
+            case 15:
+                return RAUD;
 
-        default:
-            throw new IllegalArgumentException("Invalid lock mode value[" + intValue + "]. ");
+            default:
+                throw new IllegalArgumentException("Invalid lock mode value[" + intValue + "]. ");
         }
     }
 

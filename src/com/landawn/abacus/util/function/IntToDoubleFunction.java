@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface IntToDoubleFunction extends java.util.function.IntToDoubleFunction {
 
-   static final IntToDoubleFunction DEFAULT = new IntToDoubleFunction() {
+    static final IntToDoubleFunction DEFAULT = new IntToDoubleFunction() {
         @Override
         public double applyAsDouble(int value) {
             return value;

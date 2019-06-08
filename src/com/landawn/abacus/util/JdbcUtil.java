@@ -7989,9 +7989,11 @@ public final class JdbcUtil {
      *      <ul>
      *          <li>Or else, {@code PreparedQuery#queryForSingleResult(Class).orNull()} will be called.</li>
      *      </ul>
-     * </ul>
+     * </ul> 
      * 
      * @author Haiyang Li
+     * 
+     * @param <T> {@code Object.class} or entity class with {@code getter/setter} methods.
      * 
      * @see PreparedQuery#setParameters(int, Collection)
      * @see PreparedQuery#settParameters(ParametersSetter)
@@ -8020,7 +8022,7 @@ public final class JdbcUtil {
      * 
      * @since 1.8
      */
-    public static interface Dao {
+    public static interface Dao<T> {
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
@@ -8088,6 +8090,18 @@ public final class JdbcUtil {
         public static <R extends Dao> R newInstance(final Class<R> daoInterface, final javax.sql.DataSource dataSource) {
             N.checkArgNotNull(daoInterface, "daoInterface");
             N.checkArgNotNull(dataSource, "dataSource");
+
+            if (N.notNullOrEmpty(daoInterface.getGenericInterfaces()) && daoInterface.getGenericInterfaces()[0] instanceof ParameterizedType) {
+                final ParameterizedType parameterizedType = (ParameterizedType) daoInterface.getGenericInterfaces()[0];
+                final java.lang.reflect.Type[] typeArguments = parameterizedType.getActualTypeArguments();
+
+                if (N.notNullOrEmpty(typeArguments) && typeArguments[0] instanceof Class) {
+                    if (!(typeArguments[0].equals(Object.class) || N.isEntity((Class) typeArguments[0]))) {
+                        throw new IllegalArgumentException(
+                                "Type parameter must be: Object.class or entity class with getter/setter methods. Can't be: " + typeArguments[0]);
+                    }
+                }
+            }
 
             synchronized (JdbcUtil.proxyInvokerMap) {
                 Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception> proxyInvoker = JdbcUtil.proxyInvokerMap.get(daoInterface);
@@ -8430,6 +8444,7 @@ public final class JdbcUtil {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static final Map<Class<?>, Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception>> proxyInvokerMap = new ConcurrentHashMap<>();
 
     private static final Map<Class<? extends Annotation>, Function<Annotation, String>> sqlAnnoMap = new HashMap<>();

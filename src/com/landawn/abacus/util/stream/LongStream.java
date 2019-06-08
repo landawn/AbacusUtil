@@ -492,20 +492,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return of(iter);
     }
 
-    private static final Function<long[], LongStream> flatMapper = new Function<long[], LongStream>() {
-        @Override
-        public LongStream apply(long[] t) {
-            return LongStream.of(t);
-        }
-    };
-
-    private static final Function<long[][], LongStream> flatMappper = new Function<long[][], LongStream>() {
-        @Override
-        public LongStream apply(long[][] t) {
-            return LongStream.flat(t);
-        }
-    };
-
     public static LongStream of(final java.util.stream.LongStream stream) {
         return of(new LongIteratorEx() {
             private PrimitiveIterator.OfLong iter = null;
@@ -553,6 +539,20 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
         });
     }
+
+    private static final Function<long[], LongStream> flatMapper = new Function<long[], LongStream>() {
+        @Override
+        public LongStream apply(long[] t) {
+            return LongStream.of(t);
+        }
+    };
+
+    private static final Function<long[][], LongStream> flatMappper = new Function<long[][], LongStream>() {
+        @Override
+        public LongStream apply(long[][] t) {
+            return LongStream.flat(t);
+        }
+    };
 
     public static LongStream flat(final long[][] a) {
         return N.isNullOrEmpty(a) ? empty() : Stream.of(a).flatMapToLong(flatMapper);

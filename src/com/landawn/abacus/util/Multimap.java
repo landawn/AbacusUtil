@@ -175,7 +175,8 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @see ListMultimap#invertFrom(Map)
      * @see SetMultimap#invertFrom(Map)
      */
-    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final IntFunction<? extends M> multimapSupplier) {
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map,
+            final IntFunction<? extends M> multimapSupplier) {
         final M multimap = multimapSupplier.apply(map == null ? 0 : map.size());
 
         if (N.notNullOrEmpty(map)) {

@@ -459,11 +459,11 @@ public final class Iterators {
             return;
         }
 
-        final T NONE = (T) N.NULL_MASK;
-        T prev = NONE;
+        boolean isFirst = true;
+        T prev = null;
 
         while (iter.hasNext()) {
-            if (increment > windowSize && prev != NONE) {
+            if (increment > windowSize && isFirst == false) {
                 int skipNum = increment - windowSize;
 
                 while (skipNum-- > 0 && iter.hasNext()) {
@@ -473,15 +473,15 @@ public final class Iterators {
                 if (iter.hasNext() == false) {
                     break;
                 }
-
-                prev = NONE;
             }
 
             if (increment == 1) {
-                action.accept(prev == NONE ? iter.next() : prev, (prev = (iter.hasNext() ? iter.next() : null)));
+                action.accept(isFirst ? iter.next() : prev, (prev = (iter.hasNext() ? iter.next() : null)));
             } else {
-                action.accept(iter.next(), (prev = (iter.hasNext() ? iter.next() : null)));
+                action.accept(iter.next(), iter.hasNext() ? iter.next() : null);
             }
+
+            isFirst = false;
         }
     }
 
@@ -500,12 +500,12 @@ public final class Iterators {
             return;
         }
 
-        final T NONE = (T) N.NULL_MASK;
-        T prev = NONE;
-        T prev2 = NONE;
+        boolean isFirst = true;
+        T prev = null;
+        T prev2 = null;
 
         while (iter.hasNext()) {
-            if (increment > windowSize && prev != NONE) {
+            if (increment > windowSize && isFirst == false) {
                 int skipNum = increment - windowSize;
 
                 while (skipNum-- > 0 && iter.hasNext()) {
@@ -515,19 +515,18 @@ public final class Iterators {
                 if (iter.hasNext() == false) {
                     break;
                 }
-
-                prev = NONE;
             }
 
             if (increment == 1) {
-                action.accept(prev2 == NONE ? iter.next() : prev2, (prev2 = (prev == NONE ? (iter.hasNext() ? iter.next() : null) : prev)),
+                action.accept(isFirst ? iter.next() : prev2, (prev2 = (isFirst ? (iter.hasNext() ? iter.next() : null) : prev)),
                         (prev = (iter.hasNext() ? iter.next() : null)));
             } else if (increment == 2) {
-                action.accept(prev == NONE ? iter.next() : prev, (prev2 = (iter.hasNext() ? iter.next() : null)),
-                        (prev = (iter.hasNext() ? iter.next() : null)));
+                action.accept(isFirst ? iter.next() : prev, iter.hasNext() ? iter.next() : null, (prev = (iter.hasNext() ? iter.next() : null)));
             } else {
-                action.accept(iter.next(), (prev2 = (iter.hasNext() ? iter.next() : null)), (prev = (iter.hasNext() ? iter.next() : null)));
+                action.accept(iter.next(), iter.hasNext() ? iter.next() : null, iter.hasNext() ? iter.next() : null);
             }
+
+            isFirst = false;
         }
     }
 

@@ -140,7 +140,13 @@ public class DBUtil {
         };
     }
 
-    public static interface Dao extends JdbcUtil.Dao {
+    /**
+     * 
+     * @author haiyangl
+     *
+     * @param <T> {@code Object.class} or entity class with {@code getter/setter} methods.
+     */
+    public static interface Dao<T> extends JdbcUtil.Dao<T> {
 
         @Override
         default PreparedQuery prepareQuery(final DataSource ds, final String query) throws SQLException {

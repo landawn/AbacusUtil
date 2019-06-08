@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface IntToLongFunction extends java.util.function.IntToLongFunction {
 
-   static final IntToLongFunction DEFAULT = new IntToLongFunction() {
+    static final IntToLongFunction DEFAULT = new IntToLongFunction() {
         @Override
         public long applyAsLong(int value) {
             return value;
