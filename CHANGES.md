@@ -2,6 +2,8 @@
 
 * Support `JsonXmlField`.
 
+* Support setting parameters by `Map/Entity` for named query in `JdbcUtil.Dao`.
+
 * Improvements and bug fix.
 
 
