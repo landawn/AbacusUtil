@@ -1,3 +1,10 @@
+### 1.7.6
+
+* Support `JsonXmlField`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.5
 
 * Change quotation char for column alias from ' to " in `SQLBuilder`.

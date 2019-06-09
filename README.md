@@ -201,6 +201,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [WSSecurityUtil](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/WSSecurityUtil.html),
 [EmailUtil](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/EmailUtil.html),
 [IEEE754rUtil](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/IEEE754rUtil.html),
+[Timed](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/Timed.html),
 [Index](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/Index.html),
 [Median](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/Median.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util/1.7.5/com/landawn/abacus/util/f.html),

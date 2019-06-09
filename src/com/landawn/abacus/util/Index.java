@@ -22,7 +22,7 @@ import java.util.RandomAccess;
 import com.landawn.abacus.util.u.OptionalInt;
 
 public final class Index {
-    public static final OptionalInt NOT_FOUND = OptionalInt.empty();
+    private static final OptionalInt NOT_FOUND = OptionalInt.empty();
 
     private Index() {
         // singleton.
