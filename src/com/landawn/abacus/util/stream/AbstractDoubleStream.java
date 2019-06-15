@@ -330,8 +330,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Stream<DoubleStream> split(final int size) {
-        return splitToList(size).map(new Function<DoubleList, DoubleStream>() {
+    public Stream<DoubleStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);

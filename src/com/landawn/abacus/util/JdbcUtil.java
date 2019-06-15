@@ -1009,7 +1009,6 @@ public final class JdbcUtil {
     }
 
     /**
-    >>>>>>> .merge-right.r1119
      * Here is the general code pattern to work with {@code SimpleTransaction}.
      * The transaction will be shared in the same thread for the same {@code DataSource} or {@code Connection}.
      * 
@@ -1527,29 +1526,29 @@ public final class JdbcUtil {
      * 
      * @param conn
      * @param sql
-     * @param parametersListList
+     * @param listOfParameters
      * @return
      * @throws SQLException
      */
-    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList) throws SQLException {
-        return executeBatchUpdate(conn, sql, parametersListList, JdbcSettings.DEFAULT_BATCH_SIZE);
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> listOfParameters) throws SQLException {
+        return executeBatchUpdate(conn, sql, listOfParameters, JdbcSettings.DEFAULT_BATCH_SIZE);
     }
 
     /**
      * 
      * @param conn
      * @param sql
-     * @param parametersListList
+     * @param listOfParameters
      * @param batchSize.
      * @return 
      * @throws SQLException
      */
-    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> parametersListList, final int batchSize) throws SQLException {
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> listOfParameters, final int batchSize) throws SQLException {
         N.checkArgNotNull(conn);
         N.checkArgNotNull(sql);
         N.checkArgPositive(batchSize, "batchSize");
 
-        if (N.isNullOrEmpty(parametersListList)) {
+        if (N.isNullOrEmpty(listOfParameters)) {
             return 0;
         }
 
@@ -1562,7 +1561,7 @@ public final class JdbcUtil {
             int res = 0;
             int idx = 0;
 
-            for (Object parameters : parametersListList) {
+            for (Object parameters : listOfParameters) {
                 SQLExecutor.StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
                 stmt.addBatch();
 
@@ -1773,9 +1772,9 @@ public final class JdbcUtil {
                     return (T) m;
                 }
             };
-        } else if (N.isEntity(targetClass)) {
+        } else if (ClassUtil.isEntity(targetClass)) {
             return new BiRowMapper<T, RuntimeException>() {
-                private final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+                private final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
                 private volatile String[] columnLabels = null;
                 private volatile Method[] propSetters;
                 private volatile Type<?>[] columnTypes = null;
@@ -5703,7 +5702,7 @@ public final class JdbcUtil {
          * 
          * @param func
          * @return
-         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(ds, query)...query/update/execute(...)} is recommended.
+         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(query)...query/update/execute(...)} is recommended.
          */
         @Deprecated
         public <R, E extends Exception> ContinuableFuture<R> asyncApply(final Try.Function<Q, R, E> func) {
@@ -5736,7 +5735,7 @@ public final class JdbcUtil {
          * @param func
          * @param executor
          * @return
-         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(ds, query)...query/update/execute(...)} is recommended.
+         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(query)...query/update/execute(...)} is recommended.
          */
         @Deprecated
         public <R, E extends Exception> ContinuableFuture<R> asyncApply(final Try.Function<Q, R, E> func, final Executor executor) {
@@ -5758,7 +5757,7 @@ public final class JdbcUtil {
          * 
          * @param action
          * @return
-         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(ds, query)...query/update/execute(...)} is recommended.
+         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(query)...query/update/execute(...)} is recommended.
          */
         @Deprecated
         public <E extends Exception> ContinuableFuture<Void> asyncAccept(final Try.Consumer<Q, E> action) {
@@ -5792,7 +5791,7 @@ public final class JdbcUtil {
          * @param action
          * @param executor
          * @return
-         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(ds, query)...query/update/execute(...)} is recommended.
+         * @deprecated {@code asyncExecutor.call(() -> JdbcUtil.prepareQuery(query)...query/update/execute(...)} is recommended.
          */
         @Deprecated
         public <E extends Exception> ContinuableFuture<Void> asyncAccept(final Try.Consumer<Q, E> action, final Executor executor) {
@@ -8027,7 +8026,15 @@ public final class JdbcUtil {
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface Select {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
 
             int fetchSize() default -1;
         }
@@ -8035,25 +8042,57 @@ public final class JdbcUtil {
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface Insert {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface Update {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface Delete {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface NamedSelect {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
 
             int fetchSize() default -1;
         }
@@ -8061,46 +8100,78 @@ public final class JdbcUtil {
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface NamedInsert {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface NamedUpdate {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         @Retention(RetentionPolicy.RUNTIME)
         @Target(ElementType.METHOD)
         public static @interface NamedDelete {
-            String[] value();
+            /**
+             * 
+             * @return
+             * @deprecated using sql="SELECT ... FROM ..." for explicit call.
+             */
+            @Deprecated
+            String value() default "";
+
+            String sql() default "";
         }
 
         public javax.sql.DataSource dataSource();
 
-        default PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String query) throws SQLException {
-            return JdbcUtil.prepareQuery(ds, query);
+        default PreparedQuery prepareQuery(final String query) throws SQLException {
+            return JdbcUtil.prepareQuery(dataSource(), query);
         }
 
-        default PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String query, final boolean generateKeys) throws SQLException {
-            return JdbcUtil.prepareQuery(ds, query, generateKeys);
+        default PreparedQuery prepareQuery(final String query, final boolean generateKeys) throws SQLException {
+            return JdbcUtil.prepareQuery(dataSource(), query, generateKeys);
         }
 
-        default PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String query) throws SQLException {
-            return JdbcUtil.prepareCallableQuery(ds, query);
+        default PreparedQuery prepareQuery(final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+            return JdbcUtil.prepareQuery(dataSource(), stmtCreator);
+        }
+
+        default PreparedCallableQuery prepareCallableQuery(final String query) throws SQLException {
+            return JdbcUtil.prepareCallableQuery(dataSource(), query);
+        }
+
+        default PreparedCallableQuery prepareCallableQuery(final Try.Function<Connection, CallableStatement, SQLException> stmtCreator) throws SQLException {
+            return JdbcUtil.prepareCallableQuery(dataSource(), stmtCreator);
         }
 
         @SuppressWarnings("rawtypes")
-        public static <R extends Dao> R newInstance(final Class<R> daoInterface, final javax.sql.DataSource dataSource) {
+        public static <R extends Dao> R newInstance(final Class<R> daoInterface, final javax.sql.DataSource ds) {
             N.checkArgNotNull(daoInterface, "daoInterface");
-            N.checkArgNotNull(dataSource, "dataSource");
+            N.checkArgNotNull(ds, "dataSource");
 
             if (N.notNullOrEmpty(daoInterface.getGenericInterfaces()) && daoInterface.getGenericInterfaces()[0] instanceof ParameterizedType) {
                 final ParameterizedType parameterizedType = (ParameterizedType) daoInterface.getGenericInterfaces()[0];
                 final java.lang.reflect.Type[] typeArguments = parameterizedType.getActualTypeArguments();
 
                 if (N.notNullOrEmpty(typeArguments) && typeArguments[0] instanceof Class) {
-                    if (!(typeArguments[0].equals(Object.class) || N.isEntity((Class) typeArguments[0]))) {
+                    if (!(typeArguments[0].equals(Object.class) || ClassUtil.isEntity((Class) typeArguments[0]))) {
                         throw new IllegalArgumentException(
                                 "Type parameter must be: Object.class or entity class with getter/setter methods. Can't be: " + typeArguments[0]);
                     }
@@ -8108,10 +8179,10 @@ public final class JdbcUtil {
             }
 
             synchronized (JdbcUtil.proxyInvokerMap) {
-                Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception> proxyInvoker = JdbcUtil.proxyInvokerMap.get(daoInterface);
+                Try.TriFunction<Dao, Method, Object[], ?, Exception> proxyInvoker = JdbcUtil.proxyInvokerMap.get(daoInterface);
 
                 if (proxyInvoker == null) {
-                    final Map<Method, Try.TriFunction<Dao, Object[], javax.sql.DataSource, ?, Exception>> methodInvokerMap = new HashMap<>();
+                    final Map<Method, Try.BiFunction<Dao, Object[], ?, Exception>> methodInvokerMap = new HashMap<>();
                     final List<Method> sqlMethods = StreamEx.of(ClassUtil.getAllInterfaces(daoInterface))
                             .append(daoInterface)
                             .distinct()
@@ -8128,21 +8199,21 @@ public final class JdbcUtil {
                         final Class<?>[] paramTypes = m.getParameterTypes();
                         final Class<?> returnType = m.getReturnType();
                         final int paramLen = paramTypes.length;
-                        Try.TriFunction<Dao, Object[], javax.sql.DataSource, ?, Exception> call = null;
+                        Try.BiFunction<Dao, Object[], ?, Exception> call = null;
 
                         if (sqlAnno == null) {
                             if (Modifier.isAbstract(m.getModifiers())) {
                                 if (m.getName().equals("dataSource") && javax.sql.DataSource.class.isAssignableFrom(returnType) && paramLen == 0) {
-                                    call = (proxy, args, ds) -> ds;
+                                    call = (proxy, args) -> ds;
                                 } else {
-                                    call = (proxy, args, ds) -> {
+                                    call = (proxy, args) -> {
                                         throw new UnsupportedOperationException("Can't call abstract method: " + m.getName());
                                     };
                                 }
                             } else {
                                 final MethodHandle methodHandle = createMethodHandle(m);
 
-                                call = (proxy, args, ds) -> {
+                                call = (proxy, args) -> {
                                     try {
                                         return methodHandle.bindTo(proxy).invokeWithArguments(args);
                                     } catch (Throwable e) {
@@ -8245,7 +8316,7 @@ public final class JdbcUtil {
                                 throw new UnsupportedOperationException("'throws SQLException' is not declared in method: " + m.getName());
                             }
 
-                            if (paramLen > 0 && (Map.class.isAssignableFrom(paramTypes[0]) || N.isEntity(paramTypes[0])) && isNamedQuery == false) {
+                            if (paramLen > 0 && (Map.class.isAssignableFrom(paramTypes[0]) || ClassUtil.isEntity(paramTypes[0])) && isNamedQuery == false) {
                                 throw new IllegalArgumentException(
                                         "Using named query: @NamedSelect/Update/Insert/Delete when parameter type is Map or entity with Getter/Setter methods");
                             }
@@ -8259,28 +8330,28 @@ public final class JdbcUtil {
                                 final Try.BiFunction<AbstractPreparedQuery, Object[], R, Exception> queryFunc = createQueryFunctionByMethod(m);
 
                                 // Getting ClassCastException. Not sure why query result is being casted Dao. It seems there is a bug in JDk compiler. 
-                                //   call = (proxy, args, ds) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, paramSetter), args);
+                                //   call = (proxy, args) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, paramSetter), args);
 
-                                call = new Try.TriFunction<Dao, Object[], javax.sql.DataSource, Object, Exception>() {
+                                call = new Try.BiFunction<Dao, Object[], Object, Exception>() {
                                     @Override
-                                    public Object apply(Dao proxy, Object[] args, javax.sql.DataSource ds) throws Exception {
-                                        return queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys,
-                                                args, paramSetter), args);
+                                    public Object apply(Dao proxy, Object[] args) throws Exception {
+                                        return queryFunc.apply(
+                                                JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter),
+                                                args);
                                     }
                                 };
                             } else if (sqlAnno.annotationType().equals(Dao.Insert.class) || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) {
                                 if (void.class.equals(returnType)) {
-                                    call = (proxy, args, ds) -> {
-                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
-                                                .update();
+                                    call = (proxy, args) -> {
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
                                         return null;
                                     };
                                 } else if (Optional.class.equals(returnType)) {
-                                    call = (proxy, args, ds) -> JdbcUtil
-                                            .prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).insert();
+                                    call = (proxy, args) -> JdbcUtil
+                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).insert();
                                 } else {
-                                    call = (proxy, args, ds) -> JdbcUtil
-                                            .prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
+                                    call = (proxy, args) -> JdbcUtil
+                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
                                             .insert()
                                             .orNull();
                                 }
@@ -8295,21 +8366,17 @@ public final class JdbcUtil {
                                 }
 
                                 if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
-                                    call = (proxy, args, ds) -> JdbcUtil
-                                            .prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
+                                    call = (proxy, args) -> JdbcUtil
+                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
                                 } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
-                                    call = (proxy, args,
-                                            ds) -> JdbcUtil
-                                                    .prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
-                                                    .update() > 0;
+                                    call = (proxy, args) -> JdbcUtil
+                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update() > 0;
                                 } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
-                                    call = (proxy, args, ds) -> JdbcUtil
-                                            .prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
-                                            .largeUpate();
+                                    call = (proxy, args) -> JdbcUtil
+                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).largeUpate();
                                 } else {
-                                    call = (proxy, args, ds) -> {
-                                        JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
-                                                .update();
+                                    call = (proxy, args) -> {
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
                                         return null;
                                     };
                                 }
@@ -8321,20 +8388,20 @@ public final class JdbcUtil {
                         methodInvokerMap.put(m, call);
                     }
 
-                    proxyInvoker = (proxy, method, args, ds) -> methodInvokerMap.get(method).apply(proxy, args, ds);
+                    proxyInvoker = (proxy, method, args) -> methodInvokerMap.get(method).apply(proxy, args);
 
                     JdbcUtil.proxyInvokerMap.put(daoInterface, proxyInvoker);
                 }
 
                 final Class<R>[] interfaceClasses = N.asArray(daoInterface);
-                final Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception> tmp = proxyInvoker;
+                final Try.TriFunction<Dao, Method, Object[], ?, Exception> tmp = proxyInvoker;
 
                 final InvocationHandler h = (proxy, method, args) -> {
                     if (!JdbcUtil.noLogMethods.contains(method.getName())) {
                         logger.debug("Invoking SQL method: {} with args: {}", method.getName(), args);
                     }
 
-                    return tmp.apply((Dao) proxy, method, args, dataSource);
+                    return tmp.apply((Dao) proxy, method, args);
                 };
 
                 return (R) N.newProxyInstance(interfaceClasses, h);
@@ -8343,18 +8410,82 @@ public final class JdbcUtil {
     }
 
     @SuppressWarnings("rawtypes")
-    private static final Map<Class<?>, Try.QuadFunction<Dao, Method, Object[], javax.sql.DataSource, ?, Exception>> proxyInvokerMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Try.TriFunction<Dao, Method, Object[], ?, Exception>> proxyInvokerMap = new ConcurrentHashMap<>();
 
     private static final Map<Class<? extends Annotation>, Function<Annotation, String>> sqlAnnoMap = new HashMap<>();
     static {
-        sqlAnnoMap.put(Dao.Select.class, (Annotation anno) -> StringUtil.trim(((Dao.Select) anno).value()[0]));
-        sqlAnnoMap.put(Dao.Insert.class, (Annotation anno) -> StringUtil.trim(((Dao.Insert) anno).value()[0]));
-        sqlAnnoMap.put(Dao.Update.class, (Annotation anno) -> StringUtil.trim(((Dao.Update) anno).value()[0]));
-        sqlAnnoMap.put(Dao.Delete.class, (Annotation anno) -> StringUtil.trim(((Dao.Delete) anno).value()[0]));
-        sqlAnnoMap.put(Dao.NamedSelect.class, (Annotation anno) -> StringUtil.trim(((Dao.NamedSelect) anno).value()[0]));
-        sqlAnnoMap.put(Dao.NamedInsert.class, (Annotation anno) -> StringUtil.trim(((Dao.NamedInsert) anno).value()[0]));
-        sqlAnnoMap.put(Dao.NamedUpdate.class, (Annotation anno) -> StringUtil.trim(((Dao.NamedUpdate) anno).value()[0]));
-        sqlAnnoMap.put(Dao.NamedDelete.class, (Annotation anno) -> StringUtil.trim(((Dao.NamedDelete) anno).value()[0]));
+        sqlAnnoMap.put(Dao.Select.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.Select) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.Select) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.Insert.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.Insert) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.Insert) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.Update.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.Update) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.Update) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.Delete.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.Delete) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.Delete) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.NamedSelect.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.NamedSelect) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.NamedSelect) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.NamedInsert.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.NamedInsert) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.NamedInsert) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.NamedUpdate.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.NamedUpdate) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.NamedUpdate) anno).value());
+            }
+
+            return sql;
+        });
+        sqlAnnoMap.put(Dao.NamedDelete.class, (Annotation anno) -> {
+            String sql = StringUtil.trim(((Dao.NamedDelete) anno).sql());
+
+            if (N.isNullOrEmpty(sql)) {
+                sql = StringUtil.trim(((Dao.NamedDelete) anno).value());
+            }
+
+            return sql;
+        });
     }
 
     private static final Set<String> noLogMethods = new HashSet<>();
@@ -8451,7 +8582,7 @@ public final class JdbcUtil {
             }
         } else if (DataSet.class.isAssignableFrom(returnType)) {
             return (preparedQuery, args) -> (R) preparedQuery.query();
-        } else if (N.isEntity(returnType)) {
+        } else if (ClassUtil.isEntity(returnType)) {
             return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRowMapper.to(returnType)).orNull();
         } else if (Map.class.isAssignableFrom(returnType)) {
             return (preparedQuery, args) -> (R) preparedQuery.findFirst(BiRowMapper.to(returnType)).orNull();
@@ -8461,7 +8592,7 @@ public final class JdbcUtil {
                     ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
                     : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
 
-            if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
+            if (ClassUtil.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
                 return (preparedQuery, args) -> (R) preparedQuery.list(BiRowMapper.to(eleType));
             } else {
@@ -8475,7 +8606,7 @@ public final class JdbcUtil {
                     ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
                     : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
 
-            if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
+            if (ClassUtil.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
                 if (Nullable.class.isAssignableFrom(returnType)) {
                     return (preparedQuery, args) -> (R) Nullable.from(preparedQuery.findFirst(BiRowMapper.to(eleType)));
@@ -8512,7 +8643,7 @@ public final class JdbcUtil {
                     ? (Class<?>) parameterizedReturnType.getActualTypeArguments()[0]
                     : (Class<?>) ((ParameterizedType) parameterizedReturnType.getActualTypeArguments()[0]).getRawType();
 
-            if (N.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
+            if (ClassUtil.isEntity(eleType) || Map.class.isAssignableFrom(eleType) || List.class.isAssignableFrom(eleType)
                     || Object[].class.isAssignableFrom(eleType)) {
                 if (ExceptionalStream.class.isAssignableFrom(returnType)) {
                     return (preparedQuery, args) -> (R) preparedQuery.stream(BiRowMapper.to(eleType));
@@ -8532,37 +8663,36 @@ public final class JdbcUtil {
     }
 
     @SuppressWarnings("rawtypes")
-    static AbstractPreparedQuery prepareQuery(final Dao proxy, final javax.sql.DataSource ds, final String query, final boolean isNamedQuery,
-            final NamedSQL namedSQL, final int fetchSize, final boolean returnGeneratedKeys, final Object[] args,
-            final BiParametersSetter<? super AbstractPreparedQuery, Object[], Exception> paramSetter) throws SQLException, Exception {
+    static AbstractPreparedQuery prepareQuery(final Dao proxy, final String query, final boolean isNamedQuery, final NamedSQL namedSQL, final int fetchSize,
+            final boolean returnGeneratedKeys, final Object[] args, final BiParametersSetter<? super AbstractPreparedQuery, Object[], Exception> paramSetter)
+            throws SQLException, Exception {
         if (returnGeneratedKeys) {
             if (fetchSize > 0) {
                 if (paramSetter == null) {
-                    return proxy.prepareQuery(ds, query, returnGeneratedKeys).setFetchSize(fetchSize);
+                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize);
                 } else {
-                    return proxy.prepareQuery(ds, query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
+                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
                 }
             } else {
                 if (paramSetter == null) {
-                    return proxy.prepareQuery(ds, query, returnGeneratedKeys);
+                    return proxy.prepareQuery(query, returnGeneratedKeys);
                 } else {
-                    return proxy.prepareQuery(ds, query, returnGeneratedKeys).settParameters(args, paramSetter);
+                    return proxy.prepareQuery(query, returnGeneratedKeys).settParameters(args, paramSetter);
                 }
             }
         } else {
             if (fetchSize > 0) {
                 if (paramSetter == null) {
-                    return (isNamedQuery ? proxy.prepareCallableQuery(ds, namedSQL.getPureSQL()) : proxy.prepareQuery(ds, query)).setFetchSize(fetchSize);
+                    return (isNamedQuery ? proxy.prepareCallableQuery(namedSQL.getPureSQL()) : proxy.prepareQuery(query)).setFetchSize(fetchSize);
                 } else {
-                    return (isNamedQuery ? proxy.prepareCallableQuery(ds, namedSQL.getPureSQL()) : proxy.prepareQuery(ds, query)).setFetchSize(fetchSize)
+                    return (isNamedQuery ? proxy.prepareCallableQuery(namedSQL.getPureSQL()) : proxy.prepareQuery(query)).setFetchSize(fetchSize)
                             .settParameters(args, paramSetter);
                 }
             } else {
                 if (paramSetter == null) {
-                    return isNamedQuery ? proxy.prepareCallableQuery(ds, namedSQL.getPureSQL()) : proxy.prepareQuery(ds, query);
+                    return isNamedQuery ? proxy.prepareCallableQuery(namedSQL.getPureSQL()) : proxy.prepareQuery(query);
                 } else {
-                    return (isNamedQuery ? proxy.prepareCallableQuery(ds, namedSQL.getPureSQL()) : proxy.prepareQuery(ds, query)).settParameters(args,
-                            paramSetter);
+                    return (isNamedQuery ? proxy.prepareCallableQuery(namedSQL.getPureSQL()) : proxy.prepareQuery(query)).settParameters(args, paramSetter);
                 }
             }
         }

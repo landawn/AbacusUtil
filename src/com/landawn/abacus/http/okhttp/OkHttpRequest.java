@@ -214,7 +214,7 @@ public class OkHttpRequest {
         }
 
         final Class<?> cls = formBodyByEntity.getClass();
-        N.checkArgument(N.isEntity(cls), "{} is not an entity class with getter/setter methods", cls);
+        N.checkArgument(ClassUtil.isEntity(cls), "{} is not an entity class with getter/setter methods", cls);
 
         final FormBody.Builder builder = new FormBody.Builder();
 

@@ -329,8 +329,8 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public Stream<ShortStream> split(final int size) {
-        return splitToList(size).map(new Function<ShortList, ShortStream>() {
+    public Stream<ShortStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);

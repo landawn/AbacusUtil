@@ -489,8 +489,8 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Stream<CharList> splitToList(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<CharList> splitToList(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<CharList>() {
             @Override
@@ -504,9 +504,9 @@ class IteratorCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final CharList result = new CharList(size);
+                final CharList result = new CharList(chunkSize);
 
-                while (result.size() < size && elements.hasNext()) {
+                while (result.size() < chunkSize && elements.hasNext()) {
                     result.add(elements.nextChar());
                 }
 
@@ -516,12 +516,12 @@ class IteratorCharStream extends AbstractCharStream {
             @Override
             public long count() {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, false, null);
     }

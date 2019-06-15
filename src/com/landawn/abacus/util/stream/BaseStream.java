@@ -106,11 +106,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
     /**
      * Returns Stream of {@code S} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 
-     * @param size
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @return
      */
     @SequentialOnly
-    Stream<S> split(int size);
+    Stream<S> split(int chunkSize);
 
     /**
      * Returns Stream of {@code PL} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -118,11 +118,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param size
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @return
      */
     @SequentialOnly
-    public abstract Stream<PL> splitToList(int size);
+    public abstract Stream<PL> splitToList(int chunkSize);
 
     /**
      * Split the stream by the specified predicate.
@@ -172,7 +172,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, ITER, S extends BaseStream<T
      * @param where
      * @return
      */
-    @ParallelSupported
+    @SequentialOnly
     Stream<S> splitBy(P where);
 
     /**

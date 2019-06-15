@@ -329,8 +329,8 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Stream<ByteStream> split(final int size) {
-        return splitToList(size).map(new Function<ByteList, ByteStream>() {
+    public Stream<ByteStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);

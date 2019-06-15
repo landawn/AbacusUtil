@@ -2898,7 +2898,7 @@ public interface DataSet {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param chunkSize
+     * @param chunkSize the desired size of each sub DataSet (the last may be smaller).
      * @return
      */
     Stream<DataSet> split(int chunkSize);
@@ -2906,8 +2906,8 @@ public interface DataSet {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same chunkSize (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param chunkSize
      * @param columnNames
+     * @param chunkSize the desired size of each sub DataSet (the last may be smaller).
      * @return
      */
     Stream<DataSet> split(Collection<String> columnNames, int chunkSize);

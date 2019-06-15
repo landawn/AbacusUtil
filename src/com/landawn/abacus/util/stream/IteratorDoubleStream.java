@@ -689,8 +689,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> splitToList(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<DoubleList> splitToList(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<DoubleList>() {
             @Override
@@ -704,9 +704,9 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                     throw new NoSuchElementException();
                 }
 
-                final DoubleList result = new DoubleList(size);
+                final DoubleList result = new DoubleList(chunkSize);
 
-                while (result.size() < size && elements.hasNext()) {
+                while (result.size() < chunkSize && elements.hasNext()) {
                     result.add(elements.nextDouble());
                 }
 
@@ -716,12 +716,12 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public long count() {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, false, null);
     }

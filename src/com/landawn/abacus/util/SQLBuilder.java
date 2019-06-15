@@ -370,7 +370,7 @@ public abstract class SQLBuilder {
 
                 for (String subEntityPropName : subEntityPropNames) {
                     method = ClassUtil.getPropGetMethod(entityClass, subEntityPropName);
-                    subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
+                    subEntityClass = ClassUtil.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
                     subEntityClassName = ClassUtil.getSimpleClassName(subEntityClass);
 
                     subEntityPropNameList = new LinkedHashSet<>(ClassUtil.getPropGetMethodList(subEntityClass).keySet());
@@ -445,9 +445,9 @@ public abstract class SQLBuilder {
                 Class<?>[] typeParameterClasses = null;
 
                 for (Map.Entry<String, Method> entry : propMethods.entrySet()) {
-                    if ((N.isEntity(entry.getValue().getReturnType())
+                    if ((ClassUtil.isEntity(entry.getValue().getReturnType())
                             || (N.notNullOrEmpty(typeParameterClasses = ClassUtil.getTypeArgumentsByMethod(entry.getValue()))
-                                    && N.isEntity(typeParameterClasses[0])))
+                                    && ClassUtil.isEntity(typeParameterClasses[0])))
                             && (nonSubEntityPropNames == null || !nonSubEntityPropNames.contains(entry.getKey()))) {
                         subEntityPropNames.add(entry.getKey());
                     }
@@ -474,7 +474,7 @@ public abstract class SQLBuilder {
 
         for (String subEntityPropName : subEntityPropNames) {
             method = ClassUtil.getPropGetMethod(entityClass, subEntityPropName);
-            subEntityClass = N.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
+            subEntityClass = ClassUtil.isEntity(method.getReturnType()) ? method.getReturnType() : ClassUtil.getTypeArgumentsByMethod(method)[0];
             res.add(ClassUtil.getSimpleClassName(subEntityClass));
         }
 
@@ -1912,7 +1912,7 @@ public abstract class SQLBuilder {
             final Class<?> entityClass = entity.getClass();
             this.entityClass = entityClass;
             final Collection<String> propNames = getUpdatePropNamesByClass(entityClass, excludedPropNames);
-            final Set<String> dirtyPropNames = N.isDirtyMarker(entityClass) ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Set<String> dirtyPropNames = ClassUtil.isDirtyMarker(entityClass) ? ((DirtyMarker) entity).dirtyPropNames() : null;
             final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
             for (String propName : propNames) {

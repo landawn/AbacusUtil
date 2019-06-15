@@ -510,9 +510,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * 
      * @param resultSet
      * @return
-     * @throws UncheckedSQLException 
      */
-    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet) throws UncheckedSQLException {
+    public static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet) {
         return rows(Object[].class, resultSet);
     }
 
@@ -524,7 +523,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @deprecated
      */
     @Deprecated
-    static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) throws UncheckedSQLException {
+    static ExceptionalStream<Object[], SQLException> rows(final ResultSet resultSet, final boolean closeResultSet) {
         return rows(Object[].class, resultSet, closeResultSet);
     }
 
@@ -534,7 +533,6 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param targetClass Array/List/Map or Entity with getter/setter methods.
      * @param resultSet
      * @return
-     * @throws UncheckedSQLException 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final Class<T> targetClass, final ResultSet resultSet) {
         N.checkArgNotNull(targetClass, "targetClass");
@@ -583,10 +581,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param rowMapper
      * @return
-     * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> rowMapper)
-            throws UncheckedSQLException {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> rowMapper) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(rowMapper, "rowMapper");
 
@@ -634,10 +630,9 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param rowMapper
      * @return
-     * @throws UncheckedSQLException 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper) throws UncheckedSQLException {
+            final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(rowMapper, "rowMapper");
 
@@ -701,9 +696,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param columnIndex starts from 0, not 1.
      * @return
-     * @throws UncheckedSQLException 
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex) throws UncheckedSQLException {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final int columnIndex) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNegative(columnIndex, "columnIndex");
 
@@ -777,7 +771,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param resultSet
      * @param columnName
      * @return
-     * @throws UncheckedSQLException 
+     * @throws UncheckedSQLException
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
@@ -793,6 +787,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param closeResultSet
      * @return
      * @deprecated
+     * @throws UncheckedSQLException
      */
     @Deprecated
     static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet)
@@ -1760,8 +1755,8 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         }, sorted, comparator, closeHandlers);
     }
 
-    public ExceptionalStream<Stream<T>, E> split(final int size) {
-        return splitToList(size).map(new Try.Function<List<T>, Stream<T>, E>() {
+    public ExceptionalStream<Stream<T>, E> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Try.Function<List<T>, Stream<T>, E>() {
             @Override
             public Stream<T> apply(List<T> t) {
                 return Stream.of(t);
@@ -1769,16 +1764,35 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         });
     }
 
-    public ExceptionalStream<List<T>, E> splitToList(final int size) {
-        return split(size, Factory.<T> ofList());
+    /**
+     * Returns ExceptionalStream of {@code List<T>} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @return
+     */
+    public ExceptionalStream<List<T>, E> splitToList(final int chunkSize) {
+        return split(chunkSize, Factory.<T> ofList());
     }
 
-    public ExceptionalStream<Set<T>, E> splitToSet(final int size) {
-        return split(size, Factory.<T> ofSet());
+    /**
+     * Returns ExceptionalStream of {@code Set<T>} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @return
+     */
+    public ExceptionalStream<Set<T>, E> splitToSet(final int chunkSize) {
+        return split(chunkSize, Factory.<T> ofSet());
     }
 
-    public <C extends Collection<T>> ExceptionalStream<C, E> split(final int size, final IntFunction<? extends C> collectionSupplier) {
-        checkArgPositive(size, "size");
+    /**
+     * Returns ExceptionalStream of {@code C} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @param collectionSupplier
+     * @return
+     */
+    public <C extends Collection<T>> ExceptionalStream<C, E> split(final int chunkSize, final IntFunction<? extends C> collectionSupplier) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ExceptionalIterator<C, E>() {
@@ -1793,10 +1807,10 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                     throw new NoSuchElementException();
                 }
 
-                final C result = collectionSupplier.apply(size);
+                final C result = collectionSupplier.apply(chunkSize);
                 int cnt = 0;
 
-                while (cnt++ < size && elements.hasNext()) {
+                while (cnt++ < chunkSize && elements.hasNext()) {
                     result.add(elements.next());
                 }
 
@@ -1806,20 +1820,26 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public long count() throws E {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) throws E {
                 checkArgNotNegative(n, "n");
 
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, closeHandlers);
     }
 
-    public <R, A> ExceptionalStream<R, E> split(final int size, final Collector<? super T, A, R> collector) {
-        checkArgPositive(size, "size");
+    /**
+     * 
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @param collector
+     * @return
+     */
+    public <R, A> ExceptionalStream<R, E> split(final int chunkSize, final Collector<? super T, A, R> collector) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collector, "collector");
 
         final Supplier<A> supplier = collector.supplier();
@@ -1841,7 +1861,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
                 final A container = supplier.get();
                 int cnt = 0;
 
-                while (cnt++ < size && elements.hasNext()) {
+                while (cnt++ < chunkSize && elements.hasNext()) {
                     accumulator.accept(container, elements.next());
                 }
 
@@ -1851,14 +1871,14 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
             @Override
             public long count() throws E {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) throws E {
                 checkArgNotNegative(n, "n");
 
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, closeHandlers);
     }

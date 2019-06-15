@@ -89,6 +89,7 @@ import java.util.jar.JarFile;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Id;
 import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.Condition;
@@ -149,13 +150,11 @@ public final class ClassUtil {
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
-    static final int POOL_SIZE;
+    private static final int POOL_SIZE = Internals.POOL_SIZE;
 
-    static {
-        int multi = (int) (Runtime.getRuntime().maxMemory() / ((1024 * 1024) * 256));
-
-        POOL_SIZE = Math.max(1000, Math.min(1000 * multi, 8192));
-    }
+    // ...
+    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<>(POOL_SIZE);
 
     // formalized property name list.
     private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<>(POOL_SIZE); // new LinkedHashMap<>();
@@ -530,6 +529,35 @@ public final class ClassUtil {
                 throw new IllegalArgumentException("The name of property getter/setter method must start with 'get/is/has' or 'set': " + method.getName());
             }
         }
+    }
+
+    public static boolean isEntity(final Class<?> cls) {
+        Boolean b = entityClassPool.get(cls);
+
+        if (b == null) {
+            final String canonicalClassName = ClassUtil.getCanonicalClassName(cls);
+
+            if (N.notNullOrEmpty(canonicalClassName) && (canonicalClassName.startsWith("java.lang.") || canonicalClassName.startsWith("java.util."))) {
+                b = false;
+            } else {
+                b = N.typeOf(cls).isEntity();
+            }
+
+            entityClassPool.put(cls, b);
+        }
+
+        return b;
+    }
+
+    public static boolean isDirtyMarker(final Class<?> cls) {
+        Boolean b = dirtyMarkerClassPool.get(cls);
+
+        if (b == null) {
+            b = DirtyMarker.class.isAssignableFrom(cls);
+            dirtyMarkerClassPool.put(cls, b);
+        }
+
+        return b;
     }
 
     /**

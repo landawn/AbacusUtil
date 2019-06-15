@@ -1173,11 +1173,18 @@ public final class BooleanList extends PrimitiveList<Boolean, boolean[], Boolean
         return new BooleanList(N.copyOfRange(elementData, from, to, step));
     }
 
+    /**
+     * Returns List of {@code BooleanList} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param fromIndex
+     * @param toIndex
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     */
     @Override
-    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<BooleanList> split(final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, chunkSize);
         @SuppressWarnings("rawtypes")
         final List<BooleanList> result = (List) list;
 

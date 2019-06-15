@@ -589,7 +589,7 @@ public final class HttpProxy {
                             Object newParameter = parameter;
 
                             if (type.isEntity()) {
-                                newParameter = Maps.entity2Map(parameter, !N.isDirtyMarker(parameter.getClass()), null, _config.requestParamNamingPolicy);
+                                newParameter = Maps.entity2Map(parameter, !ClassUtil.isDirtyMarker(parameter.getClass()), null, _config.requestParamNamingPolicy);
                             } else if (type.isMap()) {
                                 final Map<String, Object> m = ((Map<String, Object>) parameter);
                                 final Map<String, Object> newMap = new LinkedHashMap<>();

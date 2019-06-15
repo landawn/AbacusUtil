@@ -685,8 +685,8 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatList> splitToList(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<FloatList> splitToList(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<FloatList>() {
             @Override
@@ -700,9 +700,9 @@ class IteratorFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                final FloatList result = new FloatList(size);
+                final FloatList result = new FloatList(chunkSize);
 
-                while (result.size() < size && elements.hasNext()) {
+                while (result.size() < chunkSize && elements.hasNext()) {
                     result.add(elements.nextFloat());
                 }
 
@@ -712,12 +712,12 @@ class IteratorFloatStream extends AbstractFloatStream {
             @Override
             public long count() {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, false, null);
     }

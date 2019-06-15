@@ -328,8 +328,8 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Stream<LongStream> split(final int size) {
-        return splitToList(size).map(new Function<LongList, LongStream>() {
+    public Stream<LongStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
                 return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);

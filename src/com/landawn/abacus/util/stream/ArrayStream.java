@@ -1619,8 +1619,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<Stream<T>> split(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<Stream<T>>() {
             private int cursor = fromIndex;
@@ -1636,26 +1636,26 @@ class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayStream<>(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, cmp, null);
+                return new ArrayStream<>(elements, cursor, (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex), sorted, cmp, null);
             }
 
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }
 
     @Override
-    public Stream<List<T>> splitToList(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<List<T>> splitToList(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<List<T>>() {
             private int cursor = fromIndex;
@@ -1671,26 +1671,26 @@ class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return Stream.createList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
+                return Stream.createList(N.copyOfRange(elements, cursor, (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex)));
             }
 
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<? extends C> collectionSupplier) {
-        checkArgPositive(size, "size");
+    public <C extends Collection<T>> Stream<C> split(final int chunkSize, final IntFunction<? extends C> collectionSupplier) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
@@ -1707,9 +1707,9 @@ class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final C result = collectionSupplier.apply(toIndex - cursor > size ? size : toIndex - cursor);
+                final C result = collectionSupplier.apply(toIndex - cursor > chunkSize ? chunkSize : toIndex - cursor);
 
-                for (int to = (cursor = size < toIndex - cursor ? cursor + size : toIndex); cursor < to; cursor++) {
+                for (int to = (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex); cursor < to; cursor++) {
                     result.add(elements[cursor]);
                 }
 
@@ -1719,20 +1719,20 @@ class ArrayStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }
 
     @Override
-    public <A, R> Stream<R> split(final int size, final Collector<? super T, A, R> collector) {
-        checkArgPositive(size, "size");
+    public <A, R> Stream<R> split(final int chunkSize, final Collector<? super T, A, R> collector) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
@@ -1755,7 +1755,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 final A container = supplier.get();
 
-                for (int to = (cursor = size < toIndex - cursor ? cursor + size : toIndex); cursor < to; cursor++) {
+                for (int to = (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex); cursor < to; cursor++) {
                     accumulator.accept(container, elements[cursor]);
                 }
 
@@ -1765,13 +1765,13 @@ class ArrayStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }

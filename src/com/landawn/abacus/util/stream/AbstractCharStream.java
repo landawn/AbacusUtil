@@ -329,8 +329,8 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Stream<CharStream> split(final int size) {
-        return splitToList(size).map(new Function<CharList, CharStream>() {
+    public Stream<CharStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);

@@ -741,18 +741,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<Stream<T>> split(final int size) {
-        return splitToList(size).map(listToStreamMapper());
+    public Stream<Stream<T>> split(final int chunkSize) {
+        return splitToList(chunkSize).map(listToStreamMapper());
     }
 
     @Override
-    public Stream<List<T>> splitToList(final int size) {
-        return split(size, Factory.<T> ofList());
+    public Stream<List<T>> splitToList(final int chunkSize) {
+        return split(chunkSize, Factory.<T> ofList());
     }
 
     @Override
-    public Stream<Set<T>> splitToSet(final int size) {
-        return split(size, Factory.<T> ofSet());
+    public Stream<Set<T>> splitToSet(final int chunkSize) {
+        return split(chunkSize, Factory.<T> ofSet());
     }
 
     @Override

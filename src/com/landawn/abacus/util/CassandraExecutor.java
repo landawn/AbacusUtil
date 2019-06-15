@@ -273,7 +273,7 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     public static DataSet extractData(final Class<?> targetClass, final ResultSet resultSet) {
-        final boolean isEntity = targetClass != null && N.isEntity(targetClass);
+        final boolean isEntity = targetClass != null && ClassUtil.isEntity(targetClass);
         final boolean isMap = targetClass != null && Map.class.isAssignableFrom(targetClass);
         final ColumnDefinitions columnDefinitions = resultSet.getColumnDefinitions();
         final int columnCount = columnDefinitions.size();
@@ -446,7 +446,7 @@ public final class CassandraExecutor implements Closeable {
             }
 
             return (T) map;
-        } else if (N.isEntity(targetClass)) {
+        } else if (ClassUtil.isEntity(targetClass)) {
             final T entity = N.newInstance(targetClass);
 
             String propName = null;
@@ -473,7 +473,7 @@ public final class CassandraExecutor implements Closeable {
                     ClassUtil.setPropValue(entity, propSetMethod, propValue);
                 } else {
                     if (propValue instanceof Row) {
-                        if (Map.class.isAssignableFrom(parameterType) || N.isEntity(parameterType)) {
+                        if (Map.class.isAssignableFrom(parameterType) || ClassUtil.isEntity(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (Row) propValue));
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod, N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (Row) propValue))));
@@ -484,7 +484,7 @@ public final class CassandraExecutor implements Closeable {
                 }
             }
 
-            if (N.isDirtyMarker(entity.getClass())) {
+            if (ClassUtil.isDirtyMarker(entity.getClass())) {
                 ((DirtyMarker) entity).markDirty(false);
             }
 
@@ -686,7 +686,7 @@ public final class CassandraExecutor implements Closeable {
     @SuppressWarnings("deprecation")
     private Map<String, Object> prepareUpdateProps(final Class<?> targetClass, final Object entity) {
         final Set<String> keyNameSet = getKeyNameSet(targetClass);
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
 
         if (isDirtyMarker) {
             final Map<String, Object> props = new HashMap<>();
@@ -716,7 +716,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SuppressWarnings("deprecation")
     private Map<String, Object> prepareUpdateProps(final Class<?> targetClass, final Object entity, final Set<String> keyNameSet) {
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
 
         if (isDirtyMarker) {
             final Map<String, Object> props = new HashMap<>();
@@ -779,7 +779,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SuppressWarnings("deprecation")
     private List<Map<String, Object>> propBatchUpdatePropsList(final Class<?> targetClass, final Collection<?> entities, final Set<String> keyNameSet) {
-        final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
 
         if (isDirtyMarker) {
             final List<Map<String, Object>> propsList = new ArrayList<>(entities.size());
@@ -1987,7 +1987,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     private static <T> void checkTargetClass(final Class<T> targetClass) {
-        if (!(N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
+        if (!(ClassUtil.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
             throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
@@ -2071,7 +2071,7 @@ public final class CassandraExecutor implements Closeable {
 
         Object[] values = parameters;
 
-        if (parameters.length == 1 && (parameters[0] instanceof Map || N.isEntity(parameters[0].getClass()))) {
+        if (parameters.length == 1 && (parameters[0] instanceof Map || ClassUtil.isEntity(parameters[0].getClass()))) {
             values = new Object[parameterCount];
             final Object parameter_0 = parameters[0];
             final Map<Integer, String> namedParameters = namedCQL.getNamedParameters();

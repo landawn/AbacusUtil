@@ -1044,7 +1044,7 @@ public abstract class CQLBuilder {
         } else {
             this.entityClass = entity.getClass();
 
-            if (N.isDirtyMarker(entity.getClass())) {
+            if (ClassUtil.isDirtyMarker(entity.getClass())) {
                 final DirtyMarker dirtyMarkerEntity = ((DirtyMarker) entity);
                 final Set<String> updatedPropNames = dirtyMarkerEntity.dirtyPropNames();
                 final Map<String, Object> updateProps = new HashMap<>();
@@ -1082,7 +1082,7 @@ public abstract class CQLBuilder {
         } else {
             this.entityClass = entity.getClass();
 
-            if (N.isDirtyMarker(entity.getClass())) {
+            if (ClassUtil.isDirtyMarker(entity.getClass())) {
                 final Map<String, Object> props = new HashMap<>();
 
                 for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {

@@ -638,7 +638,7 @@ public class SQLExecutor implements Closeable {
         Mapper<T> mapper = (Mapper<T>) mapperPool.get(targetClass);
 
         if (mapper == null) {
-            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(ClassUtil.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
             SQLBuilder.registerEntityPropColumnNameMap(targetClass);
 
@@ -3748,7 +3748,7 @@ public class SQLExecutor implements Closeable {
             return false;
         }
 
-        if (parameters[0] instanceof Map || (N.isEntity(parameters[0].getClass()))) {
+        if (parameters[0] instanceof Map || (ClassUtil.isEntity(parameters[0].getClass()))) {
             return true;
         }
 
@@ -3868,7 +3868,7 @@ public class SQLExecutor implements Closeable {
         }
 
         private boolean isEntity(Object obj) {
-            return obj != null && N.isEntity(obj.getClass());
+            return obj != null && ClassUtil.isEntity(obj.getClass());
         }
 
         private Condition id2Cond(final Object id, boolean isIdOrEntity) {
@@ -5988,7 +5988,7 @@ public class SQLExecutor implements Closeable {
         private void checkEntity(final Object entity) {
             final Class<?> cls = entity.getClass();
 
-            if (N.isEntity(cls)) {
+            if (ClassUtil.isEntity(cls)) {
                 N.checkArgument(targetClass.isAssignableFrom(cls), "Delete wrong type: " + ClassUtil.getCanonicalClassName(cls) + " in " + toString());
             }
         }

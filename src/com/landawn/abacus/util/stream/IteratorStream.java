@@ -1385,8 +1385,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <C extends Collection<T>> Stream<C> split(final int size, final IntFunction<? extends C> collectionSupplier) {
-        checkArgPositive(size, "size");
+    public <C extends Collection<T>> Stream<C> split(final int chunkSize, final IntFunction<? extends C> collectionSupplier) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collectionSupplier, "collectionSupplier");
 
         return newStream(new ObjIteratorEx<C>() {
@@ -1401,10 +1401,10 @@ class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final C result = collectionSupplier.apply(size);
+                final C result = collectionSupplier.apply(chunkSize);
                 int cnt = 0;
 
-                while (cnt < size && elements.hasNext()) {
+                while (cnt < chunkSize && elements.hasNext()) {
                     result.add(elements.next());
                     cnt++;
                 }
@@ -1415,19 +1415,19 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, false, null);
     }
 
     @Override
-    public <A, R> Stream<R> split(final int size, final Collector<? super T, A, R> collector) {
-        checkArgPositive(size, "size");
+    public <A, R> Stream<R> split(final int chunkSize, final Collector<? super T, A, R> collector) {
+        checkArgPositive(chunkSize, "chunkSize");
         checkArgNotNull(collector);
 
         final Supplier<A> supplier = collector.supplier();
@@ -1449,7 +1449,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 final A container = supplier.get();
                 int cnt = 0;
 
-                while (cnt < size && elements.hasNext()) {
+                while (cnt < chunkSize && elements.hasNext()) {
                     accumulator.accept(container, elements.next());
                     cnt++;
                 }
@@ -1460,12 +1460,12 @@ class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public long count() {
                 final long len = elements.count();
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
-                elements.skip(n > Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+                elements.skip(n > Long.MAX_VALUE / chunkSize ? Long.MAX_VALUE : n * chunkSize);
             }
         }, false, null);
     }

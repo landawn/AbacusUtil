@@ -153,11 +153,11 @@ public abstract class DateUtil {
 
     private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
     private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
-    private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
-    private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
+    private static final Queue<DateFormat> utcDateTimeDFPool = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
+    private static final Queue<Calendar> utcCalendarPool = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
     // ...
-    private static final Queue<char[]> utcTimestampFormatCharsPool = new ArrayBlockingQueue<>(N.POOL_SIZE);
+    private static final Queue<char[]> utcTimestampFormatCharsPool = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
     private static final DatatypeFactory dataTypeFactory;
 
     static {
@@ -1631,7 +1631,7 @@ public abstract class DateUtil {
         Queue<DateFormat> queue = dfPool.get(format);
 
         if (queue == null) {
-            queue = new ArrayBlockingQueue<>(N.POOL_SIZE);
+            queue = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
             dfPool.put(format, queue);
         }
 
@@ -1781,7 +1781,7 @@ public abstract class DateUtil {
             timeZoneCalendarQueue = calendarPool.get(timeZone);
 
             if (timeZoneCalendarQueue == null) {
-                timeZoneCalendarQueue = new ArrayBlockingQueue<>(N.POOL_SIZE);
+                timeZoneCalendarQueue = new ArrayBlockingQueue<>(Internals.POOL_SIZE);
                 calendarPool.put(timeZone, timeZoneCalendarQueue);
             } else {
                 c = timeZoneCalendarQueue.poll();

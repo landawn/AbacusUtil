@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +45,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
@@ -51,6 +54,7 @@ import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.Duration;
+import com.landawn.abacus.util.ExceptionalStream;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -763,11 +767,11 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param size
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @return
      */
     @SequentialOnly
-    public abstract Stream<Set<T>> splitToSet(int size);
+    public abstract Stream<Set<T>> splitToSet(int chunkSize);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -775,15 +779,21 @@ public abstract class Stream<T>
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param size
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @param collectionSupplier
      * @return
      */
     @SequentialOnly
-    public abstract <C extends Collection<T>> Stream<C> split(int size, IntFunction<? extends C> collectionSupplier);
+    public abstract <C extends Collection<T>> Stream<C> split(int chunkSize, IntFunction<? extends C> collectionSupplier);
 
+    /**
+     * 
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @param collector
+     * @return
+     */
     @SequentialOnly
-    public abstract <A, R> Stream<R> split(int size, Collector<? super T, A, R> collector);
+    public abstract <A, R> Stream<R> split(int chunkSize, Collector<? super T, A, R> collector);
 
     @SequentialOnly
     public abstract Stream<Set<T>> splitToSet(Predicate<? super T> predicate);
@@ -3613,11 +3623,83 @@ public abstract class Stream<T>
         return LongStream.interval(delay, interval, unit).mapToObj(s);
     }
 
-    public static Stream<String> lines(final File file) {
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static Stream<Object[]> rows(final ResultSet resultSet) throws UncheckedSQLException {
+        return rows(Object[].class, resultSet);
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param targetClass Array/List/Map or Entity with getter/setter methods.
+     * @param resultSet
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static <T> Stream<T> rows(final Class<T> targetClass, final ResultSet resultSet) throws UncheckedSQLException {
+        return ExceptionalStream.rows(targetClass, resultSet).unchecked();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param rowMapper
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static <T> Stream<T> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> rowMapper) throws UncheckedSQLException {
+        return ExceptionalStream.rows(resultSet, rowMapper).unchecked();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param rowMapper
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static <T> Stream<T> rows(final ResultSet resultSet, final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper)
+            throws UncheckedSQLException {
+        return ExceptionalStream.rows(resultSet, rowMapper).unchecked();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnIndex starts from 0, not 1.
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static <T> Stream<T> rows(final ResultSet resultSet, final int columnIndex) throws UncheckedSQLException {
+        return ExceptionalStream.<T> rows(resultSet, columnIndex).unchecked();
+    }
+
+    /**
+     * It's user's responsibility to close the input <code>resultSet</code> after the stream is finished.
+     * 
+     * @param resultSet
+     * @param columnName
+     * @return
+     * @throws UncheckedSQLException 
+     */
+    public static <T> Stream<T> rows(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {
+        return ExceptionalStream.<T> rows(resultSet, columnName).unchecked();
+    }
+
+    public static Stream<String> lines(final File file) throws UncheckedIOException {
         return lines(file, Charsets.UTF_8);
     }
 
-    public static Stream<String> lines(final File file, final Charset charset) {
+    public static Stream<String> lines(final File file, final Charset charset) throws UncheckedIOException {
         final ObjIteratorEx<String> iter = createLazyLineIterator(file, null, charset, null, true);
 
         return of(iter).onClose(new Runnable() {
@@ -3628,11 +3710,11 @@ public abstract class Stream<T>
         });
     }
 
-    public static Stream<String> lines(final Path path) {
+    public static Stream<String> lines(final Path path) throws UncheckedIOException {
         return lines(path, Charsets.UTF_8);
     }
 
-    public static Stream<String> lines(final Path path, final Charset charset) {
+    public static Stream<String> lines(final Path path, final Charset charset) throws UncheckedIOException {
         final ObjIteratorEx<String> iter = createLazyLineIterator(null, path, charset, null, true);
 
         return of(iter).onClose(new Runnable() {
@@ -3648,8 +3730,9 @@ public abstract class Stream<T>
      * 
      * @param reader
      * @return
+     * @throws UncheckedIOException
      */
-    public static Stream<String> lines(final Reader reader) {
+    public static Stream<String> lines(final Reader reader) throws UncheckedIOException {
         N.checkArgNotNull(reader);
 
         return of(createLazyLineIterator(null, null, Charsets.UTF_8, reader, false));
@@ -3702,7 +3785,7 @@ public abstract class Stream<T>
         });
     }
 
-    public static Stream<File> listFiles(final File parentPath) {
+    public static Stream<File> listFiles(final File parentPath) throws UncheckedIOException {
         if (!parentPath.exists()) {
             return empty();
         }
@@ -3710,7 +3793,7 @@ public abstract class Stream<T>
         return of(parentPath.listFiles());
     }
 
-    public static Stream<File> listFiles(final File parentPath, final boolean recursively) {
+    public static Stream<File> listFiles(final File parentPath, final boolean recursively) throws UncheckedIOException {
         if (!parentPath.exists()) {
             return empty();
         } else if (recursively == false) {

@@ -30,9 +30,9 @@ import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * 
+ *
  * @since 0.8
- * 
+ *
  * @author Haiyang Li
  */
 public final class Splitter {
@@ -87,7 +87,7 @@ public final class Splitter {
 
     /**
      * Returns the Splitter with the default delimiter: <code>", "</code>
-     * 
+     *
      * @return
      */
     public static Splitter defauLt() {
@@ -161,7 +161,7 @@ public final class Splitter {
     }
 
     /**
-     * 
+     *
      * @param delimiter
      * @return
      * @throws IllegalArgumentException if the specified {@code delimiter} is null or empty.
@@ -261,7 +261,7 @@ public final class Splitter {
     }
 
     /**
-     * 
+     *
      * @param delimiter
      * @return
      * @throws IllegalArgumentException if the specified {@code delimiter} is null, or empty string may be matched by it.
@@ -344,7 +344,7 @@ public final class Splitter {
     }
 
     /**
-     * 
+     *
      * @param delimiterRegex
      * @return
      * @throws IllegalArgumentException if the specified {@code delimiter} is null or empty, or empty string may be matched by it.
@@ -369,7 +369,7 @@ public final class Splitter {
 
     /**
      * Removes the starting and ending white space characters if {@code strip} is true.
-     * 
+     *
      * @param strip
      * @return
      * @see Character#isWhitespace(char)
@@ -516,7 +516,7 @@ public final class Splitter {
 
         /**
          * Returns the Map Splitter with the default entry and key/value delimiter: <code>", "</code> and <code>"="</code>
-         * 
+         *
          * @return
          */
         public static MapSplitter defauLt() {
@@ -524,7 +524,7 @@ public final class Splitter {
         }
 
         /**
-         * 
+         *
          * @param entryDelimiter
          * @param keyValueDelimiter
          * @return
@@ -536,7 +536,7 @@ public final class Splitter {
         }
 
         /**
-         * 
+         *
          * @param entryDelimiter
          * @param keyValueDelimiter
          * @return
@@ -548,7 +548,7 @@ public final class Splitter {
         }
 
         /**
-         * 
+         *
          * @param entryDelimiterRegex
          * @param keyValueDelimiterRegex
          * @return
@@ -574,7 +574,7 @@ public final class Splitter {
 
         /**
          * Removes the starting and ending white space characters if {@code strip} is true.
-         * 
+         *
          * @param strip
          * @return
          * @see Character#isWhitespace(char)

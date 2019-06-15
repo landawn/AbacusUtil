@@ -331,8 +331,8 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Stream<FloatStream> split(final int size) {
-        return splitToList(size).map(new Function<FloatList, FloatStream>() {
+    public Stream<FloatStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
                 return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);

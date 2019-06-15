@@ -1152,8 +1152,8 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Stream<IntStream> split(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<IntStream> split(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<IntStream>() {
             private int cursor = fromIndex;
@@ -1169,26 +1169,26 @@ class ArrayIntStream extends AbstractIntStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayIntStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
+                return new ArrayIntStream(elements, cursor, (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex), sorted, null);
             }
 
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }
 
     @Override
-    public Stream<IntList> splitToList(final int size) {
-        checkArgPositive(size, "size");
+    public Stream<IntList> splitToList(final int chunkSize) {
+        checkArgPositive(chunkSize, "chunkSize");
 
         return newStream(new ObjIteratorEx<IntList>() {
             private int cursor = fromIndex;
@@ -1204,19 +1204,19 @@ class ArrayIntStream extends AbstractIntStream {
                     throw new NoSuchElementException();
                 }
 
-                return new IntList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
+                return new IntList(N.copyOfRange(elements, cursor, (cursor = chunkSize < toIndex - cursor ? cursor + chunkSize : toIndex)));
             }
 
             @Override
             public long count() {
                 final long len = toIndex - cursor;
-                return len % size == 0 ? len / size : len / size + 1;
+                return len % chunkSize == 0 ? len / chunkSize : len / chunkSize + 1;
             }
 
             @Override
             public void skip(long n) {
                 final long len = toIndex - cursor;
-                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+                cursor = n <= len / chunkSize ? cursor + (int) n * chunkSize : toIndex;
             }
         }, false, null);
     }

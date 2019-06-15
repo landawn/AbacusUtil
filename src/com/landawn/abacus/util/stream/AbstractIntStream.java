@@ -329,8 +329,8 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Stream<IntStream> split(final int size) {
-        return splitToList(size).map(new Function<IntList, IntStream>() {
+    public Stream<IntStream> split(final int chunkSize) {
+        return splitToList(chunkSize).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
                 return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);

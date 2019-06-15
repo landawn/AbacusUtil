@@ -2136,7 +2136,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
         } else if (valueType.isEntity()) {
             final boolean ignoreUnknownProperty = valueColumnNames == _columnNameList;
-            final boolean isDirtyMarker = N.isDirtyMarker(rowClass);
+            final boolean isDirtyMarker = ClassUtil.isDirtyMarker(rowClass);
             Object value = null;
             String propName = null;
 
@@ -2231,7 +2231,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
         } else if (valueType.isEntity()) {
             final boolean ignoreUnknownProperty = valueColumnNames == _columnNameList;
-            final boolean isDirtyMarker = N.isDirtyMarker(rowClass);
+            final boolean isDirtyMarker = ClassUtil.isDirtyMarker(rowClass);
             Object value = null;
             String propName = null;
 
@@ -2369,7 +2369,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
         } else if (elementType.isEntity()) {
             final boolean ignoreUnknownProperty = valueColumnNames == _columnNameList;
-            final boolean isDirtyMarker = N.isDirtyMarker(rowClass);
+            final boolean isDirtyMarker = ClassUtil.isDirtyMarker(rowClass);
             Object value = null;
             String propName = null;
 
@@ -2465,7 +2465,7 @@ public class RowDataSet implements DataSet, Cloneable {
             }
         } else if (elementType.isEntity()) {
             final boolean ignoreUnknownProperty = valueColumnNames == _columnNameList;
-            final boolean isDirtyMarker = N.isDirtyMarker(rowClass);
+            final boolean isDirtyMarker = ClassUtil.isDirtyMarker(rowClass);
             Object value = null;
             String propName = null;
 

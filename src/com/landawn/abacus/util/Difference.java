@@ -558,7 +558,7 @@ public class Difference<L, R> {
          * @return
          */
         public static MapDifference<Map<String, Object>, Map<String, Object>, Map<String, Pair<Object, Object>>> of(Object entity1, Object entity2) {
-            if (N.isEntity(entity1.getClass()) == false || N.isEntity(entity2.getClass()) == false) {
+            if (ClassUtil.isEntity(entity1.getClass()) == false || ClassUtil.isEntity(entity2.getClass()) == false) {
                 throw new IllegalArgumentException(
                         entity1.getClass().getCanonicalName() + " or " + entity2.getClass().getCanonicalName() + " is not an entity class");
             }

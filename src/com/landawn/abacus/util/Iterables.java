@@ -44,6 +44,8 @@ import com.landawn.abacus.util.u.Holder;
 import com.landawn.abacus.util.u.Nullable;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalInt;
+import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1379,5 +1381,157 @@ public final class Iterables {
                 logger.info("### End to parse");
             }
         }
+    }
+
+    /**
+     * <pre>
+     * <code>
+     * final int[] a = Array.rangeClosed(1, 7);
+     * splitByCount(5, 7, true, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1], [2], [3], [4, 5], [6, 7]]
+     * splitByCount(5, 7, false, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1, 2], [3, 4], [5], [6], [7]]
+     * </code>
+     * </pre>
+     * 
+     * @param maxCount
+     * @param totalSize
+     * @param smallerFirst
+     * @param func
+     * @return
+     */
+    public static <T> Stream<T> splitByCount(final int maxCount, final int totalSize, final boolean smallerFirst, final IntBiFunction<T> func) {
+        if (smallerFirst) {
+            return Iterables.splitByCountSmallerFirst(maxCount, totalSize, func);
+        } else {
+            return Iterables.splitByCountSmallerLast(maxCount, totalSize, func);
+        }
+    }
+
+    /**
+     * <pre>
+     * <code>
+     * final int[] a = Array.rangeClosed(1, 7);
+     * splitByCountSmallerFirst(5, 7, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1], [2], [3], [4, 5], [6, 7]]
+     * splitByCountSmallerLast(5, 7, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1, 2], [3, 4], [5], [6], [7]]
+     * </code>
+     * </pre>
+     *
+     * @param maxCount
+     * @param totalSize
+     * @param func
+     * @return 
+     */
+    static <T> Stream<T> splitByCountSmallerFirst(final int maxCount, final int totalSize, final IntBiFunction<T> func) {
+        N.checkArgPositive(maxCount, "maxCount");
+        N.checkArgNotNegative(totalSize, "totalSize");
+        N.checkArgNotNull(func, "func");
+
+        if (totalSize == 0) {
+            return Stream.empty();
+        }
+
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
+            private final int smallerSize = Math.max(totalSize / maxCount, 1);
+            private final int biggerSize = totalSize % maxCount == 0 ? totalSize / maxCount : totalSize / maxCount + 1;
+            private int count = totalSize >= maxCount ? maxCount : totalSize;
+            private int biggerCount = totalSize % maxCount;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < totalSize;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= totalSize) {
+                    throw new NoSuchElementException();
+                }
+
+                return func.apply(cursor, cursor = (count-- > biggerCount ? cursor + smallerSize : cursor + biggerSize));
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n > 0) {
+                    while (n-- > 0 && cursor < totalSize) {
+                        cursor = count-- > biggerCount ? cursor + smallerSize : cursor + biggerSize;
+                    }
+                }
+            }
+
+            @Override
+            public long count() {
+                return count;
+            }
+        };
+
+        return Stream.of(iter);
+    }
+
+    /**
+     * <pre>
+     * <code>
+     * final int[] a = Array.rangeClosed(1, 7);
+     * splitByCountSmallerFirst(5, 7, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1], [2], [3], [4, 5], [6, 7]]
+     * splitByCountSmallerLast(5, 7, (fromIndex, toIndex) ->  N.copyOfRange(a, fromIndex, toIndex)).forEach(Fn.println()); // [[1, 2], [3, 4], [5], [6], [7]]
+     * </code>
+     * </pre>
+     *
+     * @param maxCount
+     * @param totalSize
+     * @param func
+     * @return
+     */
+    static <T> Stream<T> splitByCountSmallerLast(final int maxCount, final int totalSize, final IntBiFunction<T> func) {
+        N.checkArgPositive(maxCount, "maxCount");
+        N.checkArgNotNegative(totalSize, "totalSize");
+        N.checkArgNotNull(func, "func");
+
+        if (totalSize == 0) {
+            return Stream.empty();
+        }
+
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
+            private final int smallerSize = Math.max(totalSize / maxCount, 1);
+            private final int biggerSize = totalSize % maxCount == 0 ? totalSize / maxCount : totalSize / maxCount + 1;
+            private int count = totalSize >= maxCount ? maxCount : totalSize;
+            private int smallerCount = count - totalSize % maxCount;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < totalSize;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= totalSize) {
+                    throw new NoSuchElementException();
+                }
+
+                return func.apply(cursor, cursor = (count-- > smallerCount ? cursor + biggerSize : cursor + smallerSize));
+            }
+
+            @Override
+            public void skip(long n) {
+                N.checkArgNotNegative(n, "n");
+
+                if (n > 0) {
+                    while (n-- > 0 && cursor < totalSize) {
+                        cursor = count-- > smallerCount ? cursor + biggerSize : cursor + smallerSize;
+                    }
+                }
+            }
+
+            @Override
+            public long count() {
+                return count;
+            }
+
+        };
+
+        return Stream.of(iter);
     }
 }

@@ -237,7 +237,7 @@ public class WebServiceServlet extends AbstractHttpServlet {
 
                 parameterMethodMap.put(ClassUtil.getSimpleClassName(parameterClass), method);
 
-                if (N.isEntity(parameterClass)) {
+                if (ClassUtil.isEntity(parameterClass)) {
                     Object tempInstance = N.newInstance(parameterClass);
                     String st = xmlParser.serialize(tempInstance);
                     int index = st.indexOf('>');

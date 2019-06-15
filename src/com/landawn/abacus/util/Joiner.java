@@ -981,7 +981,7 @@ public class Joiner implements AutoCloseable {
             return appendEntries((Map) entity);
         }
 
-        N.checkArgument(N.isEntity(entity.getClass()), "'entity' must be entity class with getter/setter methods");
+        N.checkArgument(ClassUtil.isEntity(entity.getClass()), "'entity' must be entity class with getter/setter methods");
 
         StringBuilder sb = null;
         Object propValue = null;

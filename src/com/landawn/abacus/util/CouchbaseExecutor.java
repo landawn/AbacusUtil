@@ -387,7 +387,7 @@ public final class CouchbaseExecutor implements Closeable {
                 result.putAll(m);
                 return (T) result;
             }
-        } else if (N.isEntity(targetClass)) {
+        } else if (ClassUtil.isEntity(targetClass)) {
             final T entity = N.newInstance(targetClass);
             final List<String> columnNameList = new ArrayList<>(jsonObject.getNames());
             Method propSetMethod = null;
@@ -406,7 +406,7 @@ public final class CouchbaseExecutor implements Closeable {
 
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof JsonObject) {
-                        if (Map.class.isAssignableFrom(parameterType) || N.isEntity(parameterType)) {
+                        if (Map.class.isAssignableFrom(parameterType) || ClassUtil.isEntity(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (JsonObject) propValue));
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod, N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (JsonObject) propValue))));
@@ -425,7 +425,7 @@ public final class CouchbaseExecutor implements Closeable {
                 }
             }
 
-            if (N.isDirtyMarker(entity.getClass())) {
+            if (ClassUtil.isDirtyMarker(entity.getClass())) {
                 ((DirtyMarker) entity).markDirty(false);
             }
 
@@ -492,7 +492,7 @@ public final class CouchbaseExecutor implements Closeable {
 
         if (obj instanceof Map) {
             m = (Map<String, Object>) obj;
-        } else if (N.isEntity(obj.getClass())) {
+        } else if (ClassUtil.isEntity(obj.getClass())) {
             m = Maps.entity2Map(obj);
         } else if (obj instanceof Object[]) {
             m = N.asProps(obj);
@@ -604,7 +604,7 @@ public final class CouchbaseExecutor implements Closeable {
     static JsonDocument toJsonDocument(final Object obj, final JsonObject jsonObject) {
         final Class<?> cls = obj.getClass();
         final Method idSetMethod = getObjectIdSetMethod(obj.getClass());
-        final String idPropertyName = N.isEntity(cls) ? (idSetMethod == null ? null : ClassUtil.getPropNameByMethod(idSetMethod)) : _ID;
+        final String idPropertyName = ClassUtil.isEntity(cls) ? (idSetMethod == null ? null : ClassUtil.getPropNameByMethod(idSetMethod)) : _ID;
 
         String id = null;
 
@@ -1656,7 +1656,7 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     private static void checkTargetClass(final Class<?> targetClass) {
-        if (!(N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
+        if (!(ClassUtil.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
             throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
@@ -1737,7 +1737,7 @@ public final class CouchbaseExecutor implements Closeable {
         Object[] values = parameters;
 
         if (N.notNullOrEmpty(namedParameters) && parameters.length == 1
-                && (parameters[0] instanceof Map || parameters[0] instanceof JsonObject || N.isEntity(parameters[0].getClass()))) {
+                && (parameters[0] instanceof Map || parameters[0] instanceof JsonObject || ClassUtil.isEntity(parameters[0].getClass()))) {
             values = new Object[parameterCount];
 
             final Object parameter_0 = parameters[0];

@@ -1283,6 +1283,13 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
         return new ShortList(N.copyOfRange(elementData, from, to, step));
     }
 
+    /**
+     * Returns List of {@code ShortList} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param fromIndex
+     * @param toIndex
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     */
     @Override
     public List<ShortList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);

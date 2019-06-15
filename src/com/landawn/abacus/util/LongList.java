@@ -1282,11 +1282,18 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
         return new LongList(N.copyOfRange(elementData, from, to, step));
     }
 
+    /**
+     * Returns List of {@code LongList} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param fromIndex
+     * @param toIndex
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     */
     @Override
-    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<LongList> split(final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<long[]> list = N.split(elementData, fromIndex, toIndex, chunkSize);
         @SuppressWarnings("rawtypes")
         final List<LongList> result = (List) list;
 

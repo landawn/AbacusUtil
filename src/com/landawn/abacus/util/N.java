@@ -97,7 +97,6 @@ import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
 import com.landawn.abacus.parser.XMLDeserializationConfig.XDC;
 import com.landawn.abacus.parser.XMLSerializationConfig;
-import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Fn.Factory;
@@ -145,13 +144,7 @@ public final class N {
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
-    static final int POOL_SIZE;
-
-    static {
-        int multi = (int) (Runtime.getRuntime().maxMemory() / ((1024 * 1024) * 256));
-
-        POOL_SIZE = N.max(1000, N.min(1000 * multi, 8192));
-    }
+    private static final int POOL_SIZE = Internals.POOL_SIZE;
 
     // ...
     static final String ELEMENT_SEPARATOR = Type.ELEMENT_SEPARATOR;
@@ -418,11 +411,6 @@ public final class N {
 
     private static final Map<String, Type<?>> nameTypePool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Type<?>> clsTypePool = new ObjectPool<>(POOL_SIZE);
-
-    // ...
-    private static final Map<Class<?>, Boolean> entityClassPool = new ObjectPool<>(POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<>(POOL_SIZE);
-    private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
     static final Field listElementDataField;
@@ -1456,7 +1444,7 @@ public final class N {
                 for (String key : map.keySet()) {
                     mapEntity.set(key, map.get(key));
                 }
-            } else if (N.isEntity(props[0].getClass())) {
+            } else if (ClassUtil.isEntity(props[0].getClass())) {
                 Object anEntity = props[0];
                 if (anEntity instanceof DirtyMarker) {
                     Class<?> entityClass = anEntity.getClass();
@@ -2837,7 +2825,7 @@ public final class N {
         if (a.length == 1) {
             if (a[0] instanceof Map) {
                 m.putAll((Map<K, V>) a[0]);
-            } else if (N.isEntity(a[0].getClass())) {
+            } else if (ClassUtil.isEntity(a[0].getClass())) {
                 Maps.entity2Map((Map<String, Object>) m, a[0]);
             } else {
                 throw new IllegalArgumentException(
@@ -4046,37 +4034,28 @@ public final class N {
         return UUID.randomUUID().toString();
     }
 
+    /**
+     * 
+     * @param cls
+     * @return
+     * @deprecated replaced by {@code ClassUtil.isEntity(Class)}
+     * @see ClassUtil#isEntity(Class)
+     */
+    @Deprecated
     public static boolean isEntity(final Class<?> cls) {
-        Boolean b = entityClassPool.get(cls);
-
-        if (b == null) {
-            b = typeOf(cls) instanceof EntityType;
-            entityClassPool.put(cls, b);
-        }
-
-        return b;
+        return ClassUtil.isEntity(cls);
     }
 
+    /**
+     * 
+     * @param cls
+     * @return
+     * @deprecated replaced by {@code ClassUtil.isDirtyMarker(Class)}
+     * @see ClassUtil#isDirtyMarker(Class)
+     */
+    @Deprecated
     public static boolean isDirtyMarker(final Class<?> cls) {
-        Boolean b = dirtyMarkerClassPool.get(cls);
-
-        if (b == null) {
-            b = DirtyMarker.class.isAssignableFrom(cls);
-            dirtyMarkerClassPool.put(cls, b);
-        }
-
-        return b;
-    }
-
-    static boolean isDirtyMarkerEntity(final Class<?> cls) {
-        Boolean b = dirtyMarkerEntityClassPool.get(cls);
-
-        if (b == null) {
-            b = isDirtyMarker(cls) && N.isEntity(cls);
-            dirtyMarkerEntityClassPool.put(cls, b);
-        }
-
-        return b;
+        return ClassUtil.isDirtyMarker(cls);
     }
 
     private static final Set<Class<?>> notKryoCompatible = new HashSet<>();
@@ -9819,7 +9798,7 @@ public final class N {
     public static void fill(Object entity) {
         final Class<?> entityClass = entity.getClass();
 
-        if (N.isEntity(entityClass) == false) {
+        if (ClassUtil.isEntity(entityClass) == false) {
             throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
@@ -9853,7 +9832,7 @@ public final class N {
                 propValue = type.valueOf(String.valueOf(RAND.nextInt()));
             } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
                 propValue = type.valueOf(String.valueOf(System.currentTimeMillis()));
-            } else if (N.isEntity(parameterClass)) {
+            } else if (ClassUtil.isEntity(parameterClass)) {
                 propValue = fill(parameterClass);
             } else {
                 propValue = type.defaultValue();
@@ -9870,7 +9849,7 @@ public final class N {
      * @return
      */
     public static <T> T fill(Class<T> entityClass) {
-        if (N.isEntity(entityClass) == false) {
+        if (ClassUtil.isEntity(entityClass) == false) {
             throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
@@ -9889,7 +9868,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> fill(Class<T> entityClass, int count) {
-        if (N.isEntity(entityClass) == false) {
+        if (ClassUtil.isEntity(entityClass) == false) {
             throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
         }
 
@@ -12118,23 +12097,23 @@ public final class N {
     public static void bucketSort(final char[] a) {
         M.bucketSort(a);
     }
-
+    
     public static void bucketSort(final char[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
-
+    
     public static void bucketSort(final byte[] a) {
         M.bucketSort(a);
     }
-
+    
     public static void bucketSort(final byte[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
-
+    
     public static void bucketSort(final short[] a) {
         M.bucketSort(a);
     }
-
+    
     public static void bucketSort(final short[] a, final int fromIndex, final int toIndex) {
         M.bucketSort(a, fromIndex, toIndex);
     }
@@ -18340,586 +18319,536 @@ public final class N {
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<boolean[]> split(final boolean[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<boolean[]> split(final boolean[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<char[]> split(final char[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<char[]> split(final char[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<byte[]> split(final byte[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<byte[]> split(final byte[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<short[]> split(final short[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<short[]> split(final short[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<int[]> split(final int[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<int[]> split(final int[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<long[]> split(final long[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<long[]> split(final long[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<float[]> split(final float[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<float[]> split(final float[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<double[]> split(final double[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<double[]> split(final double[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static <T> List<T[]> split(final T[] a, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static <T> List<T[]> split(final T[] a, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = a.length;
-        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = 0, toIndex = a.length; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub arrays of an array, each of the same size (the final list may be smaller),
+     * Returns consecutive sub arrays of an array, each of the same chunkSize (the final list may be smaller),
      * or an empty List if the specified array is null or empty.
      *
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub array (the last may be smaller).
      * @return
      */
-    public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
+    public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, len(a));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(copyOfRange(a, from, from <= toIndex - chunkSize ? from + chunkSize : toIndex));
         }
 
         return res;
     }
 
     /**
-     * Returns consecutive sub lists of a collection, each of the same size (the final list may be smaller).
+     * Returns consecutive sub lists of a collection, each of the same chunkSize (the final list may be smaller).
      * or an empty List if the specified collection is null or empty. The order of elements in the original collection is kept
      *
      * @param c
-     * @param size
+     * @param chunkSize the desired size of each sub list (the last may be smaller).
      * @return
      */
-    public static <T> List<List<T>> split(final Collection<? extends T> c, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return split(c, 0, c.size(), size);
+        return split(c, 0, c.size(), chunkSize);
     }
 
     /**
-     * Returns consecutive sub lists of a collection, each of the same size (the final list may be smaller).
+     * Returns consecutive sub lists of a collection, each of the same chunkSize (the final list may be smaller).
      * or an empty List if the specified collection is null or empty. The order of elements in the original collection is kept
      *
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param size
+     * @param chunkSize the desired size of each sub list (the last may be smaller).
      * @return
      */
-    public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex, size(c));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<List<T>> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<List<T>> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
         if (c instanceof List) {
             final List<T> list = (List<T>) c;
 
-            for (int i = fromIndex; i < toIndex; i += size) {
-                res.add(new ArrayList<>(list.subList(i, i <= toIndex - size ? i + size : toIndex)));
+            for (int i = fromIndex; i < toIndex; i += chunkSize) {
+                res.add(new ArrayList<>(list.subList(i, i <= toIndex - chunkSize ? i + chunkSize : toIndex)));
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
 
-            for (int i = 0; i < toIndex; i += size) {
+            for (int i = 0; i < toIndex; i += chunkSize) {
                 if (i < fromIndex) {
                     iter.next();
                     i++;
                     continue;
                 }
 
-                final List<T> subList = new ArrayList<>(N.min(size, toIndex - i));
+                final List<T> subList = new ArrayList<>(N.min(chunkSize, toIndex - i));
 
-                for (int j = i, to = i <= toIndex - size ? i + size : toIndex; j < to; j++) {
+                for (int j = i, to = i <= toIndex - chunkSize ? i + chunkSize : toIndex; j < to; j++) {
                     subList.add(iter.next());
                 }
 
@@ -18935,37 +18864,42 @@ public final class N {
      * or an empty array if the specified string is null or empty.
      *
      * @param str
-     * @param size
+     * @param chunkSize the desired size of each sub String (the last may be smaller).
      * @return
      */
-    public static List<String> split(final CharSequence str, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+    public static List<String> split(final CharSequence str, final int chunkSize) {
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(str)) {
             return new ArrayList<>();
         }
 
-        return split(str, 0, str.length(), size);
+        return split(str, 0, str.length(), chunkSize);
     }
 
-    public static List<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
+    /**
+     * Returns consecutive substring of the specified string, each of the same length (the final list may be smaller),
+     * or an empty array if the specified string is null or empty.
+     * 
+     * @param str
+     * @param fromIndex
+     * @param toIndex
+     * @param chunkSize the desired size of each sub String (the last may be smaller).
+     * @return
+     */
+    public static List<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int chunkSize) {
         N.checkFromToIndex(fromIndex, toIndex, len(str));
-
-        if (size < 1) {
-            throw new IllegalArgumentException("The parameter 'size' can not be zero or less than zero");
-        }
+        N.checkArgPositive(chunkSize, "chunkSize");
 
         if (N.isNullOrEmpty(str)) {
             return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<String> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<String> res = new ArrayList<>(len % chunkSize == 0 ? len / chunkSize : (len / chunkSize) + 1);
 
-        for (int from = fromIndex; from < toIndex; from += size) {
-            res.add(str.subSequence(from, from <= toIndex - size ? from + size : toIndex).toString());
+        for (int from = fromIndex; from < toIndex; from += chunkSize) {
+            res.add(str.subSequence(from, from <= toIndex - chunkSize ? from + chunkSize : toIndex).toString());
         }
 
         return res;
@@ -28070,7 +28004,6 @@ public final class N {
 
         return false;
     }
-
 
     public static void sleep(final long timeoutInMillis) {
         if (timeoutInMillis <= 0) {

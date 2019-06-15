@@ -124,7 +124,7 @@ public final class SQLiteExecutor {
      * @param readOnlyPropNames
      */
     public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
-        N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkArgument(ClassUtil.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
         N.checkArgNotNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
@@ -149,7 +149,7 @@ public final class SQLiteExecutor {
      * @param writeOnlyPropNames
      */
     public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
-        N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkArgument(ClassUtil.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
         N.checkArgNotNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
@@ -280,7 +280,7 @@ public final class SQLiteExecutor {
      * @return
      */
     static <T> List<T> toList(Class<T> targetClass, Cursor cursor, int offset, int count) {
-        if (N.isEntity(targetClass)) {
+        if (ClassUtil.isEntity(targetClass)) {
             final DataSet ds = extractData(targetClass, cursor, offset, count);
 
             if (ds == null || ds.isEmpty()) {
@@ -326,7 +326,7 @@ public final class SQLiteExecutor {
 
         final List<T> resultList = new ArrayList<>();
 
-        if (N.isEntity(targetClass)) {
+        if (ClassUtil.isEntity(targetClass)) {
             final Method propSetMethod = ClassUtil.getPropSetMethod(targetClass, cursor.getColumnName(columnIndex));
             final Type<T> selectColumnType = Type.valueOf(propSetMethod.getParameterTypes()[0]);
 
@@ -383,7 +383,7 @@ public final class SQLiteExecutor {
      */
     @SuppressWarnings("deprecation")
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
-        if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
+        if (!(ClassUtil.isEntity(targetClass) || targetClass.equals(Map.class))) {
             throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
@@ -461,7 +461,7 @@ public final class SQLiteExecutor {
 
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof ContentValues) {
-                        if (Map.class.isAssignableFrom(parameterType) || N.isEntity(parameterType)) {
+                        if (Map.class.isAssignableFrom(parameterType) || ClassUtil.isEntity(parameterType)) {
                             ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, namingPolicy));
                         } else {
                             ClassUtil.setPropValue(entity, propSetMethod,
@@ -617,7 +617,7 @@ public final class SQLiteExecutor {
                     throw new IllegalArgumentException("Unsupported NamingPolicy: " + namingPolicy);
             }
 
-        } else if (N.isEntity(obj.getClass())) {
+        } else if (ClassUtil.isEntity(obj.getClass())) {
             if (obj instanceof DirtyMarker) {
                 final Class<?> srCls = obj.getClass();
                 final Set<String> updatePropNames = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
@@ -792,7 +792,7 @@ public final class SQLiteExecutor {
      * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity) {
-        if (!N.isEntity(entity.getClass())) {
+        if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
@@ -812,7 +812,7 @@ public final class SQLiteExecutor {
      * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity, int conflictAlgorithm) {
-        if (!N.isEntity(entity.getClass())) {
+        if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
@@ -1027,7 +1027,7 @@ public final class SQLiteExecutor {
      * @return
      */
     public int update(Object entity) {
-        if (!N.isEntity(entity.getClass())) {
+        if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
@@ -1054,7 +1054,7 @@ public final class SQLiteExecutor {
      * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public int update(Object entity, Condition whereClause) {
-        if (!N.isEntity(entity.getClass())) {
+        if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
@@ -1108,7 +1108,7 @@ public final class SQLiteExecutor {
      * @return
      */
     public int delete(Object entity) {
-        if (!N.isEntity(entity.getClass())) {
+        if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
@@ -2119,7 +2119,7 @@ public final class SQLiteExecutor {
         final List<String> namedParameters = namedSQL.getNamedParameters();
         Object[] result = parameters;
 
-        if (N.notNullOrEmpty(namedParameters) && parameters.length == 1 && (parameters[0] instanceof Map || N.isEntity(parameters[0].getClass()))) {
+        if (N.notNullOrEmpty(namedParameters) && parameters.length == 1 && (parameters[0] instanceof Map || ClassUtil.isEntity(parameters[0].getClass()))) {
             result = new Object[parameterCount];
             Object parameter_0 = parameters[0];
 
@@ -2273,7 +2273,7 @@ public final class SQLiteExecutor {
     }
 
     private static boolean isDirtyMarkerEntity(final Class<?> cls) {
-        return DirtyMarker.class.isAssignableFrom(cls) && N.isEntity(cls);
+        return DirtyMarker.class.isAssignableFrom(cls) && ClassUtil.isEntity(cls);
     }
 
     private static class Command {

@@ -1,3 +1,8 @@
+### 1.7.7
+
+* Improvements and bug fix.
+
+
 ### 1.7.6
 
 * Support `JsonXmlField`.

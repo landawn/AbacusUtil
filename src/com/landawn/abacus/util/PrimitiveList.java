@@ -169,20 +169,21 @@ public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> impl
      * Returns consecutive sub lists of this list, each of the same size (the final list may be smaller),
      * or an empty List if the specified list is null or empty.
      *
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @return
      */
-    public List<L> split(int size) {
-        return split(0, size(), size);
+    public List<L> split(int chunkSize) {
+        return split(0, size(), chunkSize);
     }
 
     /**
-     * 
+     * Returns List of {@code PrimitiveList 'L'} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
      * @param fromIndex
      * @param toIndex
-     * @param size
-     * @return
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      */
-    public abstract List<L> split(final int fromIndex, final int toIndex, int size);
+    public abstract List<L> split(final int fromIndex, final int toIndex, int chunkSize);
 
     //    public List<L> split(P predicate) {
     //        return split(0, size(), predicate);

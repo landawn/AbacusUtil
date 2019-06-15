@@ -1265,11 +1265,18 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
         return new DoubleList(N.copyOfRange(elementData, from, to, step));
     }
 
+    /**
+     * Returns List of {@code DoubleList} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
+     *  
+     * @param fromIndex
+     * @param toIndex
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     */
     @Override
-    public List<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<DoubleList> split(final int fromIndex, final int toIndex, final int chunkSize) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<double[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<double[]> list = N.split(elementData, fromIndex, toIndex, chunkSize);
         @SuppressWarnings("rawtypes")
         final List<DoubleList> result = (List) list;
 

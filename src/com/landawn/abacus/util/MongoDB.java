@@ -334,7 +334,7 @@ public final class MongoDB {
                 map.putAll(doc);
                 return (T) map;
             }
-        } else if (N.isEntity(targetClass)) {
+        } else if (ClassUtil.isEntity(targetClass)) {
             final Method idSetMethod = getObjectIdSetMethod(targetClass);
             final Class<?> parameterType = idSetMethod == null ? null : idSetMethod.getParameterTypes()[0];
             final Object objectId = doc.get(_ID);
@@ -358,7 +358,7 @@ public final class MongoDB {
                 doc.put(_ID, objectId);
             }
 
-            if (N.isDirtyMarker(entity.getClass())) {
+            if (ClassUtil.isDirtyMarker(entity.getClass())) {
                 ((DirtyMarker) entity).markDirty(false);
             }
 
@@ -501,7 +501,7 @@ public final class MongoDB {
 
         if (obj instanceof Map) {
             result.putAll((Map<String, Object>) obj);
-        } else if (N.isEntity(obj.getClass())) {
+        } else if (ClassUtil.isEntity(obj.getClass())) {
             if (obj instanceof DirtyMarker) {
                 final Class<?> srCls = obj.getClass();
                 final Set<String> updatePropNames = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
@@ -570,7 +570,7 @@ public final class MongoDB {
 
         if (obj instanceof Map) {
             result.putAll((Map<String, Object>) obj);
-        } else if (N.isEntity(obj.getClass())) {
+        } else if (ClassUtil.isEntity(obj.getClass())) {
             Maps.deepEntity2Map(result, obj);
         } else if (obj instanceof Object[]) {
             final Object[] a = (Object[]) obj;
@@ -611,7 +611,7 @@ public final class MongoDB {
 
         if (obj instanceof Map) {
             result.putAll((Map<String, Object>) obj);
-        } else if (N.isEntity(obj.getClass())) {
+        } else if (ClassUtil.isEntity(obj.getClass())) {
             Maps.deepEntity2Map(result, obj);
         } else if (obj instanceof Object[]) {
             final Object[] a = (Object[]) obj;
@@ -645,7 +645,7 @@ public final class MongoDB {
     private static void resetObjectId(final Object obj, final Map<String, Object> doc) {
         final Class<?> cls = obj.getClass();
         final Method idSetMethod = getObjectIdSetMethod(obj.getClass());
-        final String idPropertyName = N.isEntity(cls) ? (idSetMethod == null ? null : ClassUtil.getPropNameByMethod(idSetMethod)) : _ID;
+        final String idPropertyName = ClassUtil.isEntity(cls) ? (idSetMethod == null ? null : ClassUtil.getPropNameByMethod(idSetMethod)) : _ID;
 
         if (idPropertyName != null && doc.containsKey(idPropertyName)) {
             Object id = doc.remove(idPropertyName);
@@ -665,7 +665,7 @@ public final class MongoDB {
     }
 
     private static <T> void checkTargetClass(final Class<T> targetClass) {
-        if (!(N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
+        if (!(ClassUtil.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass))) {
             throw new IllegalArgumentException("The target class must be an entity class with getter/setter methods or Map.class/Document.class. But it is: "
                     + ClassUtil.getCanonicalClassName(targetClass));
         }
@@ -695,7 +695,7 @@ public final class MongoDB {
 
         public GeneralCodec(final Class<T> cls) {
             this.cls = cls;
-            isEntityClass = N.isEntity(cls);
+            isEntityClass = ClassUtil.isEntity(cls);
         }
 
         @Override

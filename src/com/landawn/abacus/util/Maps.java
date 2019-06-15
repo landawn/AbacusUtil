@@ -916,7 +916,7 @@ public final class Maps {
             } else {
                 paramClass = propSetMethod.getParameterTypes()[0];
 
-                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
+                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && ClassUtil.isEntity(paramClass)) {
                     ClassUtil.setPropValue(entity, propSetMethod,
                             map2Entity(paramClass, (Map<String, Object>) propValue, ignoreNullProperty, ignoreUnknownProperty));
                 } else {
@@ -951,7 +951,7 @@ public final class Maps {
             } else {
                 paramClass = propSetMethod.getParameterTypes()[0];
 
-                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
+                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && ClassUtil.isEntity(paramClass)) {
                     ClassUtil.setPropValue(entity, propSetMethod, map2Entity(paramClass, (Map<String, Object>) propValue));
                 } else {
                     ClassUtil.setPropValue(entity, propSetMethod, propValue);
@@ -992,7 +992,7 @@ public final class Maps {
     }
 
     private static <T> void checkEntityClass(final Class<T> cls) {
-        if (!N.isEntity(cls)) {
+        if (!ClassUtil.isEntity(cls)) {
             throw new IllegalArgumentException("No property getter/setter method is found in the specified class: " + ClassUtil.getCanonicalClassName(cls));
         }
     }
@@ -1377,7 +1377,7 @@ public final class Maps {
                             continue;
                         }
 
-                        if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                        if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                             resultMap.put(propName, propValue);
                         } else {
                             resultMap.put(propName, deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
@@ -1405,7 +1405,7 @@ public final class Maps {
                             continue;
                         }
 
-                        if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                        if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                             resultMap.put(ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                         } else {
                             resultMap.put(ClassUtil.toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
@@ -1433,7 +1433,7 @@ public final class Maps {
                             continue;
                         }
 
-                        if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                        if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                             resultMap.put(ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                         } else {
                             resultMap.put(ClassUtil.toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
@@ -1625,7 +1625,7 @@ public final class Maps {
                                     continue;
                                 }
 
-                                if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                                if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
@@ -1659,7 +1659,7 @@ public final class Maps {
                                     continue;
                                 }
 
-                                if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                                if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
@@ -1693,7 +1693,7 @@ public final class Maps {
                                     continue;
                                 }
 
-                                if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                                if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                     if (isNullParentPropName) {
                                         resultMap.put(propName, propValue);
                                     } else {
@@ -1740,7 +1740,7 @@ public final class Maps {
                                 continue;
                             }
 
-                            if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                            if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {
@@ -1773,7 +1773,7 @@ public final class Maps {
                                 continue;
                             }
 
-                            if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                            if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {
@@ -1806,7 +1806,7 @@ public final class Maps {
                                 continue;
                             }
 
-                            if ((propValue == null) || !N.isEntity(propValue.getClass())) {
+                            if ((propValue == null) || !ClassUtil.isEntity(propValue.getClass())) {
                                 if (isNullParentPropName) {
                                     resultMap.put(propName, propValue);
                                 } else {

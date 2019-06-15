@@ -1615,8 +1615,14 @@ public final class Iterators {
         return TriIterator.unzip(iter, unzip);
     }
 
-    public static <T> ObjIterator<List<T>> split(final Iterator<? extends T> iter, final int size) {
-        N.checkArgument(size > 0, "'size' must be greater than 0, can't be: %s", size);
+    /**
+     * 
+     * @param iter
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
+     * @return
+     */
+    public static <T> ObjIterator<List<T>> split(final Iterator<? extends T> iter, final int chunkSize) {
+        N.checkArgument(chunkSize > 0, "'chunkSize' must be greater than 0, can't be: %s", chunkSize);
 
         if (iter == null) {
             return ObjIterator.empty();
@@ -1636,9 +1642,9 @@ public final class Iterators {
                     throw new NoSuchElementException();
                 }
 
-                final List<T> next = new ArrayList<>(size);
+                final List<T> next = new ArrayList<>(chunkSize);
 
-                for (int i = 0; i < size && iterator.hasNext(); i++) {
+                for (int i = 0; i < chunkSize && iterator.hasNext(); i++) {
                     next.add(iterator.next());
                 }
 

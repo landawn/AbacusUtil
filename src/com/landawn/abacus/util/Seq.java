@@ -1838,10 +1838,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * Returns consecutive sub lists of this list, each of the same size (the final list may be smaller),
      * or an empty List if the specified list is null or empty.
      *
+     * @param chunkSize the desired size of each sub sequence (the last may be smaller).
      * @return
      */
-    public List<List<T>> split(int size) {
-        return N.split(coll, size);
+    public List<List<T>> split(int chunkSize) {
+        return N.split(coll, chunkSize);
     }
 
     public <U, E extends Exception> List<List<T>> split(final Try.Predicate<? super T, E> predicate) throws E {
