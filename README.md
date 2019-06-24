@@ -251,7 +251,7 @@ compile 'com.landawn:abacus-android-se:1.7.7'
 
 
 ## User Guide:
-Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki), [Introduction to JDBC](https://www.javacodegeeks.com/2015/02/jdbc-tutorial.html).
+Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki), [Introduction to JDBC](https://www.javacodegeeks.com/2015/02/jdbc-tutorial.html), [Programming in JDBC/DB with JdbcUtil/PreparedQuery/SQLExecutor/Dao/Mapper](https://github.com/landawn/AbacusUtil/wiki/Programming-in-RDBMS-with-Jdbc,-Dao,-PreparedQuery-and-SQLExecutor-Mapper).
 
 
 ## Recommended Java programming libraries/frameworks:

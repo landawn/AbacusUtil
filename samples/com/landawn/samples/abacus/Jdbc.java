@@ -144,7 +144,6 @@ public class Jdbc extends TestCase {
         // On average, if 20 (select/insert/update/delete) queries/methods created for each table, 
         // On average, each query/method requires 20 lines codes. 20 tables * 20 queries/table * 20 lines/query = 8000 lines.
         // A lot of efforts will be paid to write the codes and maintain (add/update/delete/rename/... tables/columns).
-        // And think about what will happen when these 8000 lines of code are mixed with other tens/hundreds of lines of code with business logic integrated.
     }
 
     // A bit(lot?) improvements:
