@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -40,8 +41,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.sql.DataSource;
+
 import com.landawn.abacus.DataSet;
-import com.landawn.abacus.DataSource;
 import com.landawn.abacus.DataSourceManager;
 import com.landawn.abacus.DataSourceSelector;
 import com.landawn.abacus.DirtyMarker;
@@ -62,6 +64,7 @@ import com.landawn.abacus.util.Fn.FN;
 import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.JdbcUtil.BiRowMapper;
 import com.landawn.abacus.util.JdbcUtil.PreparedQuery;
+import com.landawn.abacus.util.JdbcUtil.RowMapper;
 import com.landawn.abacus.util.SQLBuilder.NAC;
 import com.landawn.abacus.util.SQLBuilder.NLC;
 import com.landawn.abacus.util.SQLBuilder.NSC;
@@ -101,35 +104,35 @@ import com.landawn.abacus.util.stream.Stream;
  * <br />========================================================================
  * <pre>
  * <code>
-        static final DataSource dataSource = JdbcUtil.createDataSource(...);
-        static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
-        ...
-        Account account = createAccount();
-
-        // create
-        String sql_insert = NE.insert(GUI, FIRST_NAME, LAST_NAME, LAST_UPDATE_TIME, CREATE_TIME).into(Account.class).sql();
-        N.println(sql_insert);
-        sqlExecutor.insert(sql_insert, account);
-
-        // read
-        String sql_selectByGUI = NE.selectFrom(Account.class, N.asSet(DEVICES)).where(L.eq(GUI, L.QME)).sql();
-        N.println(sql_selectByGUI);
-        Account dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
-        assertEquals(account.getFirstName(), dbAccount.getFirstName());
-
-        // update
-        String sql_updateByLastName = NE.update(Account.class).set(FIRST_NAME).where(L.eq(LAST_NAME, L.QME)).sql();
-        N.println(sql_updateByLastName);
-        dbAccount.setFirstName("newFirstName");
-        sqlExecutor.update(sql_updateByLastName, dbAccount);
-
-        // delete
-        String sql_deleteByFirstName = NE.deleteFrom(Account.class).where(L.eq(FIRST_NAME, L.QME)).sql();
-        N.println(sql_deleteByFirstName);
-        sqlExecutor.update(sql_deleteByFirstName, dbAccount);
-
-        dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
-        assertNull(dbAccount);
+ * static final DataSource dataSource = JdbcUtil.createDataSource(...);
+ * static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
+ * ...
+ * Account account = createAccount();
+ * 
+ * // create
+ * String sql_insert = NE.insert(GUI, FIRST_NAME, LAST_NAME, LAST_UPDATE_TIME, CREATE_TIME).into(Account.class).sql();
+ * N.println(sql_insert);
+ * sqlExecutor.insert(sql_insert, account);
+ * 
+ * // read
+ * String sql_selectByGUI = NE.selectFrom(Account.class, N.asSet(DEVICES)).where(L.eq(GUI, L.QME)).sql();
+ * N.println(sql_selectByGUI);
+ * Account dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
+ * assertEquals(account.getFirstName(), dbAccount.getFirstName());
+ * 
+ * // update
+ * String sql_updateByLastName = NE.update(Account.class).set(FIRST_NAME).where(L.eq(LAST_NAME, L.QME)).sql();
+ * N.println(sql_updateByLastName);
+ * dbAccount.setFirstName("newFirstName");
+ * sqlExecutor.update(sql_updateByLastName, dbAccount);
+ * 
+ * // delete
+ * String sql_deleteByFirstName = NE.deleteFrom(Account.class).where(L.eq(FIRST_NAME, L.QME)).sql();
+ * N.println(sql_deleteByFirstName);
+ * sqlExecutor.update(sql_deleteByFirstName, dbAccount);
+ * 
+ * dbAccount = sqlExecutor.findFirst(Account.class, sql_selectByGUI, account);
+ * assertNull(dbAccount);
  * </code>
  * </pre>
  * ========================================================================
@@ -144,22 +147,18 @@ import com.landawn.abacus.util.stream.Stream;
  * if Transaction is required. it can be started:
  * <pre>
  * <code>
- *      final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
-        boolean noException = false;
-        try {
-            // sqlExecutor.insert(...);
-            // sqlExecutor.update(...);
-            // sqlExecutor.query(...);
-
-            noException = true;
-        } finally {
-            // The connection will be automatically closed after the transaction is committed or rolled back.            
-            if (noException) {
-                tran.commit();
-            } else {
-                tran.rollback();
-            }
-        }
+ * final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
+ * 
+ * try {
+ *     // sqlExecutor.insert(...);
+ *     // sqlExecutor.update(...);
+ *     // sqlExecutor.query(...);
+ * 
+ *     tran.commit();
+ * } finally {
+ *     // The connection will be automatically closed after the transaction is committed or rolled back.            
+ *     tran.rollbackIfNotCommitted();
+ * }
  * </code>
  * </pre>
  * 
@@ -385,6 +384,20 @@ public class SQLExecutor implements Closeable {
         }
     };
 
+    private static final JdbcUtil.RowMapper<Object> DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR = new JdbcUtil.RowMapper<Object>() {
+        @Override
+        public Object apply(final ResultSet rs) throws SQLException {
+            return JdbcUtil.getColumnValue(rs, 1);
+        }
+    };
+
+    private static final JdbcUtil.BiRowMapper<Object> DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR_2 = new JdbcUtil.BiRowMapper<Object>() {
+        @Override
+        public Object apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
+            return JdbcUtil.getColumnValue(rs, 1);
+        }
+    };
+
     private static final ResultExtractor<ResultSet> RESULT_SET_EXTRACTOR = new ResultExtractor<ResultSet>() {
         @Override
         public ResultSet extractData(ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
@@ -421,7 +434,7 @@ public class SQLExecutor implements Closeable {
      * @see JdbcUtil#createDataSource(String)
      * @see JdbcUtil#createDataSource(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource) {
+    public SQLExecutor(final DataSource dataSource) {
         this(dataSource, null);
     }
 
@@ -432,7 +445,7 @@ public class SQLExecutor implements Closeable {
      * @see JdbcUtil#createDataSource(String)
      * @see JdbcUtil#createDataSource(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings) {
+    public SQLExecutor(final DataSource dataSource, final JdbcSettings jdbcSettings) {
         this(dataSource, jdbcSettings, null);
     }
 
@@ -444,7 +457,7 @@ public class SQLExecutor implements Closeable {
      * @see JdbcUtil#createDataSource(String)
      * @see JdbcUtil#createDataSource(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper) {
+    public SQLExecutor(final DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper) {
         this(dataSource, jdbcSettings, sqlMapper, null);
     }
 
@@ -457,7 +470,7 @@ public class SQLExecutor implements Closeable {
      * @see JdbcUtil#createDataSourceManager(String)
      * @see JdbcUtil#createDataSourceManager(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy) {
+    public SQLExecutor(final DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy) {
         this(dataSource, jdbcSettings, sqlMapper, namingPolicy, null);
     }
 
@@ -470,9 +483,9 @@ public class SQLExecutor implements Closeable {
      * @see JdbcUtil#createDataSource(String)
      * @see JdbcUtil#createDataSource(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy,
+    public SQLExecutor(final DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy,
             final AsyncExecutor asyncExecutor) {
-        this(null, JdbcUtil.wrap(dataSource), jdbcSettings, sqlMapper, namingPolicy, asyncExecutor, false);
+        this(null, dataSource, jdbcSettings, sqlMapper, namingPolicy, asyncExecutor, false);
     }
 
     /**
@@ -572,7 +585,7 @@ public class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
-            closeQuietly(conn);
+            closeConnection(conn);
         }
 
         final IsolationLevel tmp = this._ds instanceof SQLDataSource ? ((SQLDataSource) this._ds).getDefaultIsolationLevel() : IsolationLevel.DEFAULT;
@@ -610,7 +623,7 @@ public class SQLExecutor implements Closeable {
     //        return new SQLExecutor(JdbcUtil.createDataSource(props));
     //    }
     //
-    //    public static SQLExecutor create(final javax.sql.DataSource sqlDataSource) {
+    //    public static SQLExecutor create(final DataSource sqlDataSource) {
     //        return new SQLExecutor(JdbcUtil.wrap(sqlDataSource));
     //    }
 
@@ -638,7 +651,8 @@ public class SQLExecutor implements Closeable {
         Mapper<T> mapper = (Mapper<T>) mapperPool.get(targetClass);
 
         if (mapper == null) {
-            N.checkArgument(ClassUtil.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(ClassUtil.isEntity(targetClass),
+                    ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
             SQLBuilder.registerEntityPropColumnNameMap(targetClass);
 
@@ -649,38 +663,9 @@ public class SQLExecutor implements Closeable {
         return mapper;
     }
 
-    //    /**
-    //     * Create a <code>Mapper</code> which has the same life cycle as the specified <code>Connection</code>.
-    //     * To start transaction for a <code>Mapper</code>:
-    //     * <pre>
-    //     * <code>
-    //     * final Transaction tran = sqlExecutor.beginTransaction(isolationLevel);
-    //     * final ExMapper mapper = sqlExecutor.mapper(targetClass, tran.connection());
-    //     * boolean isOk = false;
-    //     * try {
-    //     *     // Do something with sqlExecutor and mapper
-    //     *     isOk = true;
-    //     * } finally {
-    //     *     if (isOk) {
-    //     *         tran.commit();
-    //     *     } else {
-    //     *          tran.rollback();
-    //     *     }  
-    //     * }
-    //     * 
-    //     * </code>
-    //     * </pre>
-    //     * @param targetClass
-    //     * @param conn
-    //     * @return
-    //     */
-    //    public <T> ExMapper<T> mapper(final Class<T> targetClass, final Connection conn) {
-    //        if (conn == null) {
-    //            return mapper(targetClass);
-    //        }
-    //
-    //        return new ExMapper<T>(conn, targetClass, this, this._namingPolicy);
-    //    }
+    public <T extends JdbcUtil.Dao> T createDao(final Class<T> daoInterface) {
+        return JdbcUtil.Dao.newInstance(daoInterface, _ds);
+    }
 
     public AsyncSQLExecutor async() {
         return _asyncSQLExecutor;
@@ -724,7 +709,13 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <ID> ID insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters)
             throws UncheckedSQLException {
-        return insert(null, sql, statementSetter, jdbcSettings, parameters);
+        return insert(sql, statementSetter, (JdbcUtil.RowMapper<ID>) DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR, jdbcSettings, parameters);
+    }
+
+    @SafeVarargs
+    public final <ID> ID insert(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<ID> autoGeneratedKeyExtractor,
+            final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
+        return insert(null, sql, statementSetter, autoGeneratedKeyExtractor, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -743,13 +734,19 @@ public class SQLExecutor implements Closeable {
         return insert(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
     }
 
+    @SafeVarargs
+    public final <ID> ID insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters)
+            throws UncheckedSQLException {
+        return insert(conn, sql, statementSetter, (JdbcUtil.RowMapper<ID>) DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR, jdbcSettings, parameters);
+    }
+
     /**
      * @see #batchInsert(Connection, String, StatementSetter, JdbcSettings, String, Object[])
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     @SafeVarargs
-    public final <ID> ID insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters)
-            throws UncheckedSQLException {
+    public final <ID> ID insert(final Connection conn, final String sql, StatementSetter statementSetter,
+            final JdbcUtil.RowMapper<ID> autoGeneratedKeyExtractor, JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -767,13 +764,13 @@ public class SQLExecutor implements Closeable {
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, true, false, parameters);
 
-            result = executeInsert(namedSQL, stmt);
+            result = executeInsert(namedSQL, stmt, autoGeneratedKeyExtractor);
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt);
-            closeQuietly(localConn, conn, ds);
+            close(stmt);
+            close(localConn, conn, ds);
         }
 
         if ((result != null) && isEntityOrMapParameter(namedSQL, parameters)) {
@@ -820,26 +817,24 @@ public class SQLExecutor implements Closeable {
         return (ID) result;
     }
 
-    protected Object executeInsert(final NamedSQL namedSQL, final PreparedStatement stmt) throws SQLException {
+    protected <ID> ID executeInsert(final NamedSQL namedSQL, final PreparedStatement stmt, final JdbcUtil.RowMapper<ID> autoGeneratedKeyExtractor)
+            throws SQLException {
         if (_isReadOnly) {
             throw new AbacusException("This SQL Executor is configured for read-only");
         }
 
         stmt.executeUpdate();
 
-        Object id = null;
+        ID id = null;
         ResultSet rs = null;
 
         try {
             rs = stmt.getGeneratedKeys();
-
-            if (rs.next()) {
-                id = JdbcUtil.getColumnValue(rs, 1);
-            }
+            id = rs.next() ? autoGeneratedKeyExtractor.apply(rs) : null;
         } catch (SQLException e) {
             logger.error("Failed to retrieve the auto-generated Ids", e);
         } finally {
-            closeQuietly(rs);
+            close(rs);
         }
 
         return id;
@@ -859,7 +854,12 @@ public class SQLExecutor implements Closeable {
 
     public <ID> List<ID> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final List<?> parametersList)
             throws UncheckedSQLException {
-        return batchInsert(null, sql, statementSetter, jdbcSettings, parametersList);
+        return batchInsert(sql, statementSetter, (JdbcUtil.BiRowMapper<ID>) DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR_2, jdbcSettings, parametersList);
+    }
+
+    public <ID> List<ID> batchInsert(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<ID> autoGeneratedKeyExtractor,
+            final JdbcSettings jdbcSettings, final List<?> parametersList) throws UncheckedSQLException {
+        return batchInsert(null, sql, statementSetter, autoGeneratedKeyExtractor, jdbcSettings, parametersList);
     }
 
     public <ID> List<ID> batchInsert(final Connection conn, final String sql, final List<?> parametersList) throws UncheckedSQLException {
@@ -876,13 +876,14 @@ public class SQLExecutor implements Closeable {
         return batchInsert(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
     }
 
-    /**
-     *
-     * @see #batchInsert(Connection, String, StatementSetter, JdbcSettings, Object[])
-     */
-    @SuppressWarnings("deprecation")
     public <ID> List<ID> batchInsert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final List<?> parametersList) throws UncheckedSQLException {
+        return batchInsert(conn, sql, statementSetter, (JdbcUtil.BiRowMapper<ID>) DEFAULT_AUTO_GENERATED_KEY_EXTRACTOR_2, jdbcSettings, parametersList);
+    }
+
+    @SuppressWarnings("deprecation")
+    public <ID> List<ID> batchInsert(final Connection conn, final String sql, StatementSetter statementSetter,
+            final JdbcUtil.BiRowMapper<ID> autoGeneratedKeyExtractor, JdbcSettings jdbcSettings, final List<?> parametersList) throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
@@ -909,7 +910,7 @@ public class SQLExecutor implements Closeable {
                 originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
-                closeQuietly(localConn, conn, ds);
+                close(localConn, conn, ds);
                 throw new UncheckedSQLException(e);
             }
 
@@ -927,7 +928,7 @@ public class SQLExecutor implements Closeable {
                     stmt.addBatch();
                 }
 
-                executeBatchInsert(resultIdList, namedSQL, stmt);
+                executeBatchInsert(resultIdList, namedSQL, stmt, autoGeneratedKeyExtractor);
             } else {
                 int num = 0;
 
@@ -937,12 +938,12 @@ public class SQLExecutor implements Closeable {
                     num++;
 
                     if ((num % batchSize) == 0) {
-                        executeBatchInsert(resultIdList, namedSQL, stmt);
+                        executeBatchInsert(resultIdList, namedSQL, stmt, autoGeneratedKeyExtractor);
                     }
                 }
 
                 if ((num % batchSize) > 0) {
-                    executeBatchInsert(resultIdList, namedSQL, stmt);
+                    executeBatchInsert(resultIdList, namedSQL, stmt, autoGeneratedKeyExtractor);
                 }
             }
 
@@ -978,8 +979,8 @@ public class SQLExecutor implements Closeable {
                 }
             }
 
-            closeQuietly(stmt);
-            closeQuietly(localConn, conn, ds);
+            close(stmt);
+            close(localConn, conn, ds);
         }
 
         if (N.notNullOrEmpty(resultIdList)) {
@@ -1058,7 +1059,8 @@ public class SQLExecutor implements Closeable {
         }
     }
 
-    protected <ID> void executeBatchInsert(final List<ID> resultIdList, final NamedSQL namedSQL, final PreparedStatement stmt) throws SQLException {
+    protected <ID> void executeBatchInsert(final List<ID> resultIdList, final NamedSQL namedSQL, final PreparedStatement stmt,
+            final JdbcUtil.BiRowMapper<ID> autoGeneratedKeyExtractor) throws SQLException {
         if (_isReadOnly) {
             throw new AbacusException("This SQL Executor is configured for read-only");
         }
@@ -1070,13 +1072,15 @@ public class SQLExecutor implements Closeable {
         try {
             rs = stmt.getGeneratedKeys();
 
+            final List<String> columnLabels = JdbcUtil.getColumnLabelList(rs);
+
             while (rs.next()) {
-                resultIdList.add((ID) JdbcUtil.getColumnValue(rs, 1));
+                resultIdList.add(autoGeneratedKeyExtractor.apply(rs, columnLabels));
             }
         } catch (SQLException e) {
             logger.error("Failed to retrieve the auto-generated Ids", e);
         } finally {
-            closeQuietly(rs);
+            close(rs);
         }
 
         stmt.clearBatch();
@@ -1145,8 +1149,8 @@ public class SQLExecutor implements Closeable {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt);
-            closeQuietly(localConn, conn, ds);
+            close(stmt);
+            close(localConn, conn, ds);
         }
     }
 
@@ -1216,7 +1220,7 @@ public class SQLExecutor implements Closeable {
                 originalIsolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
-                closeQuietly(localConn, conn, ds);
+                close(localConn, conn, ds);
                 throw new UncheckedSQLException(e);
             }
 
@@ -1289,8 +1293,8 @@ public class SQLExecutor implements Closeable {
                 }
             }
 
-            closeQuietly(stmt);
-            closeQuietly(localConn, conn, ds);
+            close(stmt);
+            close(localConn, conn, ds);
         }
     }
 
@@ -1531,17 +1535,16 @@ public class SQLExecutor implements Closeable {
      * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
-    public final <T> Optional<T> get(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> Optional<T> get(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return Optional.ofNullable(gett(sql, rowMapper, parameters));
     }
 
-    public final <T> Optional<T> get(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
+    public final <T> Optional<T> get(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
             final Object... parameters) {
         return Optional.ofNullable(gett(sql, statementSetter, rowMapper, parameters));
     }
 
-    public final <T> Optional<T> get(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public final <T> Optional<T> get(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         return Optional.ofNullable(gett(sql, rowMapper, jdbcSettings, parameters));
     }
 
@@ -1556,7 +1559,7 @@ public class SQLExecutor implements Closeable {
      * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
-    public final <T> Optional<T> get(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
+    public final <T> Optional<T> get(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return Optional.ofNullable(gett(sql, statementSetter, rowMapper, jdbcSettings, parameters));
     }
@@ -1571,20 +1574,19 @@ public class SQLExecutor implements Closeable {
      * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
-    public final <T> Optional<T> get(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            final Object... parameters) {
+    public final <T> Optional<T> get(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return Optional.ofNullable(gett(conn, sql, rowMapper, parameters));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> get(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> Optional<T> get(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
+            final Object... parameters) {
         return Optional.ofNullable(gett(conn, sql, statementSetter, rowMapper, parameters));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> get(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> Optional<T> get(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return Optional.ofNullable(gett(conn, sql, rowMapper, jdbcSettings, parameters));
     }
 
@@ -1600,8 +1602,8 @@ public class SQLExecutor implements Closeable {
      * @throws DuplicatedResultException if two or more records are found.
      */
     @SafeVarargs
-    public final <T> Optional<T> get(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> Optional<T> get(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return Optional.ofNullable(gett(conn, sql, statementSetter, rowMapper, jdbcSettings, parameters));
     }
 
@@ -1659,8 +1661,8 @@ public class SQLExecutor implements Closeable {
             JdbcSettings jdbcSettings, final Object... parameters) {
         N.checkArgNotNull(targetClass, "targetClass");
 
-        final JdbcUtil.RowMapper<T, RuntimeException> rowMapper = new JdbcUtil.RowMapper<T, RuntimeException>() {
-            private final BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
+        final JdbcUtil.RowMapper<T> rowMapper = new JdbcUtil.RowMapper<T>() {
+            private final BiRowMapper<T> biRowMapper = BiRowMapper.to(targetClass);
 
             @Override
             public T apply(ResultSet rs) throws SQLException {
@@ -1672,39 +1674,37 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> T gett(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> T gett(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return gett(sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
     @SafeVarargs
-    public final <T> T gett(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            final Object... parameters) {
+    public final <T> T gett(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return gett(sql, statementSetter, rowMapper, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> T gett(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public final <T> T gett(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         return gett(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> T gett(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T gett(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return gett(null, sql, statementSetter, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> T gett(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> T gett(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return gett(conn, sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
-    public final <T> T gett(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> T gett(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
+            final Object... parameters) {
         return gett(conn, sql, statementSetter, rowMapper, null, parameters);
     }
 
-    public final <T> T gett(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, JdbcSettings jdbcSettings,
+    public final <T> T gett(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, JdbcSettings jdbcSettings,
             final Object... parameters) {
         return gett(conn, sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
@@ -1722,8 +1722,8 @@ public class SQLExecutor implements Closeable {
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final <T> T gett(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> T gett(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
+            JdbcSettings jdbcSettings, final Object... parameters) {
         N.checkArgNotNull(rowMapper, "rowMapper");
 
         final ResultExtractor<T> resultExtractor = new ResultExtractor<T>() {
@@ -1809,8 +1809,8 @@ public class SQLExecutor implements Closeable {
             final JdbcSettings jdbcSettings, final Object... parameters) {
         N.checkArgNotNull(targetClass, "targetClass");
 
-        final JdbcUtil.RowMapper<T, RuntimeException> rowMapper = new JdbcUtil.RowMapper<T, RuntimeException>() {
-            private final BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
+        final JdbcUtil.RowMapper<T> rowMapper = new JdbcUtil.RowMapper<T>() {
+            private final BiRowMapper<T> biRowMapper = BiRowMapper.to(targetClass);
 
             @Override
             public T apply(ResultSet rs) throws SQLException {
@@ -1822,41 +1822,40 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Optional<T> findFirst(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> Optional<T> findFirst(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return findFirst(sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
     @SafeVarargs
-    public final <T> Optional<T> findFirst(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
+    public final <T> Optional<T> findFirst(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
             final Object... parameters) {
         return findFirst(sql, statementSetter, rowMapper, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> Optional<T> findFirst(final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
+    public final <T> Optional<T> findFirst(final String sql, final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return findFirst(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Optional<T> findFirst(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
+    public final <T> Optional<T> findFirst(final String sql, final StatementSetter statementSetter, final JdbcUtil.RowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return findFirst(null, sql, statementSetter, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            final Object... parameters) {
+    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return findFirst(conn, sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
     public final <T> Optional<T> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+            final JdbcUtil.RowMapper<T> rowMapper, final Object... parameters) {
         return findFirst(conn, sql, statementSetter, rowMapper, null, parameters);
     }
 
-    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final JdbcUtil.RowMapper<T, RuntimeException> rowMapper,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> Optional<T> findFirst(final Connection conn, final String sql, final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return findFirst(conn, sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
@@ -1875,7 +1874,7 @@ public class SQLExecutor implements Closeable {
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public final <T> Optional<T> findFirst(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.RowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
+            final JdbcUtil.RowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         N.checkArgNotNull(rowMapper, "rowMapper");
 
         final ResultExtractor<T> resultExtractor = new ResultExtractor<T>() {
@@ -1944,47 +1943,43 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> list(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return list(conn, sql, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return list(conn, sql, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> list(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> List<T> list(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final Object... parameters) {
         return list(sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> list(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> List<T> list(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final Object... parameters) {
         return list(sql, statementSetter, rowMapper, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> list(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public final <T> List<T> list(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         return list(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> list(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> List<T> list(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return list(null, sql, statementSetter, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> list(final Connection conn, final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
-            final Object... parameters) {
+    public final <T> List<T> list(final Connection conn, final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final Object... parameters) {
         return list(conn, sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
-    public final <T> List<T> list(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> List<T> list(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
+            final Object... parameters) {
         return list(conn, sql, statementSetter, rowMapper, null, parameters);
     }
 
-    public final <T> List<T> list(final Connection conn, final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> List<T> list(final Connection conn, final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return list(conn, sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
@@ -2000,8 +1995,8 @@ public class SQLExecutor implements Closeable {
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final <T> List<T> list(final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> List<T> list(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         N.checkArgNotNull(rowMapper);
 
         final ResultExtractor<List<T>> resultExtractor = new ResultExtractor<List<T>>() {
@@ -2036,9 +2031,7 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> listAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return listAll(sql, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return listAll(sql, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2049,19 +2042,16 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> List<T> listAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return listAll(sqls, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return listAll(sqls, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> listAll(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public final <T> List<T> listAll(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         return listAll(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> listAll(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> List<T> listAll(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         checkJdbcSettingsForAllQuery(jdbcSettings);
 
@@ -2108,13 +2098,13 @@ public class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> List<T> listAll(final List<String> sqls, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
+    public final <T> List<T> listAll(final List<String> sqls, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return listAll(sqls, null, rowMapper, jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> List<T> listAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> List<T> listAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         if (sqls.size() == 1) {
             return listAll(sqls.get(0), statementSetter, rowMapper, jdbcSettings, parameters);
@@ -2623,8 +2613,8 @@ public class SQLExecutor implements Closeable {
             if (result instanceof ResultSet) {
                 // delay.
             } else {
-                closeQuietly(rs, stmt);
-                closeQuietly(localConn, conn, ds);
+                close(rs, stmt);
+                close(localConn, conn, ds);
             }
         }
 
@@ -2736,25 +2726,22 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> Stream<T> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return stream(sql, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return stream(sql, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Stream<T> stream(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final Object... parameters) {
+    public final <T> Stream<T> stream(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final Object... parameters) {
         return stream(sql, StatementSetter.DEFAULT, rowMapper, parameters);
     }
 
     @SafeVarargs
-    public final <T> Stream<T> stream(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> Stream<T> stream(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final Object... parameters) {
         return stream(sql, statementSetter, rowMapper, null, parameters);
     }
 
     @SafeVarargs
-    public final <T> Stream<T> stream(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    public final <T> Stream<T> stream(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
         return stream(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
 
@@ -2770,7 +2757,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Stream<T> stream(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> Stream<T> stream(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
 
         final ObjIteratorEx<T> lazyIter = ObjIteratorEx.of(new Supplier<ObjIteratorEx<T>>() {
@@ -2918,13 +2905,11 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> Stream<T> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return streamAll(sql, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return streamAll(sql, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Stream<T> streamAll(final String sql, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
+    public final <T> Stream<T> streamAll(final String sql, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, parameters);
     }
@@ -2940,7 +2925,7 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Stream<T> streamAll(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper,
+    public final <T> Stream<T> streamAll(final String sql, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         checkJdbcSettingsForAllQuery(jdbcSettings);
 
@@ -2986,13 +2971,11 @@ public class SQLExecutor implements Closeable {
     @SafeVarargs
     public final <T> Stream<T> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
-        final JdbcUtil.BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-        return streamAll(sqls, statementSetter, biRowMapper, jdbcSettings, parameters);
+        return streamAll(sqls, statementSetter, BiRowMapper.to(targetClass), jdbcSettings, parameters);
     }
 
     @SafeVarargs
-    public final <T> Stream<T> streamAll(final List<String> sqls, final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings,
+    public final <T> Stream<T> streamAll(final List<String> sqls, final JdbcUtil.BiRowMapper<T> rowMapper, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll(sqls, null, rowMapper, jdbcSettings, parameters);
     }
@@ -3009,8 +2992,8 @@ public class SQLExecutor implements Closeable {
      * @return
      */
     @SafeVarargs
-    public final <T> Stream<T> streamAll(final List<String> sqls, final StatementSetter statementSetter,
-            final JdbcUtil.BiRowMapper<T, RuntimeException> rowMapper, final JdbcSettings jdbcSettings, final Object... parameters) {
+    public final <T> Stream<T> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcUtil.BiRowMapper<T> rowMapper,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         if (sqls.size() == 1) {
             return streamAll(sqls.get(0), statementSetter, rowMapper, jdbcSettings, parameters);
         }
@@ -3030,67 +3013,169 @@ public class SQLExecutor implements Closeable {
         });
     }
 
+    @Beta
     public PreparedQuery prepareQuery(final String sql, final Object... parameters) throws UncheckedSQLException {
         return prepareQuery(sql, StatementSetter.DEFAULT, parameters);
     }
 
+    @Beta
     public PreparedQuery prepareQuery(final String sql, final StatementSetter statementSetter, final Object... parameters) throws UncheckedSQLException {
-        return prepareQuery(sql, statementSetter, (JdbcSettings) null, parameters);
+        return prepareQuery(null, sql, statementSetter, parameters);
     }
 
-    public PreparedQuery prepareQuery(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
-        return prepareQuery(sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
+    @Beta
+    public PreparedQuery prepareQuery(final String sql, final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator,
+            final Object... parameters) throws UncheckedSQLException {
+        return prepareQuery(sql, stmtCreator, StatementSetter.DEFAULT, parameters);
     }
 
-    public PreparedQuery prepareQuery(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters)
-            throws UncheckedSQLException {
-        return prepareQuery(null, sql, statementSetter, jdbcSettings, parameters);
+    @Beta
+    public PreparedQuery prepareQuery(final String sql, final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator,
+            final StatementSetter statementSetter, final Object... parameters) throws UncheckedSQLException {
+        return prepareQuery(null, sql, stmtCreator, statementSetter, parameters);
     }
 
+    //    @Beta
+    //    public PreparedQuery prepareQuery(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) throws UncheckedSQLException {
+    //        return prepareQuery(sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
+    //    }
+    //
+    //    @Beta
+    //    public PreparedQuery prepareQuery(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters)
+    //            throws UncheckedSQLException {
+    //        return prepareQuery(null, sql, statementSetter, jdbcSettings, parameters);
+    //    }
+
+    @Beta
     public PreparedQuery prepareQuery(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         return prepareQuery(conn, sql, StatementSetter.DEFAULT, parameters);
     }
 
-    public PreparedQuery prepareQuery(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters)
-            throws UncheckedSQLException {
-        return prepareQuery(conn, sql, statementSetter, (JdbcSettings) null, parameters);
-    }
-
-    public PreparedQuery prepareQuery(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters)
-            throws UncheckedSQLException {
-        return prepareQuery(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
-    }
-
     @SuppressWarnings("resource")
-    public PreparedQuery prepareQuery(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final Object... parameters) throws UncheckedSQLException {
+    @Beta
+    public PreparedQuery prepareQuery(final Connection conn, String sql, StatementSetter statementSetter, final Object... parameters)
+            throws UncheckedSQLException {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = statementSetter == null ? StatementSetter.DEFAULT : statementSetter;
-        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
 
-        final DataSource ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
-        final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT);
+        final DataSource ds = getDataSource(namedSQL.getPureSQL(), parameters, _jdbcSettings);
+        final Connection localConn = getConnection(conn, ds, _jdbcSettings, SQLOperation.SELECT);
         PreparedQuery result = null;
 
         try {
-            final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
+            sql = namedSQL.getPureSQL();
+
+            if (ds instanceof com.landawn.abacus.DataSource) {
+                sql = ((com.landawn.abacus.DataSource) ds).getSliceSelector().select(null, sql, parameters, null);
+            }
+
+            logSQL(sql, _jdbcSettings, parameters);
+
+            final PreparedStatement stmt = localConn.prepareStatement(sql);
+            statementSetter.setParameters(namedSQL, stmt, parameters);
 
             result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Runnable() {
                 @Override
                 public void run() {
-                    closeQuietly(localConn, conn, ds);
+                    close(localConn, conn, ds);
                 }
             });
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
             if (result == null && conn == null) {
-                closeQuietly(localConn, conn, ds);
+                close(localConn, conn, ds);
             }
         }
 
         return result;
     }
+
+    @Beta
+    public PreparedQuery prepareQuery(final Connection conn, final String sql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator, final Object... parameters) throws UncheckedSQLException {
+        return prepareQuery(conn, sql, stmtCreator, StatementSetter.DEFAULT, parameters);
+    }
+
+    @SuppressWarnings("resource")
+    @Beta
+    public PreparedQuery prepareQuery(final Connection conn, String sql, final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator,
+            StatementSetter statementSetter, final Object... parameters) throws UncheckedSQLException {
+        N.checkArgNotNull(stmtCreator, "stmtCreator");
+
+        final NamedSQL namedSQL = getNamedSQL(sql);
+        statementSetter = statementSetter == null ? StatementSetter.DEFAULT : statementSetter;
+
+        final DataSource ds = getDataSource(namedSQL.getPureSQL(), parameters, _jdbcSettings);
+        final Connection localConn = getConnection(conn, ds, _jdbcSettings, SQLOperation.SELECT);
+        PreparedQuery result = null;
+
+        try {
+            sql = namedSQL.getPureSQL();
+
+            if (ds instanceof com.landawn.abacus.DataSource) {
+                sql = ((com.landawn.abacus.DataSource) ds).getSliceSelector().select(null, sql, parameters, null);
+            }
+
+            logSQL(sql, _jdbcSettings, parameters);
+
+            final PreparedStatement stmt = stmtCreator.apply(conn, sql);
+            statementSetter.setParameters(namedSQL, stmt, parameters);
+
+            result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Runnable() {
+                @Override
+                public void run() {
+                    close(localConn, conn, ds);
+                }
+            });
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        } finally {
+            if (result == null && conn == null) {
+                close(localConn, conn, ds);
+            }
+        }
+
+        return result;
+    }
+
+    //    @Beta
+    //    public PreparedQuery prepareQuery(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters)
+    //            throws UncheckedSQLException {
+    //        return prepareQuery(conn, sql, StatementSetter.DEFAULT, jdbcSettings, parameters);
+    //    }
+    //
+    //    @SuppressWarnings("resource")
+    //    @Beta
+    //    public PreparedQuery prepareQuery(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters)
+    //            throws UncheckedSQLException {
+    //        final NamedSQL namedSQL = getNamedSQL(sql);
+    //        statementSetter = statementSetter == null ? StatementSetter.DEFAULT : statementSetter;
+    //        jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL, _sqlMapper.getAttrs(sql));
+    //
+    //        final DataSource ds = getDataSource(namedSQL.getPureSQL(), parameters, jdbcSettings);
+    //        final Connection localConn = getConnection(conn, ds, jdbcSettings, SQLOperation.SELECT);
+    //        PreparedQuery result = null;
+    //
+    //        try {
+    //            final PreparedStatement stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, false, false, parameters);
+    //
+    //            result = new PreparedQuery(stmt, _asyncExecutor).onClose(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    close(localConn, conn, ds);
+    //                }
+    //            });
+    //        } catch (SQLException e) {
+    //            throw new UncheckedSQLException(e);
+    //        } finally {
+    //            if (result == null && conn == null) {
+    //                close(localConn, conn, ds);
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     //    public PreparedCallableQuery prepareCallableQuery(final String sql) throws UncheckedSQLException {
     //        return prepareCallableQuery(sql, null);
@@ -3165,16 +3250,20 @@ public class SQLExecutor implements Closeable {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             throw new UncheckedSQLException(msg, e);
         } finally {
-            closeQuietly(stmt);
-            closeQuietly(localConn, conn, ds);
+            close(stmt);
+            close(localConn, conn, ds);
         }
     }
 
     /** 
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
+     * <br />
+     * <br />
+     * The transaction will be shared cross the instances of {@code SQLExecutor} by the methods called in the same thread with same {@code DataSource}.
      * 
      * @return
+     * @see #beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public SQLTransaction beginTransaction() {
         return beginTransaction(IsolationLevel.DEFAULT);
@@ -3183,9 +3272,13 @@ public class SQLExecutor implements Closeable {
     /** 
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
+     * <br />
+     * <br />
+     * The transaction will be shared cross the instances of {@code SQLExecutor} by the methods called in the same thread with same {@code DataSource}.
      * 
      * @param isolationLevel
      * @return
+     * @see #beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public SQLTransaction beginTransaction(final IsolationLevel isolationLevel) {
         return beginTransaction(isolationLevel, false);
@@ -3194,9 +3287,13 @@ public class SQLExecutor implements Closeable {
     /** 
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
+     * <br />
+     * <br />
+     * The transaction will be shared cross the instances of {@code SQLExecutor} by the methods called in the same thread with same {@code DataSource}.
      * 
      * @param forUpdateOnly
      * @return
+     * @see #beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public SQLTransaction beginTransaction(final boolean forUpdateOnly) {
         return beginTransaction(IsolationLevel.DEFAULT, forUpdateOnly);
@@ -3205,20 +3302,48 @@ public class SQLExecutor implements Closeable {
     /**
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
+     * <br />
+     * <br />
+     * The transaction will be shared cross the instances of {@code SQLExecutor} by the methods called in the same thread with same {@code DataSource}.
      * 
      * @param isolationLevel
      * @param forUpdateOnly
      * @return
+     * @see #beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public SQLTransaction beginTransaction(IsolationLevel isolationLevel, boolean forUpdateOnly) {
         return beginTransaction(isolationLevel, forUpdateOnly, null);
     }
 
-    final Map<String, SQLTransaction> threadTransactionMap = new ConcurrentHashMap<>();
-
     /**
      * The connection opened in the transaction will be automatically closed after the transaction is committed or rolled back.
      * DON'T close it again by calling the close method.
+     * <br />
+     * <br />
+     * The transaction will be shared cross the instances of {@code SQLExecutor/JdbcUtil.Dao/CrudDao} by the methods called in the same thread with same {@code DataSource}.
+     * 
+     * <br />
+     * <br />
+     * 
+     * The general programming way with SQLExeucte is to execute sql scripts(generated by SQLBuilder) with array/list/map/entity by calling (batch)insert/update/delete/query/... methods.
+     * if transaction is required, it can be started:
+     * 
+     * <pre>
+     * <code>
+     *   final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
+     *   try {
+     *       // sqlExecutor.insert(...);
+     *       // sqlExecutor.update(...);
+     *       // sqlExecutor.query(...);
+     *
+     *       tran.commit();
+     *   } finally {
+     *       // The connection will be automatically closed after the transaction is committed or rolled back.            
+     *       tran.rollbackIfNotCommitted();
+     *   }
+     * </code>
+     * </pre>
+     * 
      * 
      * @param isolationLevel
      * @param forUpdateOnly
@@ -3232,30 +3357,34 @@ public class SQLExecutor implements Closeable {
         final DataSource ds = jdbcSettings != null && jdbcSettings.getQueryWithDataSource() != null
                 ? getDataSource(N.EMPTY_STRING, N.EMPTY_OBJECT_ARRAY, jdbcSettings) : _ds;
 
-        final String ttid = getTransactionThreadId(ds);
-        SQLTransaction transaction = threadTransactionMap.get(ttid);
+        SQLTransaction tran = SQLTransaction.getTransaction(ds);
 
-        if (transaction == null) {
-            transaction = new SQLTransaction(this, ds, isolation);
-            threadTransactionMap.put(ttid, transaction);
+        if (tran == null) {
+            Connection conn = null;
+            boolean noException = false;
 
-            logger.info("Creating a new transaction(id={})", transaction.id());
+            try {
+                conn = getConnection(ds);
+                tran = new SQLTransaction(ds, conn, isolation, true, true);
+                tran.incrementAndGetRef(isolation, forUpdateOnly);
 
+                noException = true;
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            } finally {
+                if (noException == false) {
+                    close(conn, ds);
+                }
+            }
+
+            logger.info("Create a new SQLTransaction(id={})", tran.id());
+            SQLTransaction.putTransaction(ds, tran);
         } else {
-            logger.info("Reusing existing transaction(id={})", transaction.id());
+            logger.info("Reusing the existing SQLTransaction(id={})", tran.id());
+            tran.incrementAndGetRef(isolation, forUpdateOnly);
         }
 
-        logger.debug("Current active transactions: {}", threadTransactionMap.values());
-
-        transaction.incrementAndGetRef(isolation, forUpdateOnly);
-
-        return transaction;
-    }
-
-    static String getTransactionThreadId(final DataSource ds) {
-        final Thread currentThread = Thread.currentThread();
-
-        return currentThread.getName() + "_" + currentThread.getId() + "_" + System.identityHashCode(ds);
+        return tran;
     }
 
     public DBSequence getDBSequence(final String tableName, final String seqName) {
@@ -3291,7 +3420,7 @@ public class SQLExecutor implements Closeable {
         try {
             return JdbcUtil.doesTableExist(conn, tableName);
         } finally {
-            closeQuietly(conn);
+            closeConnection(conn);
         }
     }
 
@@ -3308,7 +3437,7 @@ public class SQLExecutor implements Closeable {
         try {
             return JdbcUtil.createTableIfNotExists(conn, tableName, schema);
         } finally {
-            closeQuietly(conn);
+            closeConnection(conn);
         }
     }
 
@@ -3324,7 +3453,7 @@ public class SQLExecutor implements Closeable {
         try {
             return JdbcUtil.dropTableIfExists(conn, tableName);
         } finally {
-            closeQuietly(conn);
+            closeConnection(conn);
         }
     }
 
@@ -3345,7 +3474,7 @@ public class SQLExecutor implements Closeable {
             } catch (SQLException e) {
                 throw new UncheckedSQLException(e);
             } finally {
-                closeQuietly(conn);
+                closeConnection(conn);
             }
         }
 
@@ -3353,7 +3482,11 @@ public class SQLExecutor implements Closeable {
     }
 
     public Connection getConnection() {
-        return _ds.getConnection();
+        return getConnection(_ds);
+    }
+
+    public void closeConnection(final Connection conn) {
+        close(conn, _ds);
     }
 
     protected DataSource getDataSource(final String sql, final Object[] parameters, final JdbcSettings jdbcSettings) {
@@ -3395,7 +3528,7 @@ public class SQLExecutor implements Closeable {
             return conn;
         }
 
-        final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId(ds));
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds);
 
         if (tran != null && (tran.isForUpdateOnly() == false || op != SQLOperation.SELECT)) {
             return tran.connection();
@@ -3405,7 +3538,11 @@ public class SQLExecutor implements Closeable {
     }
 
     protected Connection getConnection(final DataSource ds) {
-        return ds.getConnection();
+        try {
+            return JdbcUtil.getConnection(ds);
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        }
     }
 
     protected PreparedStatement prepareStatement(final DataSource ds, final Connection localConn, final NamedSQL namedSQL,
@@ -3413,10 +3550,14 @@ public class SQLExecutor implements Closeable {
             final Object... parameters) throws SQLException {
         String sql = namedSQL.getPureSQL();
 
-        if (isBatch) {
-            sql = ds.getSliceSelector().select(null, sql, (List<?>) parameters[0], null);
-        } else {
-            sql = ds.getSliceSelector().select(null, sql, parameters, null);
+        if (ds instanceof com.landawn.abacus.DataSource) {
+            final com.landawn.abacus.DataSource ds2 = (com.landawn.abacus.DataSource) ds;
+
+            if (isBatch) {
+                sql = ds2.getSliceSelector().select(null, sql, (List<?>) parameters[0], null);
+            } else {
+                sql = ds2.getSliceSelector().select(null, sql, parameters, null);
+            }
         }
 
         logSQL(sql, jdbcSettings, parameters);
@@ -3571,36 +3712,32 @@ public class SQLExecutor implements Closeable {
         }
     }
 
-    protected void closeQuietly(final ResultSet rs) {
+    protected void close(final ResultSet rs) {
         JdbcUtil.closeQuietly(rs);
     }
 
-    protected void closeQuietly(final PreparedStatement stmt) {
+    protected void close(final PreparedStatement stmt) {
         JdbcUtil.closeQuietly(stmt);
     }
 
-    protected void closeQuietly(final Connection conn) {
-        JdbcUtil.closeQuietly(conn);
-    }
-
-    protected void closeQuietly(final ResultSet rs, final PreparedStatement stmt) {
+    protected void close(final ResultSet rs, final PreparedStatement stmt) {
         JdbcUtil.closeQuietly(rs, stmt);
     }
 
-    protected void closeQuietly(final Connection localConn, final Connection inputConn, final DataSource ds) {
+    protected void close(final Connection localConn, final Connection inputConn, final DataSource ds) {
         if (inputConn == null) {
-            final SQLTransaction tran = threadTransactionMap.get(getTransactionThreadId(ds));
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
 
             if (tran != null && tran.connection() == localConn) {
                 // ignore.
             } else {
-                closeQuietly(localConn, ds);
+                close(localConn, ds);
             }
         }
     }
 
-    protected void closeQuietly(final Connection conn, final DataSource ds) {
-        JdbcUtil.closeQuietly(conn);
+    protected void close(final Connection conn, final DataSource ds) {
+        JdbcUtil.releaseConnection(conn, ds);
     }
 
     /**
@@ -3609,8 +3746,12 @@ public class SQLExecutor implements Closeable {
     @Override
     public void close() throws IOException {
         try {
-            if (_ds != null && _ds.isClosed() == false) {
-                _ds.close();
+            if (_ds != null && _ds instanceof com.landawn.abacus.DataSource) {
+                final com.landawn.abacus.DataSource ds = (com.landawn.abacus.DataSource) _ds;
+
+                if (ds.isClosed() == false) {
+                    ds.close();
+                }
             }
         } finally {
             if (_dsm != null && _dsm.isClosed() == false) {
@@ -3778,6 +3919,15 @@ public class SQLExecutor implements Closeable {
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NSC._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NSC.COUNT_ALL);
 
+        static final JdbcUtil.RowMapper<Map<String, Object>> generatedKeyExtractor = new JdbcUtil.RowMapper<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> apply(final ResultSet rs) throws SQLException {
+                return BiRowMapper.TO_MAP.apply(rs, JdbcUtil.getColumnLabelList(rs));
+            }
+        };
+
+        static final JdbcUtil.BiRowMapper<Map<String, Object>> biGeneratedKeyExtractor = BiRowMapper.TO_MAP;
+
         private final Class<T> targetClass;
         private final Type<T> targetType;
         private final List<String> propNameList;
@@ -3793,6 +3943,7 @@ public class SQLExecutor implements Closeable {
         private final String sql_get_by_id;
         private final String sql_delete_by_id;
         private final AsyncMapper<T> asyncMapper;
+
         // TODO cache more sqls to improve performance.
 
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
@@ -3802,7 +3953,10 @@ public class SQLExecutor implements Closeable {
             final Set<String> idPropNames = ClassUtil.getIdFieldNames(targetClass);
 
             N.checkArgNotNullOrEmpty(idPropNames, "Target class: " + ClassUtil.getCanonicalClassName(targetClass)
-                    + " must at least has one id property annotated by @Id or @ReadOnlyId on field/method or class");
+                    + " must at least has one id property annotated by @Id or @ReadOnlyId on field or class");
+
+            //    N.checkArgument(idPropNames.size() == 1, "Only one id is supported at present. But Entity class {} has {} ids: {}", targetClass, idPropNames.size(),
+            //            idPropNames);
 
             this.targetClass = targetClass;
             this.targetType = N.typeOf(targetClass);
@@ -3832,30 +3986,31 @@ public class SQLExecutor implements Closeable {
             this.sql_exists_by_id = this.prepareQuery(SQLBuilder._1_list, idCond).sql;
             this.sql_get_by_id = this.prepareQuery(defaultSelectPropNameList, idCond).sql;
             this.sql_delete_by_id = this.prepareDelete(idCond).sql;
+
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
         }
 
-        public Class<T> targetClass() {
+        Class<T> targetClass() {
             return targetClass;
         }
 
-        public Type<T> targetType() {
+        Type<T> targetType() {
             return targetType;
         }
 
-        public List<String> idPropNameList() {
+        List<String> idPropNameList() {
             return idPropNameList;
         }
 
-        public Set<String> idPropNameSet() {
+        Set<String> idPropNameSet() {
             return idPropNameSet;
         }
 
-        public List<String> propNameList() {
+        List<String> propNameList() {
             return propNameList;
         }
 
-        public Set<String> propNameSet() {
+        Set<String> propNameSet() {
             return propNameSet;
         }
 
@@ -4172,82 +4327,78 @@ public class SQLExecutor implements Closeable {
             return sqlExecutor.findFirst(targetClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
-        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return findFirst(null, selectPropName, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(conn, selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return findFirst(conn, Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Optional<R> findFirst(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return findFirst(null, selectPropName, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(conn, selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> Optional<R> findFirst(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return findFirst(conn, Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return findFirst(null, selectPropNames, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause) {
             return findFirst(conn, selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.findFirst(conn, sp.sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, sp.parameters.toArray());
         }
 
-        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return findFirst(selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> Optional<R> findFirst(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return findFirst(null, selectPropNames, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause) {
             return findFirst(conn, selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> Optional<R> findFirst(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
@@ -4293,63 +4444,58 @@ public class SQLExecutor implements Closeable {
             return sqlExecutor.list(targetClass, conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
-        public <R> List<R> list(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> List<R> list(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return list(selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return list(null, selectPropName, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return list(conn, selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return list(conn, Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> List<R> list(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return list(selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return list(null, selectPropName, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return list(conn, selectPropName, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(final Connection conn, String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return list(conn, Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return list(selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return list(null, selectPropNames, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return list(conn, selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(rowMapper);
 
-            final JdbcUtil.BiRowMapper<R, RuntimeException> biRowMapper = new JdbcUtil.BiRowMapper<R, RuntimeException>() {
+            final JdbcUtil.BiRowMapper<R> biRowMapper = new JdbcUtil.BiRowMapper<R>() {
                 @Override
                 public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
                     return rowMapper.apply(rs);
@@ -4359,22 +4505,22 @@ public class SQLExecutor implements Closeable {
             return list(conn, selectPropNames, biRowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return list(selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> List<R> list(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return list(null, selectPropNames, rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause) {
             return list(conn, selectPropNames, rowMapper, whereCause, null);
         }
 
-        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> List<R> list(final Connection conn, Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.list(conn, sp.sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, sp.parameters.toArray());
@@ -4407,21 +4553,20 @@ public class SQLExecutor implements Closeable {
             return sqlExecutor.listAll(targetClass, sp.sql, StatementSetter.DEFAULT, jdbcSettings, sp.parameters.toArray());
         }
 
-        public <R> List<R> listAll(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> List<R> listAll(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return listAll(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
+        }
+
+        public <R> List<R> listAll(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return listAll(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> listAll(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
-            return listAll(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
-        }
-
-        public <R> List<R> listAll(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> List<R> listAll(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(rowMapper);
 
-            final JdbcUtil.BiRowMapper<R, RuntimeException> biRowMapper = new JdbcUtil.BiRowMapper<R, RuntimeException>() {
+            final JdbcUtil.BiRowMapper<R> biRowMapper = new JdbcUtil.BiRowMapper<R>() {
                 @Override
                 public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
                     return rowMapper.apply(rs);
@@ -4431,7 +4576,7 @@ public class SQLExecutor implements Closeable {
             return listAll(selectPropNames, biRowMapper, whereCause, jdbcSettings);
         }
 
-        public <R> List<R> listAll(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> List<R> listAll(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
@@ -4489,7 +4634,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return stream(selectPropName, rowMapper, whereCause, null);
         }
 
@@ -4504,8 +4649,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
-                final JdbcSettings jdbcSettings) {
+        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return stream(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
 
@@ -4519,7 +4663,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return stream(selectPropName, rowMapper, whereCause, null);
         }
 
@@ -4534,7 +4678,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> stream(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return stream(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
@@ -4549,7 +4693,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return stream(selectPropNames, rowMapper, whereCause, null);
         }
 
@@ -4564,11 +4708,11 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(rowMapper);
 
-            final JdbcUtil.BiRowMapper<R, RuntimeException> biRowMapper = new JdbcUtil.BiRowMapper<R, RuntimeException>() {
+            final JdbcUtil.BiRowMapper<R> biRowMapper = new JdbcUtil.BiRowMapper<R>() {
                 @Override
                 public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
                     return rowMapper.apply(rs);
@@ -4588,7 +4732,7 @@ public class SQLExecutor implements Closeable {
          * @param whereCause
          * @return
          */
-        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return stream(selectPropNames, rowMapper, whereCause, null);
         }
 
@@ -4603,7 +4747,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> stream(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
@@ -4655,7 +4799,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> streamAll(String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> streamAll(String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return streamAll(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
@@ -4672,7 +4816,7 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> streamAll(String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> streamAll(String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return streamAll(Arrays.asList(selectPropName), rowMapper, whereCause, jdbcSettings);
         }
@@ -4689,11 +4833,11 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> streamAll(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause,
+        public <R> Stream<R> streamAll(Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             N.checkArgNotNull(rowMapper);
 
-            final JdbcUtil.BiRowMapper<R, RuntimeException> biRowMapper = new JdbcUtil.BiRowMapper<R, RuntimeException>() {
+            final JdbcUtil.BiRowMapper<R> biRowMapper = new JdbcUtil.BiRowMapper<R>() {
                 @Override
                 public R apply(final ResultSet rs, final List<String> columnLabels) throws SQLException {
                     return rowMapper.apply(rs);
@@ -4715,8 +4859,8 @@ public class SQLExecutor implements Closeable {
          * @param jdbcSettings
          * @return
          */
-        public <R> Stream<R> streamAll(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> Stream<R> streamAll(Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             final SP sp = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.streamAll(sp.sql, StatementSetter.DEFAULT, rowMapper, jdbcSettings, sp.parameters.toArray());
@@ -5124,12 +5268,12 @@ public class SQLExecutor implements Closeable {
          * @param entity
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <ID> ID add(final T entity) {
-            return add(null, entity);
+        public <ID> ID insert(final T entity) {
+            return insert(null, entity);
         }
 
-        public <ID> ID add(final T entity, final Collection<String> insertPropNames) {
-            return add(null, entity, insertPropNames);
+        public <ID> ID insert(final T entity, final Collection<String> insertPropNames) {
+            return insert(null, entity, insertPropNames);
         }
 
         /**
@@ -5137,39 +5281,35 @@ public class SQLExecutor implements Closeable {
          * @param props
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <ID> ID add(final Map<String, Object> props) {
-            return add(null, props);
+        public <ID> ID insert(final Map<String, Object> props) {
+            return insert(null, props);
         }
 
-        public <ID> ID add(final Connection conn, final T entity) {
-            return add(conn, entity, null);
+        public <ID> ID insert(final Connection conn, final T entity) {
+            return insert(conn, entity, null);
         }
 
         @SuppressWarnings("deprecation")
-        public <ID> ID add(final Connection conn, final T entity, final Collection<String> insertPropNames) {
+        public <ID> ID insert(final Connection conn, final T entity, final Collection<String> insertPropNames) {
             N.checkArgNotNull(entity);
 
             if (entity instanceof DirtyMarker && N.isNullOrEmpty(((DirtyMarker) entity).signedPropNames())) {
                 throw new IllegalArgumentException("No property value is signed to the specified entity");
             }
 
+            Map<String, Object> generatedKeys = null;
+
             if (insertPropNames == null) {
-                final SP sp = prepareAdd(entity);
+                final SP sp = prepareInsert(entity);
 
-                final ID id = sqlExecutor.insert(conn, sp.sql, sp.parameters.toArray());
-
-                postAdd(entity, id);
-
-                return id;
+                generatedKeys = sqlExecutor.insert(conn, sp.sql, StatementSetter.DEFAULT, generatedKeyExtractor, null, sp.parameters.toArray());
             } else {
-                final SP sp = prepareAdd(insertPropNames);
+                final SP sp = prepareInsert(insertPropNames);
 
-                final ID id = sqlExecutor.insert(conn, sp.sql, entity);
-
-                postAdd(entity, id);
-
-                return id;
+                generatedKeys = sqlExecutor.insert(conn, sp.sql, StatementSetter.DEFAULT, generatedKeyExtractor, null, entity);
             }
+
+            return postInsert(generatedKeys, entity);
         }
 
         /**
@@ -5177,89 +5317,16 @@ public class SQLExecutor implements Closeable {
          * @param props
          * @return the auto-generated id or null if there is no auto-generated id.
          */
-        public <ID> ID add(final Connection conn, final Map<String, Object> props) {
+        public <ID> ID insert(final Connection conn, final Map<String, Object> props) {
             N.checkArgNotNull(props);
 
-            final SP sp = prepareAdd(props);
+            final SP sp = prepareInsert(props);
 
-            return sqlExecutor.insert(conn, sp.sql, sp.parameters.toArray());
+            final Map<String, Object> generatedKeys = sqlExecutor.insert(conn, sp.sql, StatementSetter.DEFAULT, generatedKeyExtractor, null,
+                    sp.parameters.toArray());
+
+            return postInsert(generatedKeys, props);
         }
-
-        //        /**
-        //         * Insert All the records one by one in transaction. And set back auto-generated ids to the specified entities if there are the auto-generated ids.
-        //         * 
-        //         * @param entities
-        //         * @return a list with the auto-generated id or null element if there is no auto-generated id.
-        //         * @deprecated replaced by {@code #batchAdd(Collection)}
-        //         */
-        //        @Deprecated
-        //        public <ID> List<ID> addAll(final Collection<? extends T> entities) {
-        //            return addAll(entities, IsolationLevel.DEFAULT);
-        //        }
-        //
-        //        /**
-        //         * Insert All the records one by one in transaction.
-        //         * 
-        //         * @param entities
-        //         * @param isolationLevel
-        //         * @return a list with the auto-generated id or null element if there is no auto-generated id.
-        //         * @deprecated replaced by {@code #batchAdd(Collection)}
-        //         */
-        //        @Deprecated
-        //        public <ID> List<ID> addAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
-        //            if (N.isNullOrEmpty(entities)) {
-        //                return new ArrayList<>();
-        //            }
-        //
-        //            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-        //            final List<ID> result = new ArrayList<>(entities.size());
-        //            boolean isOk = false;
-        //
-        //            try {
-        //                for (T entity : entities) {
-        //                    result.add((ID) add(entity));
-        //                }
-        //
-        //                isOk = true;
-        //            } finally {
-        //                if (tran != null) {
-        //                    if (isOk) {
-        //                        tran.commit();
-        //                    } else {
-        //                        tran.rollback();
-        //                    }
-        //                }
-        //            }
-        //
-        //            return result;
-        //        }
-        //
-        //        /**
-        //         * Insert All the records one by one with specified {@code Connection}.
-        //         * 
-        //         * @param conn
-        //         * @param entities
-        //         * @return
-        //         * @deprecated replaced by {@code #batchAdd(Collection)}
-        //         */
-        //        @Deprecated
-        //        public <ID> List<ID> addAll(final Connection conn, final Collection<? extends T> entities) {
-        //            if (N.isNullOrEmpty(entities)) {
-        //                return new ArrayList<>();
-        //            }
-        //
-        //            if (conn == null) {
-        //                return addAll(entities);
-        //            }
-        //
-        //            final List<ID> result = new ArrayList<>(entities.size());
-        //
-        //            for (T entity : entities) {
-        //                result.add((ID) add(conn, entity));
-        //            }
-        //
-        //            return result;
-        //        }
 
         /**
          * Insert All the records by batch operation. And set back auto-generated ids to the specified entities if there are the auto-generated ids.
@@ -5267,20 +5334,20 @@ public class SQLExecutor implements Closeable {
          * @param entities which must have the same updated properties set.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <ID> List<ID> batchAdd(final Collection<? extends T> entities) {
-            return batchAdd(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        public <ID> List<ID> batchInsert(final Collection<? extends T> entities) {
+            return batchInsert(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public <ID> List<ID> batchAdd(final Collection<? extends T> entities, final int batchSize) {
-            return batchAdd(entities, batchSize, IsolationLevel.DEFAULT);
+        public <ID> List<ID> batchInsert(final Collection<? extends T> entities, final int batchSize) {
+            return batchInsert(entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public <ID> List<ID> batchAdd(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
-            return batchAdd(null, entities, batchSize, isolationLevel);
+        public <ID> List<ID> batchInsert(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+            return batchInsert(null, entities, batchSize, isolationLevel);
         }
 
-        public <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities) {
-            return batchAdd(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        public <ID> List<ID> batchInsert(final Connection conn, final Collection<? extends T> entities) {
+            return batchInsert(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
         /**
@@ -5290,11 +5357,11 @@ public class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
-            return batchAdd(conn, entities, batchSize, IsolationLevel.DEFAULT);
+        public <ID> List<ID> batchInsert(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
+            return batchInsert(conn, entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        private <ID> List<ID> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize,
+        private <ID> List<ID> batchInsert(final Connection conn, final Collection<? extends T> entities, final int batchSize,
                 final IsolationLevel isolationLevel) {
             N.checkArgPositive(batchSize, "batchSize");
 
@@ -5302,24 +5369,27 @@ public class SQLExecutor implements Closeable {
                 return new ArrayList<>();
             }
 
-            final SP sp = prepareAdd(entities.iterator().next());
+            final SP sp = prepareInsert(entities.iterator().next());
             final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> parametersList = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final List<ID> ids = sqlExecutor.batchInsert(conn, sp.sql, StatementSetter.DEFAULT, jdbcSettings, parametersList);
+            final List<Map<String, Object>> listOfGeneratedKeys = sqlExecutor.batchInsert(conn, sp.sql, StatementSetter.DEFAULT, biGeneratedKeyExtractor,
+                    jdbcSettings, parametersList);
 
-            if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
+            final List<ID> result = new ArrayList<>(listOfGeneratedKeys.size());
+
+            if (N.notNullOrEmpty(listOfGeneratedKeys) && listOfGeneratedKeys.size() == entities.size()) {
                 int idx = 0;
 
                 for (T entity : entities) {
-                    postAdd(entity, ids.get(idx++));
+                    result.add((ID) postInsert(listOfGeneratedKeys.get(idx++), entity));
                 }
             }
 
-            return ids;
+            return result;
         }
 
-        private SP prepareAdd(final Collection<String> insertPropNames) {
+        private SP prepareInsert(final Collection<String> insertPropNames) {
             SP sp = null;
 
             switch (namingPolicy) {
@@ -5341,11 +5411,11 @@ public class SQLExecutor implements Closeable {
             return sp;
         }
 
-        private SP prepareAdd(final Object entity) {
+        private SP prepareInsert(final Object entity) {
             checkEntity(entity);
 
             if (entity instanceof Map) {
-                return prepareAdd((Map<String, Object>) entity);
+                return prepareInsert((Map<String, Object>) entity);
             } else if (entity instanceof DirtyMarker) {
                 @SuppressWarnings("deprecation")
                 final Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
@@ -5355,7 +5425,7 @@ public class SQLExecutor implements Closeable {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
 
-                return prepareAdd(props);
+                return prepareInsert(props);
             } else {
                 switch (namingPolicy) {
                     case LOWER_CASE_WITH_UNDERSCORE:
@@ -5373,7 +5443,7 @@ public class SQLExecutor implements Closeable {
             }
         }
 
-        private SP prepareAdd(final Map<String, Object> props) {
+        private SP prepareInsert(final Map<String, Object> props) {
             N.checkArgument(N.notNullOrEmpty(props), "The specified 'props' can't be null or empty");
 
             switch (namingPolicy) {
@@ -5392,14 +5462,84 @@ public class SQLExecutor implements Closeable {
         }
 
         @SuppressWarnings("deprecation")
-        private <E> void postAdd(final T entity, final E idVal) {
-            if (idVal != null && isEntity(entity)) {
-                ClassUtil.setPropValue(entity, idPropName, idVal);
+        private <ID> ID postInsert(final Map<String, Object> generatedKeys, final Object entity) {
+            final boolean isEntity = isEntity(entity);
+            ID ret = null;
+
+            if (N.notNullOrEmpty(generatedKeys)) {
+                if (idPropNameSet.size() == 1) {
+                    // TODO key name is not id column name.
+
+                    //    for (String key : generatedKeys.keySet()) {
+                    //        if (idPropName.equalsIgnoreCase(ClassUtil.formalizePropName(key))) {
+                    //            final Object id = generatedKeys.get(key);
+                    //
+                    //            if (id != null) {
+                    //                if (isEntity) {
+                    //                    Object propVal = ClassUtil.getPropValue(entity, idPropName);
+                    //
+                    //                    if (propVal == null || (propVal instanceof Number && ((Number) propVal).longValue() == 0)) {
+                    //                        ClassUtil.setPropValue(entity, idPropName, id);
+                    //                    }
+                    //                }
+                    //            }
+                    //
+                    //            ret = (ID) id;
+                    //            break;
+                    //        }
+                    //    }
+
+                    final Object id = generatedKeys.values().iterator().next();
+
+                    if (id != null) {
+                        if (isEntity) {
+                            Object propVal = ClassUtil.getPropValue(entity, idPropName);
+
+                            if (propVal == null || (propVal instanceof Number && ((Number) propVal).longValue() == 0)) {
+                                ClassUtil.setPropValue(entity, idPropName, id);
+                            }
+                        }
+                    }
+
+                    ret = (ID) id;
+                } else {
+                    Map<String, Object> idMap = null;
+
+                    for (String idPropName : idPropNameSet) {
+                        for (String key : generatedKeys.keySet()) {
+                            if (idPropName.equalsIgnoreCase(ClassUtil.formalizePropName(key))) {
+                                final Object id = generatedKeys.get(key);
+
+                                if (id != null) {
+                                    if (isEntity) {
+                                        Object propVal = ClassUtil.getPropValue(entity, idPropName);
+
+                                        if (propVal == null || (propVal instanceof Number && ((Number) propVal).longValue() == 0)) {
+                                            ClassUtil.setPropValue(entity, idPropName, id);
+                                        }
+                                    }
+
+                                    if (idMap == null) {
+                                        idMap = new LinkedHashMap<>();
+                                    }
+
+                                    idMap.put(idPropName, id);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+
+                    ret = (ID) idMap;
+                }
             }
 
-            if (entity instanceof DirtyMarker) {
+            if (isEntity && entity instanceof DirtyMarker) {
                 ((DirtyMarker) entity).markDirty(false);
             }
+
+            return ret;
         }
 
         /**
@@ -5408,11 +5548,11 @@ public class SQLExecutor implements Closeable {
          * @param entity
          * @return  
          */
-        public T addOrUpdate(final T entity) {
+        public T upsert(final T entity) {
             final T dbEntity = idPropNameList.size() == 1 ? gett(ClassUtil.getPropValue(entity, idPropName)) : gett(entity);
 
             if (dbEntity == null) {
-                add(entity);
+                insert(entity);
                 return entity;
             } else {
                 N.merge(entity, dbEntity);
@@ -5428,13 +5568,13 @@ public class SQLExecutor implements Closeable {
          * @param whereCause to verify if the record exists or not.
          * @return
          */
-        public T addOrUpdate(final T entity, final Condition whereCause) {
+        public T upsert(final T entity, final Condition whereCause) {
             N.checkArgNotNull(whereCause, "whereCause");
 
             final T dbEntity = findFirst(whereCause).orNull();
 
             if (dbEntity == null) {
-                add(entity);
+                insert(entity);
                 return entity;
             } else {
                 N.merge(entity, dbEntity, false, idPropNameSet);
@@ -5532,120 +5672,6 @@ public class SQLExecutor implements Closeable {
 
             return sqlExecutor.update(conn, sp.sql, sp.parameters.toArray());
         }
-
-        //        /**
-        //         * Update All the records one by one in transaction.
-        //         * 
-        //         * @param entities
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Collection<? extends T> entities) {
-        //            return updateAll(entities, (Collection<String>) null);
-        //        }
-        //
-        //        /**
-        //         * 
-        //         * @param entities
-        //         * @param updatePropNames
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames) {
-        //            return updateAll(entities, updatePropNames, IsolationLevel.DEFAULT);
-        //        }
-        //
-        //        /**
-        //         * 
-        //         * @param entities
-        //         * @param isolationLevel
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
-        //            return updateAll(entities, (Collection<String>) null, isolationLevel);
-        //        }
-        //
-        //        /**
-        //         * Update All the records one by one in transaction.
-        //         * 
-        //         * @param entities
-        //         * @param updatePropNames
-        //         * @param isolationLevel
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Collection<? extends T> entities, final Collection<String> updatePropNames, final IsolationLevel isolationLevel) {
-        //            if (N.isNullOrEmpty(entities)) {
-        //                return 0;
-        //            }
-        //
-        //            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-        //            int result = 0;
-        //            boolean isOk = false;
-        //
-        //            try {
-        //                for (T entity : entities) {
-        //                    result += update(entity, updatePropNames);
-        //                }
-        //
-        //                isOk = true;
-        //            } finally {
-        //                if (tran != null) {
-        //                    if (isOk) {
-        //                        tran.commit();
-        //                    } else {
-        //                        tran.rollback();
-        //                    }
-        //                }
-        //            }
-        //
-        //            return result;
-        //        }
-        //
-        //        /**
-        //         * 
-        //         * @param conn
-        //         * @param entities
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Connection conn, final Collection<? extends T> entities) {
-        //            return updateAll(conn, entities, (Collection<String>) null);
-        //        }
-        //
-        //        /**
-        //         * Update All the records one by one with specified {@code Connection}.
-        //         * 
-        //         * @param conn
-        //         * @param entities
-        //         * @param updatePropNames
-        //         * @return
-        //         * @deprecated replaced by {@code #batchUpdate(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int updateAll(final Connection conn, final Collection<? extends T> entities, final Collection<String> updatePropNames) {
-        //            if (N.isNullOrEmpty(entities)) {
-        //                return 0;
-        //            }
-        //
-        //            if (conn == null) {
-        //                return updateAll(entities, updatePropNames);
-        //            }
-        //
-        //            int result = 0;
-        //
-        //            for (T entity : entities) {
-        //                result += update(conn, entity, updatePropNames);
-        //            }
-        //
-        //            return result;
-        //        }
 
         /**
          * Update All the records by batch operation.
@@ -5815,82 +5841,6 @@ public class SQLExecutor implements Closeable {
 
             return sqlExecutor.update(conn, sp.sql, sp.parameters.toArray());
         }
-
-        //        /**
-        //         * Delete All records by ids or entities in one transaction.
-        //         * 
-        //         * @param idsOrEntities
-        //         * @return
-        //         * @deprecated replaced by {@code #deleteAll(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int deleteAll(final Collection<?> idsOrEntities) {
-        //            return deleteAll(idsOrEntities, IsolationLevel.DEFAULT);
-        //        }
-        //
-        //        /**
-        //         * Delete All records by ids or entities in one transaction.
-        //         * 
-        //         * @param idsOrEntities
-        //         * @param isolationLevel
-        //         * @return
-        //         * @deprecated replaced by {@code #deleteAll(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
-        //            if (N.isNullOrEmpty(idsOrEntities)) {
-        //                return 0;
-        //            }
-        //
-        //            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
-        //            int result = 0;
-        //            boolean isOk = false;
-        //
-        //            try {
-        //                for (Object idOrEntity : idsOrEntities) {
-        //                    result += delete(idOrEntity);
-        //                }
-        //
-        //                isOk = true;
-        //            } finally {
-        //                if (tran != null) {
-        //                    if (isOk) {
-        //                        tran.commit();
-        //                    } else {
-        //                        tran.rollback();
-        //                    }
-        //                }
-        //            }
-        //
-        //            return result;
-        //        }
-        //
-        //        /**
-        //         * Delete All records by ids or entities with specified {@code Connection}.
-        //         * 
-        //         * @param conn
-        //         * @param idsOrEntities
-        //         * @return
-        //         * @deprecated replaced by {@code #deleteAll(Collection)}
-        //         */
-        //        @Deprecated
-        //        public int deleteAll(final Connection conn, final Collection<?> idsOrEntities) {
-        //            if (N.isNullOrEmpty(idsOrEntities)) {
-        //                return 0;
-        //            }
-        //
-        //            if (conn == null) {
-        //                return deleteAll(idsOrEntities);
-        //            }
-        //
-        //            int result = 0;
-        //
-        //            for (Object idOrEntity : idsOrEntities) {
-        //                result += delete(conn, idOrEntity);
-        //            }
-        //
-        //            return result;
-        //        }
 
         /**
          * Delete all the records by batch operation.
@@ -6259,8 +6209,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6269,8 +6218,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6279,8 +6228,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper,
+                final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6289,8 +6238,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6299,7 +6248,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
@@ -6309,7 +6258,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
@@ -6320,7 +6269,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+                final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6330,7 +6279,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+                final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6339,8 +6288,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6349,8 +6297,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6359,8 +6307,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6369,8 +6317,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6379,7 +6327,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
@@ -6389,7 +6337,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Optional<R>> findFirst(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
@@ -6400,7 +6348,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+                final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6410,7 +6358,7 @@ public class SQLExecutor implements Closeable {
         }
 
         public <R> ContinuableFuture<Optional<R>> findFirst(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+                final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<R>>() {
                 @Override
                 public Optional<R> call() throws Exception {
@@ -6474,8 +6422,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6484,8 +6431,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6494,7 +6441,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6504,7 +6451,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6514,7 +6461,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6524,8 +6471,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6534,8 +6481,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
+                final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6544,8 +6491,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.RowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6554,8 +6501,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6564,8 +6510,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6574,8 +6520,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6584,8 +6530,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6594,7 +6540,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6604,7 +6550,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> list(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6614,8 +6560,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6624,8 +6570,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames,
-                final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper, final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> list(final Connection conn, final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
+                final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6652,8 +6598,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6662,8 +6608,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<List<R>> listAll(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
                 public List<R> call() throws Exception {
@@ -6672,7 +6618,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6682,7 +6628,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<List<R>> listAll(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<R>>() {
                 @Override
@@ -6719,8 +6665,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6729,8 +6674,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6739,7 +6684,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -6749,7 +6694,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -6759,8 +6704,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause) {
+        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6769,8 +6713,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Stream<R>> stream(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6779,7 +6723,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -6789,7 +6733,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> stream(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -6817,8 +6761,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> streamAll(final String selectPropName, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Stream<R>> streamAll(final String selectPropName, final JdbcUtil.RowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6827,8 +6771,8 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> streamAll(final String selectPropName, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
-                final Condition whereCause, final JdbcSettings jdbcSettings) {
+        public <R> ContinuableFuture<Stream<R>> streamAll(final String selectPropName, final JdbcUtil.BiRowMapper<R> rowMapper, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
                 public Stream<R> call() throws Exception {
@@ -6837,7 +6781,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> streamAll(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> streamAll(final Collection<String> selectPropNames, final JdbcUtil.RowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -6847,7 +6791,7 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <R> ContinuableFuture<Stream<R>> streamAll(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R, RuntimeException> rowMapper,
+        public <R> ContinuableFuture<Stream<R>> streamAll(final Collection<String> selectPropNames, final JdbcUtil.BiRowMapper<R> rowMapper,
                 final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Stream<R>>() {
                 @Override
@@ -7156,149 +7100,149 @@ public class SQLExecutor implements Closeable {
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final T entity) {
+        public <ID> ContinuableFuture<ID> insert(final T entity) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(entity);
+                    return mapper.insert(entity);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final T entity, final Collection<String> insertPropNames) {
+        public <ID> ContinuableFuture<ID> insert(final T entity, final Collection<String> insertPropNames) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(entity, insertPropNames);
+                    return mapper.insert(entity, insertPropNames);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final Map<String, Object> props) {
+        public <ID> ContinuableFuture<ID> insert(final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(props);
+                    return mapper.insert(props);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final Connection conn, final T entity) {
+        public <ID> ContinuableFuture<ID> insert(final Connection conn, final T entity) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(conn, entity);
+                    return mapper.insert(conn, entity);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final Connection conn, final T entity, final Collection<String> insertPropNames) {
+        public <ID> ContinuableFuture<ID> insert(final Connection conn, final T entity, final Collection<String> insertPropNames) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(conn, entity, insertPropNames);
+                    return mapper.insert(conn, entity, insertPropNames);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<ID> add(final Connection conn, final Map<String, Object> props) {
+        public <ID> ContinuableFuture<ID> insert(final Connection conn, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<ID>() {
                 @Override
                 public ID call() throws Exception {
-                    return mapper.add(conn, props);
+                    return mapper.insert(conn, props);
                 }
             });
         }
 
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<? extends T> entities) {
+        //        public <ID> ContinuableFuture<List<ID>> insertAll(final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
-        //                    return mapper.addAll(entities);
+        //                    return mapper.insertAll(entities);
         //                }
         //            });
         //        }
         //
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
+        //        public <ID> ContinuableFuture<List<ID>> insertAll(final Collection<? extends T> entities, final IsolationLevel isolationLevel) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
-        //                    return mapper.addAll(entities, isolationLevel);
+        //                    return mapper.insertAll(entities, isolationLevel);
         //                }
         //            });
         //        }
         //
         //        @Deprecated
-        //        public <ID> ContinuableFuture<List<ID>> addAll(final Connection conn, final Collection<? extends T> entities) {
+        //        public <ID> ContinuableFuture<List<ID>> insertAll(final Connection conn, final Collection<? extends T> entities) {
         //            return asyncExecutor.execute(new Callable<List<ID>>() {
         //                @Override
         //                public List<ID> call() throws Exception {
-        //                    return mapper.addAll(conn, entities);
+        //                    return mapper.insertAll(conn, entities);
         //                }
         //            });
         //        }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchInsert(final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
-                    return mapper.batchAdd(entities);
+                    return mapper.batchInsert(entities);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchInsert(final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
-                    return mapper.batchAdd(entities, batchSize);
+                    return mapper.batchInsert(entities, batchSize);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
+        public <ID> ContinuableFuture<List<ID>> batchInsert(final Collection<? extends T> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
-                    return mapper.batchAdd(entities, batchSize, isolationLevel);
+                    return mapper.batchInsert(entities, batchSize, isolationLevel);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<? extends T> entities) {
+        public <ID> ContinuableFuture<List<ID>> batchInsert(final Connection conn, final Collection<? extends T> entities) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
-                    return mapper.batchAdd(conn, entities);
+                    return mapper.batchInsert(conn, entities);
                 }
             });
         }
 
-        public <ID> ContinuableFuture<List<ID>> batchAdd(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
+        public <ID> ContinuableFuture<List<ID>> batchInsert(final Connection conn, final Collection<? extends T> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<ID>>() {
                 @Override
                 public List<ID> call() throws Exception {
-                    return mapper.batchAdd(conn, entities, batchSize);
+                    return mapper.batchInsert(conn, entities, batchSize);
                 }
             });
         }
 
-        public ContinuableFuture<T> addOrUpdate(final T entity) {
+        public ContinuableFuture<T> upsert(final T entity) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
-                    return mapper.addOrUpdate(entity);
+                    return mapper.upsert(entity);
                 }
             });
         }
 
-        public ContinuableFuture<T> addOrUpdate(final T entity, final Condition whereCause) {
+        public ContinuableFuture<T> upsert(final T entity, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
-                    return mapper.addOrUpdate(entity, whereCause);
+                    return mapper.upsert(entity, whereCause);
                 }
             });
         }
@@ -7703,8 +7647,7 @@ public class SQLExecutor implements Closeable {
          * @param valueExtractor
          * @return
          */
-        public static <K, V> ResultExtractor<Map<K, V>> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor) {
+        public static <K, V> ResultExtractor<Map<K, V>> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor) {
             return toMap(keyExtractor, valueExtractor, Suppliers.<K, V> ofMap());
         }
 
@@ -7715,8 +7658,8 @@ public class SQLExecutor implements Closeable {
          * @param supplier
          * @return
          */
-        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -7730,8 +7673,8 @@ public class SQLExecutor implements Closeable {
          * @see {@link Fn.EE#replacingMerger()}
          * @see {@link Fn.EE#ignoringMerger()}
          */
-        public static <K, V> ResultExtractor<Map<K, V>> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction) {
+        public static <K, V> ResultExtractor<Map<K, V>> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Try.BinaryOperator<V, SQLException> mergeFunction) {
             return toMap(keyExtractor, valueExtractor, mergeFunction, Suppliers.<K, V> ofMap());
         }
 
@@ -7746,9 +7689,8 @@ public class SQLExecutor implements Closeable {
          * @see {@link Fn.EE#replacingMerger()}
          * @see {@link Fn.EE#ignoringMerger()}
          */
-        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Try.BinaryOperator<V, SQLException> mergeFunction, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -7780,8 +7722,8 @@ public class SQLExecutor implements Closeable {
          * @param downstream
          * @return
          */
-        public static <K, V, A, D> ResultExtractor<Map<K, D>> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream) {
+        public static <K, V, A, D> ResultExtractor<Map<K, D>> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Collector<? super V, A, D> downstream) {
             return toMap(keyExtractor, valueExtractor, downstream, Suppliers.<K, D> ofMap());
         }
 
@@ -7793,9 +7735,8 @@ public class SQLExecutor implements Closeable {
          * @param supplier
          * @return
          */
-        public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
-                final Supplier<? extends M> supplier) {
+        public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Collector<? super V, A, D> downstream, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7845,8 +7786,7 @@ public class SQLExecutor implements Closeable {
          * @param valueExtractor
          * @return
          */
-        public static <K, V> ResultExtractor<Map<K, V>> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor) {
+        public static <K, V> ResultExtractor<Map<K, V>> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor) {
             return toMap(keyExtractor, valueExtractor, Suppliers.<K, V> ofMap());
         }
 
@@ -7857,8 +7797,8 @@ public class SQLExecutor implements Closeable {
          * @param supplier
          * @return
          */
-        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Supplier<? extends M> supplier) {
             return toMap(keyExtractor, valueExtractor, FN.throwingMerger(), supplier);
         }
 
@@ -7872,8 +7812,8 @@ public class SQLExecutor implements Closeable {
          * @see {@link Fn.EE#replacingMerger()}
          * @see {@link Fn.EE#ignoringMerger()}
          */
-        public static <K, V> ResultExtractor<Map<K, V>> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction) {
+        public static <K, V> ResultExtractor<Map<K, V>> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Try.BinaryOperator<V, SQLException> mergeFunction) {
             return toMap(keyExtractor, valueExtractor, mergeFunction, Suppliers.<K, V> ofMap());
         }
 
@@ -7888,9 +7828,8 @@ public class SQLExecutor implements Closeable {
          * @see {@link Fn.EE#replacingMerger()}
          * @see {@link Fn.EE#ignoringMerger()}
          */
-        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Try.BinaryOperator<V, SQLException> mergeFunction,
-                final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, V>> ResultExtractor<M> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Try.BinaryOperator<V, SQLException> mergeFunction, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(mergeFunction, "mergeFunction");
@@ -7923,8 +7862,8 @@ public class SQLExecutor implements Closeable {
          * @param downstream
          * @return
          */
-        public static <K, V, A, D> ResultExtractor<Map<K, D>> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream) {
+        public static <K, V, A, D> ResultExtractor<Map<K, D>> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Collector<? super V, A, D> downstream) {
             return toMap(keyExtractor, valueExtractor, downstream, Suppliers.<K, D> ofMap());
         }
 
@@ -7936,9 +7875,8 @@ public class SQLExecutor implements Closeable {
          * @param supplier
          * @return
          */
-        public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Collector<? super V, A, D> downstream,
-                final Supplier<? extends M> supplier) {
+        public static <K, V, A, D, M extends Map<K, D>> ResultExtractor<M> toMap(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Collector<? super V, A, D> downstream, final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(downstream, "downstream");
@@ -7983,13 +7921,12 @@ public class SQLExecutor implements Closeable {
             };
         }
 
-        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor) {
+        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor) {
             return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
         }
 
-        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.Function<ResultSet, K, SQLException> keyExtractor,
-                final Try.Function<ResultSet, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final RowMapper<K> keyExtractor, final RowMapper<V> valueExtractor,
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");
@@ -8023,13 +7960,12 @@ public class SQLExecutor implements Closeable {
             };
         }
 
-        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor) {
+        public static <K, V> ResultExtractor<Map<K, List<V>>> groupTo(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor) {
             return groupTo(keyExtractor, valueExtractor, Suppliers.<K, List<V>> ofMap());
         }
 
-        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final Try.BiFunction<ResultSet, List<String>, K, SQLException> keyExtractor,
-                final Try.BiFunction<ResultSet, List<String>, V, SQLException> valueExtractor, final Supplier<? extends M> supplier) {
+        public static <K, V, M extends Map<K, List<V>>> ResultExtractor<M> groupTo(final BiRowMapper<K> keyExtractor, final BiRowMapper<V> valueExtractor,
+                final Supplier<? extends M> supplier) {
             N.checkArgNotNull(keyExtractor, "keyExtractor");
             N.checkArgNotNull(valueExtractor, "valueExtractor");
             N.checkArgNotNull(supplier, "supplier");

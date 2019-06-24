@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.annotation.ParallelSupported;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Array;
@@ -3723,7 +3724,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super T> stmtSetter) throws SQLException {
         PreparedStatement stmt = null;
 
         try {
@@ -3737,7 +3738,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws SQLException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super T> stmtSetter) throws SQLException {
         checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
         assertNotClosed();

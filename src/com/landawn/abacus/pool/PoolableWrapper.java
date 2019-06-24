@@ -78,7 +78,7 @@ public final class PoolableWrapper<T> extends AbstractPoolable {
 
     @Override
     public int hashCode() {
-        return ((srcObject == null) ? 0 : srcObject.hashCode());
+        return N.hashCode(srcObject.hashCode());
     }
 
     @SuppressWarnings("unchecked")
@@ -89,6 +89,6 @@ public final class PoolableWrapper<T> extends AbstractPoolable {
 
     @Override
     public String toString() {
-        return "{srcObject=" + srcObject + "}";
+        return "{srcObject=" + srcObject + "; activityPrint=" + activityPrint + "}";
     }
 }

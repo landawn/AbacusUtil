@@ -1241,7 +1241,13 @@ public final class N {
             return newEmptyDataSet();
         }
 
-        return new RowDataSet(new ArrayList<String>(columnNames), new ArrayList<List<Object>>());
+        final List<List<Object>> columnList = new ArrayList<>(columnNames.size());
+
+        for (int i = 0, size = columnNames.size(); i < size; i++) {
+            columnList.add(new ArrayList<>(0));
+        }
+
+        return new RowDataSet(new ArrayList<String>(columnNames), columnList);
     }
 
     /**
@@ -1287,9 +1293,9 @@ public final class N {
     public static <T> DataSet newDataSet(Collection<String> columnNames, Collection<T> rowList) {
         if (N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(rowList)) {
             // throw new IllegalArgumentException("Column name list and row list can not be both null or empty");
-            return new RowDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
+            return N.newEmptyDataSet();
         } else if (N.isNullOrEmpty(rowList)) {
-            return new RowDataSet(new ArrayList<String>(columnNames), new ArrayList<List<Object>>(0));
+            return N.newEmptyDataSet(columnNames);
         }
 
         final int rowSize = rowList.size();

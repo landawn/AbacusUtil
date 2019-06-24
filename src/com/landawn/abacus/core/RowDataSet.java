@@ -171,6 +171,8 @@ public class RowDataSet implements DataSet, Cloneable {
         N.checkArgNotNull(columnNameList);
         N.checkArgNotNull(columnList);
         N.checkArgument(N.hasDuplicates(columnNameList) == false, "Dupliated column names: {}", columnList);
+        N.checkArgument(columnNameList.size() == columnList.size(), "the size of column name list: {} is different from the size of column list: {}",
+                columnNameList.size(), columnList.size());
 
         final int size = columnList.size() == 0 ? 0 : columnList.get(0).size();
 

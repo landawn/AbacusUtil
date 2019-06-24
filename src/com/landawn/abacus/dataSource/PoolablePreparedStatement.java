@@ -49,6 +49,8 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
     private final java.sql.PreparedStatement internalStmt;
     private final PoolableConnection poolableConn;
 
+    private boolean isClosed = false;
+
     public PoolablePreparedStatement(java.sql.PreparedStatement stmt, PoolableConnection conn, CachedStatmentKey id) {
         super(DEFAULT_LIVE_TIME, DEFAULT_MAX_IDLE_TIME);
         internalStmt = stmt;
@@ -61,6 +63,45 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
     }
 
     /**
+     * Method isPoolable.
+     * 
+     * @return boolean
+     * @throws SQLException
+     * @see java.sql.Statement#isPoolable()
+     */
+    @Override
+    public boolean isPoolable() throws SQLException {
+        return internalStmt.isPoolable();
+    }
+
+    /**
+     * Method isClosed.
+     * 
+     * @return boolean
+     * @throws SQLException
+     * @see java.sql.Statement#isClosed()
+     */
+    @Override
+    public boolean isClosed() throws SQLException {
+        if (!isClosed) {
+            try {
+                if (internalStmt.isClosed()) {
+                    destroy();
+                }
+            } catch (SQLException e) {
+                // ignore
+                destroy();
+
+                if (logger.isWarnEnabled()) {
+                    logger.warn(AbacusException.getErrorMsg(e));
+                }
+            }
+        }
+
+        return isClosed;
+    }
+
+    /**
      * Method close.
      * 
      * @throws SQLException
@@ -68,7 +109,13 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
      */
     @Override
     public void close() throws SQLException {
-        if ((id == null) || (poolableConn == null)) {
+        if (isClosed) {
+            return;
+        }
+
+        if ((id == null) || (poolableConn == null) || internalStmt.isPoolable() == false) {
+            isClosed = true;
+
             internalStmt.close();
         } else {
             poolableConn.cachePreparedStatement(this);
@@ -77,6 +124,12 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
 
     @Override
     public void destroy() {
+        if (isClosed) {
+            return;
+        }
+
+        isClosed = true;
+
         try {
             internalStmt.close();
         } catch (SQLException e) {
@@ -84,14 +137,6 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
 
             if (logger.isWarnEnabled()) {
                 logger.warn(AbacusException.getErrorMsg(e));
-            }
-        } finally {
-            try {
-                poolableConn.removePreparedStatementFromCache(this);
-            } catch (SQLException e) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(AbacusException.getErrorMsg(e));
-                }
             }
         }
     }
@@ -1299,30 +1344,6 @@ class PoolablePreparedStatement extends AbstractPoolable implements PreparedStat
     @Override
     public SQLWarning getWarnings() throws SQLException {
         return internalStmt.getWarnings();
-    }
-
-    /**
-     * Method isClosed.
-     * 
-     * @return boolean
-     * @throws SQLException
-     * @see java.sql.Statement#isClosed()
-     */
-    @Override
-    public boolean isClosed() throws SQLException {
-        return internalStmt.isClosed();
-    }
-
-    /**
-     * Method isPoolable.
-     * 
-     * @return boolean
-     * @throws SQLException
-     * @see java.sql.Statement#isPoolable()
-     */
-    @Override
-    public boolean isPoolable() throws SQLException {
-        return internalStmt.isPoolable();
     }
 
     /**

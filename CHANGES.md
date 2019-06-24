@@ -1,3 +1,18 @@
+### 1.7.8
+
+* Fix issue #21
+
+* Rename `SQLExecutor.Mapper.add/batchAdd/addOrUpdate` to `Mapper.insert/batchInsert/upsert`.
+
+* Remove parameterized type `E extends Exception` from `JdbcUtil.RowMapper/BiRowMapper/RowFilter/BiRowFilter/ParametersSetter/.../ResultExtractor/BiResultExtractor`.
+
+* Add `Fn.parseByte/parseShort/parseInt/ParseLong/parseFloat/ParseDouble`.
+
+* Add `JdbcUtil.Dao/.CrudDao` for Java 8 or above.
+
+* Improvements and bug fix.
+
+
 ### 1.7.7
 
 * Improvements and bug fix.

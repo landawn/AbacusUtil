@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Random;
 
+import com.landawn.abacus.annotation.SequentialOnly;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;

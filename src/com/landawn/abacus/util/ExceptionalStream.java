@@ -37,13 +37,13 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.annotation.SequentialOnly;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.Fn.Suppliers;
-import com.landawn.abacus.util.JdbcUtil.BiRowMapper;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalDouble;
@@ -56,7 +56,6 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
-import com.landawn.abacus.util.stream.SequentialOnly;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -538,16 +537,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
         N.checkArgNotNull(targetClass, "targetClass");
         N.checkArgNotNull(resultSet, "resultSet");
 
-        final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper = new Try.BiFunction<ResultSet, List<String>, T, SQLException>() {
-            private final BiRowMapper<T, RuntimeException> biRowMapper = BiRowMapper.to(targetClass);
-
-            @Override
-            public T apply(ResultSet resultSet, List<String> columnLabels) throws SQLException {
-                return biRowMapper.apply(resultSet, columnLabels);
-            }
-        };
-
-        return rows(resultSet, rowMapper);
+        return rows(resultSet, JdbcUtil.BiRowMapper.to(targetClass));
     }
 
     /**
@@ -582,7 +572,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param rowMapper
      * @return
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final Try.Function<ResultSet, T, SQLException> rowMapper) {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final JdbcUtil.RowMapper<T> rowMapper) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(rowMapper, "rowMapper");
 
@@ -631,8 +621,7 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      * @param rowMapper
      * @return
      */
-    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet,
-            final Try.BiFunction<ResultSet, List<String>, T, SQLException> rowMapper) {
+    public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final JdbcUtil.BiRowMapper<T> rowMapper) {
         N.checkArgNotNull(resultSet, "resultSet");
         N.checkArgNotNull(rowMapper, "rowMapper");
 
@@ -775,9 +764,47 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
      */
     public static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(columnName, "columnName");
+        N.checkArgNotNullOrEmpty(columnName, "columnName");
 
-        return rows(resultSet, getColumnIndex(resultSet, columnName));
+        final ExceptionalIterator<T, SQLException> iter = new ExceptionalIterator<T, SQLException>() {
+            private int columnIndex = -1;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() throws SQLException {
+                if (hasNext == false) {
+                    hasNext = resultSet.next();
+                }
+
+                return hasNext;
+            }
+
+            @Override
+            public T next() throws SQLException {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("No more rows");
+                }
+
+                columnIndex = columnIndex == -1 ? getColumnIndex(resultSet, columnName) : columnIndex;
+
+                final T next = (T) JdbcUtil.getColumnValue(resultSet, columnIndex);
+                hasNext = false;
+                return next;
+            }
+
+            @Override
+            public void skip(long n) throws SQLException {
+                N.checkArgNotNegative(n, "n");
+
+                final long m = hasNext ? n - 1 : n;
+
+                JdbcUtil.skip(resultSet, m);
+
+                hasNext = false;
+            }
+        };
+
+        return newStream(iter);
     }
 
     /**
@@ -793,9 +820,18 @@ public class ExceptionalStream<T, E extends Exception> implements AutoCloseable 
     static <T> ExceptionalStream<T, SQLException> rows(final ResultSet resultSet, final String columnName, final boolean closeResultSet)
             throws UncheckedSQLException {
         N.checkArgNotNull(resultSet, "resultSet");
-        N.checkArgNotNull(columnName, "columnName");
+        N.checkArgNotNullOrEmpty(columnName, "columnName");
 
-        return rows(resultSet, getColumnIndex(resultSet, columnName), closeResultSet);
+        if (closeResultSet) {
+            return (ExceptionalStream<T, SQLException>) rows(resultSet, columnName).onClose(new Try.Runnable<SQLException>() {
+                @Override
+                public void run() throws SQLException {
+                    JdbcUtil.closeQuietly(resultSet);
+                }
+            });
+        } else {
+            return rows(resultSet, columnName);
+        }
     }
 
     private static int getColumnIndex(final ResultSet resultSet, final String columnName) throws UncheckedSQLException {

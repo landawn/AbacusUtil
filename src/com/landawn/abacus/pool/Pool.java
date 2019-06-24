@@ -22,7 +22,7 @@ import java.io.Serializable;
  * 
  * @author Haiyang Li
  */
-public interface Pool<K, E extends Poolable> extends Serializable {
+public interface Pool extends Serializable {
     void lock();
 
     void unlock();

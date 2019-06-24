@@ -16,9 +16,20 @@ package com.landawn.abacus.pool;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.util.ClassUtil;
+import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Objectory;
 
 /**
  * 
@@ -26,11 +37,15 @@ import java.util.Set;
  * 
  * @author Haiyang Li
  */
-public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool<K, E> implements KeyedObjectPool<K, E> {
+public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool implements KeyedObjectPool<K, E> {
     private static final long serialVersionUID = 2208516321399679864L;
     private final long maxMemorySize;
     private final KeyedObjectPool.MemoryMeasure<K, E> memoryMeasure;
     private volatile long usedMemorySize = 0;
+
+    final Map<K, E> pool;
+    final Comparator<Map.Entry<K, E>> cmp;
+    ScheduledFuture<?> scheduleFuture;
 
     protected GenericKeyedObjectPool(int capacity, long evictDelay, EvictionPolicy evictionPolicy) {
         this(capacity, evictDelay, evictionPolicy, 0, null);
@@ -47,10 +62,66 @@ public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool<
 
     protected GenericKeyedObjectPool(int capacity, long evictDelay, EvictionPolicy evictionPolicy, boolean autoBalance, float balanceFactor, long maxMemorySize,
             KeyedObjectPool.MemoryMeasure<K, E> memoryMeasure) {
-        super(capacity, evictDelay, evictionPolicy, autoBalance, balanceFactor, new HashMap<K, E>((capacity > 1000) ? 1000 : capacity));
+        super(capacity, evictDelay, evictionPolicy, autoBalance, balanceFactor);
 
         this.maxMemorySize = maxMemorySize;
         this.memoryMeasure = memoryMeasure;
+        this.pool = new HashMap<K, E>((capacity > 1000) ? 1000 : capacity);
+
+        switch (this.evictionPolicy) {
+            case LAST_ACCESS_TIME:
+
+                cmp = new Comparator<Map.Entry<K, E>>() {
+                    @Override
+                    public int compare(Map.Entry<K, E> o1, Map.Entry<K, E> o2) {
+                        return Long.compare(o1.getValue().activityPrint().getLastAccessTime(), o2.getValue().activityPrint().getLastAccessTime());
+                    }
+                };
+
+                break;
+
+            case ACCESS_COUNT:
+                cmp = new Comparator<Map.Entry<K, E>>() {
+                    @Override
+                    public int compare(Map.Entry<K, E> o1, Map.Entry<K, E> o2) {
+                        return Long.compare(o1.getValue().activityPrint().getAccessCount(), o2.getValue().activityPrint().getAccessCount());
+                    }
+                };
+
+                break;
+
+            case EXPIRATION_TIME:
+                cmp = new Comparator<Map.Entry<K, E>>() {
+                    @Override
+                    public int compare(Map.Entry<K, E> o1, Map.Entry<K, E> o2) {
+                        return Long.compare(o1.getValue().activityPrint().getExpirationTime(), o2.getValue().activityPrint().getExpirationTime());
+                    }
+                };
+
+                break;
+
+            default:
+                throw new AbacusException("Unsupproted eviction policy: " + evictionPolicy.name());
+        }
+
+        if (evictDelay > 0) {
+            final Runnable evictTask = new Runnable() {
+                @Override
+                public void run() {
+                    // Evict from the pool
+                    try {
+                        evict();
+                    } catch (Exception e) {
+                        // ignore
+                        if (logger.isWarnEnabled()) {
+                            logger.warn(AbacusException.getErrorMsg(e));
+                        }
+                    }
+                }
+            };
+
+            scheduleFuture = scheduledExecutor.scheduleWithFixedDelay(evictTask, evictDelay, evictDelay, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
@@ -86,7 +157,7 @@ public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool<
                 E oldValue = pool.put(key, e);
 
                 if (oldValue != null) {
-                    destroyObject(key, oldValue);
+                    destroy(key, oldValue);
                 }
 
                 if (memoryMeasure != null) {
@@ -100,7 +171,6 @@ public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool<
         } finally {
             lock.unlock();
         }
-
     }
 
     @Override
@@ -240,11 +310,195 @@ public class GenericKeyedObjectPool<K, E extends Poolable> extends AbstractPool<
     }
 
     @Override
-    protected void destroyObject(K key, E value) {
-        if (memoryMeasure != null) {
-            usedMemorySize -= memoryMeasure.sizeOf(key, value);
+    public void clear() {
+        assertNotClosed();
+
+        removeAll();
+    }
+
+    @Override
+    public void close() {
+        if (isClosed) {
+            return;
         }
 
-        super.destroyObject(key, value);
+        isClosed = true;
+
+        try {
+            if (scheduleFuture != null) {
+                scheduleFuture.cancel(true);
+            }
+        } finally {
+            removeAll();
+        }
+    }
+
+    @Override
+    public void vacate() {
+        assertNotClosed();
+
+        lock.lock();
+
+        try {
+            vacate((int) (pool.size() * balanceFactor));
+
+            notFull.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public int size() {
+        // assertNotClosed();
+
+        return pool.size();
+    }
+
+    @Override
+    public int hashCode() {
+        return pool.hashCode();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean equals(Object obj) {
+        return this == obj || (obj instanceof GenericKeyedObjectPool && N.equals(((GenericKeyedObjectPool<K, E>) obj).pool, pool));
+    }
+
+    @Override
+    public String toString() {
+        return pool.toString();
+    }
+
+    protected void vacate(int vacationNumber) {
+        int size = pool.size();
+
+        if (vacationNumber >= size) {
+            destroyAll(new HashMap<>(pool));
+            pool.clear();
+        } else {
+            final Queue<Map.Entry<K, E>> heap = new PriorityQueue<>(vacationNumber, cmp);
+
+            for (Map.Entry<K, E> entry : pool.entrySet()) {
+                if (heap.size() < vacationNumber) {
+                    heap.offer(entry);
+                } else if (cmp.compare(entry, heap.peek()) < 0) {
+                    heap.poll();
+                    heap.offer(entry);
+                }
+            }
+
+            final Map<K, E> removingObjects = new HashMap<>(N.initHashCapacity(heap.size()));
+
+            for (Map.Entry<K, E> entry : heap) {
+                pool.remove(entry.getKey());
+                removingObjects.put(entry.getKey(), entry.getValue());
+            }
+
+            destroyAll(removingObjects);
+        }
+    }
+
+    /**
+     * scan the object pool to find the idle object which inactive time greater than permitted the inactive time for it
+     * or it's time out.
+     * 
+     */
+    protected void evict() {
+        lock.lock();
+
+        Map<K, E> removingObjects = null;
+
+        try {
+            for (Map.Entry<K, E> entry : pool.entrySet()) {
+                if (entry.getValue().activityPrint().isExpired()) {
+                    if (removingObjects == null) {
+                        removingObjects = Objectory.createMap();
+                    }
+
+                    removingObjects.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            if (N.notNullOrEmpty(removingObjects)) {
+                for (K key : removingObjects.keySet()) {
+                    pool.remove(key);
+                }
+
+                destroyAll(removingObjects);
+
+                notFull.signalAll();
+            }
+        } finally {
+            lock.unlock();
+
+            Objectory.recycle(removingObjects);
+        }
+    }
+
+    protected void destroy(K key, E value) {
+        evictionCount.incrementAndGet();
+
+        if (value != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Destroying cached object " + ClassUtil.getSimpleClassName(value.getClass()) + " with activity print: " + value.activityPrint());
+            }
+
+            if (memoryMeasure != null) {
+                usedMemorySize -= memoryMeasure.sizeOf(key, value);
+            }
+
+            try {
+                value.destroy();
+            } catch (Exception e) {
+
+                if (logger.isWarnEnabled()) {
+                    logger.warn(AbacusException.getErrorMsg(e));
+                }
+            }
+        }
+    }
+
+    protected void destroyAll(Map<K, E> map) {
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, E> entry : map.entrySet()) {
+                destroy(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private void removeAll() {
+        lock.lock();
+
+        try {
+            destroyAll(new HashMap<>(pool));
+
+            pool.clear();
+
+            notFull.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream os) throws java.io.IOException {
+        lock.lock();
+
+        try {
+            os.defaultWriteObject();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream is) throws java.io.IOException, ClassNotFoundException {
+        lock.lock();
+
+        try {
+            is.defaultReadObject();
+        } finally {
+            lock.unlock();
+        }
     }
 }

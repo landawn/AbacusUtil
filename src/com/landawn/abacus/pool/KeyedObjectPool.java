@@ -23,7 +23,7 @@ import java.util.Set;
  * 
  * @author Haiyang Li
  */
-public interface KeyedObjectPool<K, E extends Poolable> extends Pool<K, E> {
+public interface KeyedObjectPool<K, E extends Poolable> extends Pool {
     /**
      * Method put.
      * 

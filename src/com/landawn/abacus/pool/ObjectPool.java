@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Haiyang Li
  */
-public interface ObjectPool<E extends Poolable> extends Pool<E, E> {
+public interface ObjectPool<E extends Poolable> extends Pool {
     /**
      * 
      * @param e

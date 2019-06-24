@@ -16,10 +16,11 @@ package com.landawn.abacus.util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.landawn.abacus.DataSource;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.Transaction;
 import com.landawn.abacus.exception.UncheckedSQLException;
@@ -36,48 +37,55 @@ import com.landawn.abacus.logging.LoggerFactory;
 public final class SQLTransaction implements Transaction {
     private static final Logger logger = LoggerFactory.getLogger(SQLTransaction.class);
 
-    private final SQLExecutor sqlExecutor;
-    private final DataSource ds;
-    private final String id;
-    private Connection conn;
-    private final int originalIsolationLevel;
-    private final boolean originalAutoCommit;
-    private Status status;
+    private static final Map<String, SQLTransaction> threadTransacionMap = new ConcurrentHashMap<>();
+    // private static final Map<String, SQLTransaction> attachedThreadTransacionMap = new ConcurrentHashMap<>();
 
+    private final String id;
+    private final String timedId;
+    private final javax.sql.DataSource ds;
+    private final Connection conn;
+    private final boolean closeConnection;
+    private final boolean originalAutoCommit;
+    private final int originalIsolationLevel;
+    private final boolean autoSharedByPrepareQuery;
+
+    private Transaction.Status status = Status.ACTIVE;
     private final AtomicInteger refCount = new AtomicInteger();
     private final Stack<IsolationLevel> isolationLevelStack = new Stack<>();
     private final Stack<Boolean> isForUpdateOnlyStack = new Stack<>();
     private IsolationLevel isolationLevel;
     private boolean isForUpdateOnly;
 
-    SQLTransaction(SQLExecutor sqlExecutor, DataSource ds, IsolationLevel isolationLevel) {
-        this.sqlExecutor = sqlExecutor;
+    private boolean isMarkedByCommitPreviously = false;
+
+    SQLTransaction(final javax.sql.DataSource ds, final Connection conn, final IsolationLevel isolationLevel, final boolean closeConnection,
+            final boolean autoSharedByPrepareQuery) throws SQLException {
+        N.checkArgNotNull(conn);
+        N.checkArgNotNull(isolationLevel);
+
+        this.id = getTransactionId(ds);
+        this.timedId = id + "_" + System.currentTimeMillis();
         this.ds = ds;
-        this.id = SQLExecutor.getTransactionThreadId(ds) + "_" + System.currentTimeMillis();
+        this.conn = conn;
         this.isolationLevel = isolationLevel;
-        this.conn = sqlExecutor.getConnection(ds);
-        status = Status.ACTIVE;
+        this.closeConnection = closeConnection;
 
-        try {
-            originalIsolationLevel = conn.getTransactionIsolation();
-            originalAutoCommit = conn.getAutoCommit();
+        this.originalAutoCommit = conn.getAutoCommit();
+        this.originalIsolationLevel = conn.getTransactionIsolation();
+        this.autoSharedByPrepareQuery = autoSharedByPrepareQuery;
 
-            conn.setAutoCommit(false);
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
+        conn.setAutoCommit(false);
+
+        if (isolationLevel == IsolationLevel.DEFAULT) {
+            conn.setTransactionIsolation(isolationLevel.intValue());
         }
     }
 
     @Override
     public String id() {
-        return id;
+        return timedId;
     }
 
-    /**
-     * DO NOT CLOSE the connection manually. It will be automatically closed after the transaction is committed or rolled back.
-     * 
-     * @return
-     */
     public Connection connection() {
         return conn;
     }
@@ -88,7 +96,7 @@ public final class SQLTransaction implements Transaction {
     }
 
     @Override
-    public Status status() {
+    public Transaction.Status status() {
         return status;
     }
 
@@ -97,143 +105,205 @@ public final class SQLTransaction implements Transaction {
         return status == Status.ACTIVE;
     }
 
+    //    /**
+    //     * Attaches this transaction to current thread.
+    //     * 
+    //     */
+    //    public void attach() {
+    //        final String currentThreadName = Thread.currentThread().getName();
+    //        final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+    //        final String targetTTID = currentThreadName + "_" + resourceId;
+    //
+    //        if (attachedThreadTransacionMap.containsKey(targetTTID)) {
+    //            throw new IllegalStateException("Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id()
+    //                    + ") has already been attached to current thread: " + currentThreadName);
+    //        } else if (threadTransacionMap.containsKey(targetTTID)) {
+    //            throw new IllegalStateException(
+    //                    "Transaction(id=" + threadTransacionMap.get(targetTTID).id() + ") has already been created in current thread: " + currentThreadName);
+    //        }
+    //
+    //        attachedThreadTransacionMap.put(targetTTID, this);
+    //        threadTransacionMap.put(targetTTID, this);
+    //    }
+    //
+    //    public void detach() {
+    //        final String currentThreadName = Thread.currentThread().getName();
+    //        final String resourceId = ttid.substring(ttid.lastIndexOf('_') + 1);
+    //        final String targetTTID = currentThreadName + "_" + resourceId;
+    //
+    //        if (!attachedThreadTransacionMap.containsKey(targetTTID)) {
+    //            throw new IllegalStateException(
+    //                    "Transaction(id=" + attachedThreadTransacionMap.get(targetTTID).id() + ") is not attached to current thread: " + currentThreadName);
+    //        }
+    //
+    //        threadTransacionMap.remove(targetTTID);
+    //        attachedThreadTransacionMap.remove(targetTTID);
+    //    }
+
     @Override
     public void commit() throws UncheckedSQLException {
-        if (decrementAndGetRef() > 0) {
+        final int refCount = decrementAndGetRef();
+        isMarkedByCommitPreviously = true;
+
+        if (refCount > 0) {
+            return;
+        } else if (refCount < 0) {
+            logger.warn("Transaction(id={}) is already: {}. This committing is ignored", timedId, status);
             return;
         }
 
-        if (status.equals(Status.MARKED_ROLLBACK)) {
-            logger.warn("Transaction(id={}) will be rolled back because it's marked for roll back only", id);
-
+        if (status == Status.MARKED_ROLLBACK) {
+            logger.warn("Transaction(id={}) will be rolled back because it's marked for roll back only", timedId);
             executeRollback();
+            return;
         }
 
-        if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+        if (status != Status.ACTIVE) {
+            throw new IllegalArgumentException("Transaction(id=" + timedId + ") is already: " + status + ". It can not be committed");
         }
 
-        logger.info("Committing transaction(id={})", id);
+        logger.info("Committing transaction(id={})", timedId);
 
         status = Status.FAILED_COMMIT;
 
         try {
-            conn.commit();
+            if (originalAutoCommit) {
+                conn.commit();
+            }
 
             status = Status.COMMITTED;
         } catch (SQLException e) {
             throw new UncheckedSQLException("Failed to commit transaction(id=" + id + ")", e);
         } finally {
             if (status == Status.COMMITTED) {
-                logger.info("Transaction(id={}) has been committed sucessfully", id);
+                logger.info("Transaction(id={}) has been committed successfully", timedId);
 
                 resetAndCloseConnection();
             } else {
-                logger.warn("Failed to commit transaction(id={}). It will be automatically rolled back ", id);
-
+                logger.warn("Failed to commit transaction(id={}). It will automatically be rolled back ", timedId);
                 executeRollback();
             }
         }
     }
 
+    /**
+     * 
+     * The general programming way with SQLExeucte is to execute sql scripts(generated by SQLBuilder) with array/list/map/entity by calling (batch)insert/update/delete/query/... methods.
+     * if Transaction is required. it can be started:
+     * 
+     * <pre>
+     * <code>
+     *   final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
+     *   try {
+     *       // sqlExecutor.insert(...);
+     *       // sqlExecutor.update(...);
+     *       // sqlExecutor.query(...);
+     *
+     *       tran.commit();
+     *   } finally {
+     *       // The connection will be automatically closed after the transaction is committed or rolled back.            
+     *       tran.rollbackIfNotCommitted();
+     *   }
+     * </code>
+     * </pre>
+     * 
+     * @throws UncheckedSQLException
+     * @deprecated replaced by {@code #rollbackIfNotCommitted()}
+     * @see SQLExecutor#beginTransaction(IsolationLevel)
+     */
+    @Deprecated
     @Override
     public void rollback() throws UncheckedSQLException {
-        if (decrementAndGetRef() > 0) {
+        final int refCount = decrementAndGetRef();
+        isMarkedByCommitPreviously = true;
+
+        if (refCount > 0) {
             status = Status.MARKED_ROLLBACK;
+            return;
+        } else if (refCount < 0) {
+            logger.warn("Transaction(id={}) is already: {}. This rollback is ignored", timedId, status);
             return;
         }
 
         if (!(status.equals(Status.ACTIVE) || status.equals(Status.MARKED_ROLLBACK) || status == Status.FAILED_COMMIT)) {
-            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+            throw new IllegalStateException("Transaction(id=" + timedId + ") is already: " + status);
+        }
+
+        executeRollback();
+    }
+
+    public void rollbackIfNotCommitted() throws UncheckedSQLException {
+        if (isMarkedByCommitPreviously) { // Do nothing. It happened in finally block.
+            isMarkedByCommitPreviously = false;
+            return;
+        }
+
+        final int refCount = decrementAndGetRef();
+
+        if (refCount > 0) {
+            status = Status.MARKED_ROLLBACK;
+            return;
+        } else if (refCount < 0) {
+            if (refCount == -1
+                    && (status == Status.COMMITTED || status == Status.FAILED_COMMIT || status == Status.ROLLED_BACK || status == Status.FAILED_ROLLBACK)) {
+                // Do nothing. It happened in finally block.
+            } else {
+                logger.warn("Transaction(id={}) is already: {}. This rollback is ignored", timedId, status);
+            }
+
+            return;
+        }
+
+        if (!(status == Status.ACTIVE || status == Status.MARKED_ROLLBACK || status == Status.FAILED_COMMIT || status == Status.FAILED_ROLLBACK)) {
+            throw new IllegalArgumentException("Transaction(id=" + timedId + ") is already: " + status + ". It can not be rolled back");
         }
 
         executeRollback();
     }
 
     private void executeRollback() throws UncheckedSQLException {
-        logger.warn("Rolling back transaction(id={})" + id);
+        logger.warn("Rolling back transaction(id={})", timedId);
 
         status = Status.FAILED_ROLLBACK;
 
         try {
-            conn.rollback();
+            if (originalAutoCommit) {
+                conn.rollback();
+            }
 
             status = Status.ROLLED_BACK;
         } catch (SQLException e) {
-            throw new UncheckedSQLException("Failed to roll back transaction(id=" + id + ")", e);
+            throw new UncheckedSQLException(e);
         } finally {
             if (status == Status.ROLLED_BACK) {
-                logger.warn("Transaction(id={}) has been rolled back successfully", id);
+                logger.warn("Transaction(id={}) has been rolled back successfully", timedId);
             } else {
-                logger.warn("Failed to roll back transaction(id={})", id);
+                logger.warn("Failed to roll back transaction(id={})", timedId);
             }
 
             resetAndCloseConnection();
         }
     }
 
-    //    /**
-    //     * Associate current thread with this transaction.
-    //     * 
-    //     */
-    //    public void attach() {
-    //        attach(SQLExecutor.getTransactionThreadId());
-    //    }
-    //
-    //    /**
-    //     * Associate the specified thread with this transaction.
-    //     * 
-    //     * @param threadId
-    //     */
-    //    private void attach(String ttid) {
-    //        if (!status.equals(Status.ACTIVE)) {
-    //            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
-    //        }
-    //
-    //        logger.info("Attaching transaction(id={}) to thread={}", id, ttid);
-    //
-    //        sqlExecutor.threadTransactionMap.put(ttid, this);
-    //    }
-    //
-    //    /**
-    //     * Remove this transaction from current thread.
-    //     * 
-    //     */
-    //    public void detach() {
-    //        detach(SQLExecutor.getTransactionThreadId());
-    //    }
-    //
-    //    /**
-    //     * Remove this transaction from the specified thread.
-    //     * 
-    //     * @param threadId
-    //     */
-    //    private void detach(String ttid) {
-    //        logger.info("Detaching transaction(id={}) from thread={}", id, ttid);
-    //
-    //        sqlExecutor.threadTransactionMap.remove(ttid);
-    //    }
-
     private void resetAndCloseConnection() {
-        if (conn == null) {
-            return;
-        }
-
         try {
             conn.setAutoCommit(originalAutoCommit);
             conn.setTransactionIsolation(originalIsolationLevel);
         } catch (SQLException e) {
-            logger.error("Failed to reset connection in transaction(id=" + id + ")", e);
+            logger.warn("Failed to reset connection", e);
         } finally {
-            sqlExecutor.closeQuietly(conn, ds);
-            conn = null;
+            if (closeConnection) {
+                JdbcUtil.releaseConnection(conn, ds);
+            }
         }
     }
 
     synchronized int incrementAndGetRef(final IsolationLevel isolationLevel, final boolean forUpdateOnly) {
         if (!status.equals(Status.ACTIVE)) {
-            throw new IllegalStateException("Transaction(id=" + id + ") is already: " + status);
+            throw new IllegalStateException("Transaction(id=" + timedId + ") is already: " + status);
         }
+
+        isMarkedByCommitPreviously = false;
 
         if (conn != null) {
             try {
@@ -258,12 +328,12 @@ public final class SQLTransaction implements Transaction {
         final int res = refCount.decrementAndGet();
 
         if (res == 0) {
-            sqlExecutor.threadTransactionMap.remove(SQLExecutor.getTransactionThreadId(ds));
+            threadTransacionMap.remove(id);
 
-            logger.info("Finishing transaction(id={})", id);
+            logger.info("Finishing transaction(id={})", timedId);
 
-            logger.debug("Remaining active transactions: {}" + sqlExecutor.threadTransactionMap.values());
-        } else {
+            logger.debug("Remaining active transactions: {}", threadTransacionMap.values());
+        } else if (res > 0) {
             this.isolationLevel = isolationLevelStack.pop();
             this.isForUpdateOnly = isForUpdateOnlyStack.pop();
 
@@ -274,7 +344,6 @@ public final class SQLTransaction implements Transaction {
                     throw new UncheckedSQLException(e);
                 }
             }
-
         }
 
         return res;
@@ -284,18 +353,34 @@ public final class SQLTransaction implements Transaction {
         return isForUpdateOnly;
     }
 
+    boolean autoSharedByPrepareQuery() {
+        return autoSharedByPrepareQuery;
+    }
+
+    static String getTransactionId(Object dataSourceOrConnection) {
+        return Thread.currentThread().getName() + "_" + System.identityHashCode(dataSourceOrConnection);
+    }
+
+    static SQLTransaction getTransaction(final javax.sql.DataSource ds) {
+        return threadTransacionMap.get(getTransactionId(ds));
+    }
+
+    static SQLTransaction putTransaction(final javax.sql.DataSource ds, final SQLTransaction tran) {
+        return threadTransacionMap.put(getTransactionId(ds), tran);
+    }
+
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return timedId.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof SQLTransaction && id.equals(((SQLTransaction) obj).id);
+        return obj instanceof SQLTransaction && timedId.equals(((SQLTransaction) obj).timedId);
     }
 
     @Override
     public String toString() {
-        return id;
+        return "SQLTransaction={id=" + timedId + "}";
     }
 }

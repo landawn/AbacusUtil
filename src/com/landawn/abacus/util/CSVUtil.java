@@ -1539,12 +1539,12 @@ public final class CSVUtil {
      * @return
      */
     public static long importCSV(final File file, final Connection conn, final String insertSQL,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
         return importCSV(file, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, stmtSetter);
     }
 
     public static long importCSV(final File file, final long offset, final long count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter)
+            final int batchInterval, final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter)
             throws UncheckedSQLException, UncheckedIOException {
         return importCSV(file, offset, count, Fn.<String[]> alwaysTrue(), conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
@@ -1564,7 +1564,7 @@ public final class CSVUtil {
      */
     public static <E extends Exception> long importCSV(final File file, final long offset, final long count, final Try.Predicate<String[], E> filter,
             final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
         PreparedStatement stmt = null;
 
         try {
@@ -1579,12 +1579,12 @@ public final class CSVUtil {
     }
 
     public static long importCSV(final File file, final PreparedStatement stmt,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
         return importCSV(file, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
     public static long importCSV(final File file, final long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter)
+            final int batchInterval, final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter)
             throws UncheckedSQLException, UncheckedIOException {
         return importCSV(file, offset, count, Fn.<String[]> alwaysTrue(), stmt, batchSize, batchInterval, stmtSetter);
     }
@@ -1604,7 +1604,7 @@ public final class CSVUtil {
      */
     public static <E extends Exception> long importCSV(final File file, final long offset, final long count, final Try.Predicate<String[], E> filter,
             final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
         Reader reader = null;
 
         try {
@@ -1619,12 +1619,12 @@ public final class CSVUtil {
     }
 
     public static long importCSV(final InputStream is, final PreparedStatement stmt,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
         return importCSV(is, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
     public static long importCSV(final InputStream is, final long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter)
+            final int batchInterval, final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter)
             throws UncheckedSQLException, UncheckedIOException {
         return importCSV(is, offset, count, Fn.<String[]> alwaysTrue(), stmt, batchSize, batchInterval, stmtSetter);
     }
@@ -1644,19 +1644,19 @@ public final class CSVUtil {
      */
     public static <E extends Exception> long importCSV(final InputStream is, long offset, final long count, final Try.Predicate<String[], E> filter,
             final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
         final Reader reader = new InputStreamReader(is);
         return importCSV(reader, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
     }
 
     public static long importCSV(final Reader reader, final PreparedStatement stmt,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
         return importCSV(reader, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
     @SuppressWarnings({ "unchecked" })
     public static long importCSV(final Reader reader, long offset, final long count, final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException {
         return importCSV(reader, offset, count, Fn.<String[]> alwaysTrue(), stmt, batchSize, batchInterval, stmtSetter);
     }
 
@@ -1676,7 +1676,7 @@ public final class CSVUtil {
     @SuppressWarnings({ "unchecked" })
     public static <E extends Exception> long importCSV(final Reader reader, long offset, final long count, final Try.Predicate<String[], E> filter,
             final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final Try.BiConsumer<? super PreparedStatement, ? super String[], SQLException> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
+            final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super String[]> stmtSetter) throws UncheckedSQLException, UncheckedIOException, E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);

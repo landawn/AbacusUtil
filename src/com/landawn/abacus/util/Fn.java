@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.annotation.SequentialOnly;
 import com.landawn.abacus.util.NoCachingNoUpdating.DisposableArray;
 import com.landawn.abacus.util.Tuple.Tuple1;
 import com.landawn.abacus.util.Tuple.Tuple2;
@@ -123,7 +124,6 @@ import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
-import com.landawn.abacus.util.stream.SequentialOnly;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -627,6 +627,8 @@ public abstract class Fn extends Comparators {
      * @return
      * @see {@code Stream.split/sliding};
      */
+    @Beta
+    @SequentialOnly
     public static <T, C extends Collection<T>> Supplier<? extends C> reuse(final Supplier<? extends C> supplier) {
         return new Supplier<C>() {
             private C c;
@@ -653,6 +655,8 @@ public abstract class Fn extends Comparators {
      * @return
      * @see {@code Stream.split/sliding};
      */
+    @Beta
+    @SequentialOnly
     public static <T, C extends Collection<T>> IntFunction<? extends C> reuse(final IntFunction<? extends C> supplier) {
         return new IntFunction<C>() {
             private C c;
@@ -776,6 +780,14 @@ public abstract class Fn extends Comparators {
         return DO_NOTHING;
     }
 
+    public static <T extends AutoCloseable> Consumer<T> close() {
+        return (Consumer<T>) CLOSE;
+    }
+
+    public static <T extends AutoCloseable> Consumer<T> closeQuietly() {
+        return (Consumer<T>) CLOSE_QUIETLY;
+    }
+
     public static <T> Consumer<T> sleep(final long millis) {
         return new Consumer<T>() {
             @Override
@@ -792,14 +804,6 @@ public abstract class Fn extends Comparators {
                 N.sleepUninterruptibly(millis);
             }
         };
-    }
-
-    public static <T extends AutoCloseable> Consumer<T> close() {
-        return (Consumer<T>) CLOSE;
-    }
-
-    public static <T extends AutoCloseable> Consumer<T> closeQuietly() {
-        return (Consumer<T>) CLOSE_QUIETLY;
     }
 
     public static <T> Consumer<T> println() {
@@ -890,17 +894,17 @@ public abstract class Fn extends Comparators {
         }
     };
 
-    @SuppressWarnings("rawtypes")
-    public static <K, T> Function<Keyed<K, T>, T> val() {
-        return (Function) VAL;
-    }
-
     private static final Function<Map.Entry<Keyed<Object, Object>, Object>, Object> KK = new Function<Map.Entry<Keyed<Object, Object>, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Keyed<Object, Object>, Object> t) {
             return t.getKey().val();
         }
     };
+
+    @SuppressWarnings("rawtypes")
+    public static <K, T> Function<Keyed<K, T>, T> val() {
+        return (Function) VAL;
+    }
 
     @SuppressWarnings("rawtypes")
     public static <T, K, V> Function<Map.Entry<Keyed<K, T>, V>, T> kk() {
@@ -1917,6 +1921,93 @@ public abstract class Fn extends Comparators {
                 return func.apply(entry.getKey(), entry.getValue());
             }
         };
+    }
+
+    private static Function<String, Integer> PARSE_INT_FUNC = new Function<String, Integer>() {
+        @Override
+        public Integer apply(String t) {
+            return N.parseInt(t);
+        }
+    };
+
+    private static Function<String, Byte> PARSE_BYTE_FUNC = new Function<String, Byte>() {
+        @Override
+        public Byte apply(String t) {
+            return N.parseByte(t);
+        }
+    };
+
+    public static Function<String, Byte> parseByte() {
+        return PARSE_BYTE_FUNC;
+    }
+
+    private static Function<String, Short> PARSE_SHORT_FUNC = new Function<String, Short>() {
+        @Override
+        public Short apply(String t) {
+            return N.parseShort(t);
+        }
+    };
+
+    public static Function<String, Short> parseShort() {
+        return PARSE_SHORT_FUNC;
+    }
+
+    public static Function<String, Integer> parseInt() {
+        return PARSE_INT_FUNC;
+    }
+
+    private static Function<String, Long> PARSE_LONG_FUNC = new Function<String, Long>() {
+        @Override
+        public Long apply(String t) {
+            return N.parseLong(t);
+        }
+    };
+
+    public static Function<String, Long> parseLong() {
+        return PARSE_LONG_FUNC;
+    }
+
+    private static Function<String, Float> PARSE_FLOAT_FUNC = new Function<String, Float>() {
+        @Override
+        public Float apply(String t) {
+            return N.parseFloat(t);
+        }
+    };
+
+    public static Function<String, Float> parseFloat() {
+        return PARSE_FLOAT_FUNC;
+    }
+
+    private static Function<String, Double> PARSE_DOUBLE_FUNC = new Function<String, Double>() {
+        @Override
+        public Double apply(String t) {
+            return N.parseDouble(t);
+        }
+    };
+
+    public static Function<String, Double> parseDouble() {
+        return PARSE_DOUBLE_FUNC;
+    }
+
+    private static Function<String, Number> CREATE_NUMBER_FUNC = new Function<String, Number>() {
+        @Override
+        public Number apply(final String t) {
+            return N.isNullOrEmpty(t) ? null : StringUtil.createNumber(t).orElseThrow(new Supplier<NumberFormatException>() {
+                @Override
+                public NumberFormatException get() {
+                    return new NumberFormatException("Invalid number: " + t);
+                }
+            });
+        }
+    };
+
+    /**
+     * 
+     * @return
+     * @see StringUtil#createNumber(String)
+     */
+    public static Function<String, Number> createNumber() {
+        return CREATE_NUMBER_FUNC;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

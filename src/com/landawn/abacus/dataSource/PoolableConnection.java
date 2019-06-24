@@ -81,9 +81,12 @@ class PoolableConnection extends AbstractPoolable implements Connection {
                 stmt.reset();
 
                 synchronized (cachedStatementPool) {
-                    if (cachedStatementPool.containsKey(id)) {
-                        stmt.destroy();
-                    } else if (!cachedStatementPool.put(id, stmt)) {
+                    final PoolablePreparedStatement cached = cachedStatementPool.get(id);
+                    if (cached == null) {
+                        if (!cachedStatementPool.put(id, stmt)) {
+                            stmt.destroy();
+                        }
+                    } else if (cached != stmt) {
                         stmt.destroy();
                     }
                 }
@@ -97,78 +100,78 @@ class PoolableConnection extends AbstractPoolable implements Connection {
         }
     }
 
-    void removePreparedStatementFromCache(PoolablePreparedStatement stmt) throws SQLException {
-        if ((stmt != null) && (stmt.getId() != null)) {
-            // DO NOT synchronized(cachedStatementPool) because it may cause dead lock.
-
-            /*
-            JNI global references: 294
-            
-            
-            Found one Java-level deadlock:
-            =============================
-            "Thread-37":
-            waiting to lock monitor 0x000000006374ffe8 (object 0x000000078a8ebc70, a com.landawn.abacus.pool.GenericKeyedObjectPool),
-            which is held by "pool-165-thread-25"
-            "pool-165-thread-25":
-            waiting for ownable synchronizer 0x000000078a8ebd38, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
-            which is held by "Thread-37"
-            
-            Java stack information for the threads listed above:
-            ===================================================
-            "Thread-37":
-            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.removePreparedStatementFromCache(PoolableConnection.java:106)
-            - waiting to lock <0x000000078a8ebc70> (a com.landawn.abacus.pool.GenericKeyedObjectPool)
-            at com.landawn.abacus.core.sql.dataSource.PoolablePreparedStatement.destroy(PoolablePreparedStatement.java:89)
-            at com.landawn.abacus.pool.AbstractPool.destroyObject(AbstractPool.java:327)
-            at com.landawn.abacus.pool.GenericKeyedObjectPool.destroyObject(GenericKeyedObjectPool.java:248)
-            at com.landawn.abacus.pool.AbstractPool.destroyObject(AbstractPool.java:340)
-            at com.landawn.abacus.pool.AbstractPool.clear(AbstractPool.java:238)
-            at com.landawn.abacus.pool.AbstractPool.close(AbstractPool.java:257)
-            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.destroy(PoolableConnection.java:150)
-            at com.landawn.abacus.core.sql.dataSource.SQLConnectionManager.clear(SQLConnectionManager.java:302)
-            - locked <0x00000007840e1158> (a java.util.IdentityHashMap)
-            at com.landawn.abacus.core.sql.dataSource.SQLConnectionManager$2.run(SQLConnectionManager.java:119)
-            "pool-165-thread-25":
-            at sun.misc.Unsafe.park(Native Method)
-            - parking to wait for  <0x000000078a8ebd38> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
-            at java.util.concurrent.locks.LockSupport.park(LockSupport.java:186)
-            at java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:834)
-            at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireQueued(AbstractQueuedSynchronizer.java:867)
-            at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(AbstractQueuedSynchronizer.java:1197)
-            at java.util.concurrent.locks.ReentrantLock$NonfairSync.lock(ReentrantLock.java:214)
-            at java.util.concurrent.locks.ReentrantLock.lock(ReentrantLock.java:290)
-            at com.landawn.abacus.pool.GenericKeyedObjectPool.containsKey(GenericKeyedObjectPool.java:194)
-            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.cachePreparedStatement(PoolableConnection.java:85)
-            - locked <0x000000078a8ebc70> (a com.landawn.abacus.pool.GenericKeyedObjectPool)
-            at com.landawn.abacus.core.sql.dataSource.PoolablePreparedStatement.close(PoolablePreparedStatement.java:74)
-            at com.landawn.abacus.util.JdbcUtil.closeQuietly(JdbcUtil.java:636)
-            at com.landawn.abacus.util.SQLExecutor.closeQuietly(SQLExecutor.java:3295)
-            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1841)
-            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1806)
-            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1757)
-            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1722)
-            at com.landawn.abacus.util.PropertiesUtil$2.run(PropertiesUtil.java:195)
-            - locked <0x00000007849489a0> (a java.util.concurrent.ConcurrentHashMap)
-            at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
-            at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304)
-            at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:178)
-            at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
-            at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
-            at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
-            at java.lang.Thread.run(Thread.java:745)
-            
-            Found 1 deadlock.            
-             */
-            final PoolablePreparedStatement tmp = cachedStatementPool.remove(stmt.getId());
-
-            if (tmp == stmt || tmp == null) {
-                // do nothing.
-            } else {
-                tmp.close();
-            }
-        }
-    }
+    //    void removePreparedStatementFromCache(PoolablePreparedStatement stmt) throws SQLException {
+    //        if ((stmt != null) && (stmt.getId() != null)) {
+    //            // DO NOT synchronized(cachedStatementPool) because it may cause dead lock.
+    //
+    //            /*
+    //            JNI global references: 294
+    //            
+    //            
+    //            Found one Java-level deadlock:
+    //            =============================
+    //            "Thread-37":
+    //            waiting to lock monitor 0x000000006374ffe8 (object 0x000000078a8ebc70, a com.landawn.abacus.pool.GenericKeyedObjectPool),
+    //            which is held by "pool-165-thread-25"
+    //            "pool-165-thread-25":
+    //            waiting for ownable synchronizer 0x000000078a8ebd38, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+    //            which is held by "Thread-37"
+    //            
+    //            Java stack information for the threads listed above:
+    //            ===================================================
+    //            "Thread-37":
+    //            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.removePreparedStatementFromCache(PoolableConnection.java:106)
+    //            - waiting to lock <0x000000078a8ebc70> (a com.landawn.abacus.pool.GenericKeyedObjectPool)
+    //            at com.landawn.abacus.core.sql.dataSource.PoolablePreparedStatement.destroy(PoolablePreparedStatement.java:89)
+    //            at com.landawn.abacus.pool.AbstractPool.destroyObject(AbstractPool.java:327)
+    //            at com.landawn.abacus.pool.GenericKeyedObjectPool.destroyObject(GenericKeyedObjectPool.java:248)
+    //            at com.landawn.abacus.pool.AbstractPool.destroyObject(AbstractPool.java:340)
+    //            at com.landawn.abacus.pool.AbstractPool.clear(AbstractPool.java:238)
+    //            at com.landawn.abacus.pool.AbstractPool.close(AbstractPool.java:257)
+    //            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.destroy(PoolableConnection.java:150)
+    //            at com.landawn.abacus.core.sql.dataSource.SQLConnectionManager.clear(SQLConnectionManager.java:302)
+    //            - locked <0x00000007840e1158> (a java.util.IdentityHashMap)
+    //            at com.landawn.abacus.core.sql.dataSource.SQLConnectionManager$2.run(SQLConnectionManager.java:119)
+    //            "pool-165-thread-25":
+    //            at sun.misc.Unsafe.park(Native Method)
+    //            - parking to wait for  <0x000000078a8ebd38> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+    //            at java.util.concurrent.locks.LockSupport.park(LockSupport.java:186)
+    //            at java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:834)
+    //            at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireQueued(AbstractQueuedSynchronizer.java:867)
+    //            at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(AbstractQueuedSynchronizer.java:1197)
+    //            at java.util.concurrent.locks.ReentrantLock$NonfairSync.lock(ReentrantLock.java:214)
+    //            at java.util.concurrent.locks.ReentrantLock.lock(ReentrantLock.java:290)
+    //            at com.landawn.abacus.pool.GenericKeyedObjectPool.containsKey(GenericKeyedObjectPool.java:194)
+    //            at com.landawn.abacus.core.sql.dataSource.PoolableConnection.cachePreparedStatement(PoolableConnection.java:85)
+    //            - locked <0x000000078a8ebc70> (a com.landawn.abacus.pool.GenericKeyedObjectPool)
+    //            at com.landawn.abacus.core.sql.dataSource.PoolablePreparedStatement.close(PoolablePreparedStatement.java:74)
+    //            at com.landawn.abacus.util.JdbcUtil.closeQuietly(JdbcUtil.java:636)
+    //            at com.landawn.abacus.util.SQLExecutor.closeQuietly(SQLExecutor.java:3295)
+    //            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1841)
+    //            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1806)
+    //            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1757)
+    //            at com.landawn.abacus.util.SQLExecutor.query(SQLExecutor.java:1722)
+    //            at com.landawn.abacus.util.PropertiesUtil$2.run(PropertiesUtil.java:195)
+    //            - locked <0x00000007849489a0> (a java.util.concurrent.ConcurrentHashMap)
+    //            at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)
+    //            at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304)
+    //            at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:178)
+    //            at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)
+    //            at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+    //            at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+    //            at java.lang.Thread.run(Thread.java:745)
+    //            
+    //            Found 1 deadlock.            
+    //             */
+    //            final PoolablePreparedStatement tmp = cachedStatementPool.remove(stmt.getId());
+    //
+    //            if (tmp == stmt || tmp == null) {
+    //                // do nothing.
+    //            } else {
+    //                tmp.close();
+    //            }
+    //        }
+    //    }
 
     synchronized void updateLastSQLExecutionTime(boolean isOk) {
         lastSQLExecutionTime = System.currentTimeMillis();
@@ -571,7 +574,7 @@ class PoolableConnection extends AbstractPoolable implements Connection {
             }
         }
 
-        if (stmt == null) {
+        if (stmt == null || stmt.isClosed()) {
             if ((resultSetType != -1) && (resultSetConcurrency != -1) && (resultSetHoldability != -1)) {
                 stmt = new PoolablePreparedStatement(internalConn.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability), this, id);
             } else if ((resultSetType != -1) && (resultSetConcurrency != -1)) {
