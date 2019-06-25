@@ -1,5 +1,9 @@
 package com.landawn.samples.abacus;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +17,7 @@ import org.junit.Test;
 import com.landawn.abacus.annotation.Id;
 import com.landawn.abacus.annotation.ReadOnly;
 import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.JdbcUtil.Dao;
 import com.landawn.abacus.util.N;
@@ -22,8 +27,8 @@ import com.landawn.abacus.util.SQLBuilder.PSC;
 import com.landawn.abacus.util.SQLExecutor;
 import com.landawn.abacus.util.SQLExecutor.Mapper;
 import com.landawn.abacus.util.SQLTransaction;
+import com.landawn.abacus.util.stream.Stream;
 
-import junit.framework.TestCase;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,7 +37,7 @@ import lombok.NoArgsConstructor;
 /**
  * All I want to do is: insert -> read -> update -> delete a record in DB table.
  */
-public class Jdbc extends TestCase {
+public class Jdbc {
     static final DataSource dataSource = JdbcUtil.createDataSource("jdbc:h2:~/test", "sa", "");
     static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
     static final UserDao userDao = Dao.newInstance(UserDao.class, dataSource);
@@ -69,7 +74,7 @@ public class Jdbc extends TestCase {
     }
 
     @Test
-    public void test_crudByJdbc() throws SQLException {
+    public void crud_by_Jdbc() throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
 
@@ -148,7 +153,7 @@ public class Jdbc extends TestCase {
 
     // A bit(lot?) improvements:
     @Test
-    public void test_crudByPreparedQuery() throws SQLException {
+    public void crud_by_PreparedQuery() throws SQLException {
 
         String sql = PSC.insertInto(User.class).sql();
         JdbcUtil.prepareQuery(dataSource, sql) //
@@ -184,7 +189,7 @@ public class Jdbc extends TestCase {
     }
 
     @Test
-    public void test_crudBySQLExecutor() throws SQLException {
+    public void crud_by_SQLExecutor() {
         String sql = NSC.insertInto(User.class).sql();
         User user = User.builder().id(100).firstName("Forrest").lastName("Gump").email("123@email.com").build();
         sqlExecutor.insert(sql, user);
@@ -214,10 +219,16 @@ public class Jdbc extends TestCase {
 
         @NamedUpdate("UPDATE user SET first_name = :firstName, last_name = :lastName WHERE id = :id")
         int updateFirstAndLastName(String newFirstName, String newLastName, long id) throws SQLException;
+
+        @NamedSelect("SELECT first_name, last_name FROM user WHERE id = :id")
+        int getFirstAndLastNameBy(long id) throws SQLException;
+
+        @NamedSelect("SELECT id, first_name, last_name, email FROM user")
+        Stream<User> allUsers() throws SQLException;
     }
 
     @Test
-    public void test_crudByDao() throws SQLException {
+    public void crud_by_Dao() throws SQLException {
         User user = User.builder().id(100).firstName("Forrest").lastName("Gump").email("123@email.com").build();
         userDao.insertWithId(user);
 
@@ -225,6 +236,8 @@ public class Jdbc extends TestCase {
         System.out.println(userFromDB);
 
         userDao.updateFirstAndLastName("Tom", "Hanks", 100);
+
+        userDao.allUsers().map(e -> e.getFirstName() + " " + e.getLastName()).forEach(Fn.println());
 
         userDao.delete(100L);
 
@@ -239,7 +252,7 @@ public class Jdbc extends TestCase {
     }
 
     @Test
-    public void test_crudByMapper() throws SQLException {
+    public void crud_by_Mapper() {
         User user = User.builder().id(100).firstName("Forrest").lastName("Gump").email("123@email.com").build();
         userMapper.insert(user);
 

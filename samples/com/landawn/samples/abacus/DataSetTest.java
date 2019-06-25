@@ -14,8 +14,8 @@ public class DataSetTest {
 
     @Test
     public void test_join() {
-        Account account = new Account().setId(1001).setFirstName("Tom");
-        Contact contact = new Contact().setId(2001).setAccountId(1001).setAddress("1 Rd");
+        Account account = Account.builder().id(1001).firstName("Tom").build();
+        Contact contact = Contact.builder().id(2001).accountId(1001).address("1 Rd").build();
 
         DataSet ds1 = N.newDataSet(N.asList("id", "firstName"), N.asList(account));
         ds1.println();

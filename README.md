@@ -143,7 +143,9 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Mapper](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Mapper_view.html), 
 [PreparedQuery](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/PreparedQuery_view.html), 
 [SQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SQLBuilder_view.html), 
-[DynamicSQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DynamicSQLBuilder_view.html), 
+[DynamicSQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DynamicSQLBuilder_view.html),
+[JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
+[JdbcUtil.Dao/CrudDao](https://static.javadoc.io/com.landawn/abacus-util/1.7.8/com/landawn/abacus/util/JdbcUtil.Dao.html), 
 [ConditionFactory(L)](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ConditionFactory_view.html)...
 
 * ORMs for NoSQL: 
