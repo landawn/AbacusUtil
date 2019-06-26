@@ -221,7 +221,7 @@ public class Jdbc {
         int updateFirstAndLastName(String newFirstName, String newLastName, long id) throws SQLException;
 
         @NamedSelect("SELECT first_name, last_name FROM user WHERE id = :id")
-        int getFirstAndLastNameBy(long id) throws SQLException;
+        User getFirstAndLastNameBy(long id) throws SQLException;
 
         @NamedSelect("SELECT id, first_name, last_name, email FROM user")
         Stream<User> allUsers() throws SQLException;
