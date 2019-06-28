@@ -106,7 +106,7 @@ Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
 * By Abacus-Util
 ```java
 Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
-              .map(className -> Try.call(Class::forName))
+              .map(Fn.ff(className -> Class.forName(className)))
               .toList();
 ```
 
@@ -252,9 +252,7 @@ public static <T> Collector<T, ?, T> singletonCollector() {
 
 * By Abacus-Util
 ```java
-users.stream().filter(user -> user.getId() == 1).limit(2)
-      .toListAndThen(l -> Optional.ofNulable(l.size() == 1 ? l.get(0) : null))
-      .orElseThrow(IllegalStateException::new)
+users.stream().filter(user -> user.getId() == 1).onlyOne();
 ```
 
 ---
