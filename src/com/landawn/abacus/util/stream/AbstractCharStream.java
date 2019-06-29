@@ -747,7 +747,7 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public CharStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<char[], char[]>() {
@@ -924,7 +924,7 @@ abstract class AbstractCharStream extends CharStream {
             public IndexedChar apply(char t) {
                 return IndexedChar.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_CHAR_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_CHAR_COMPARATOR);
     }
 
     @Override

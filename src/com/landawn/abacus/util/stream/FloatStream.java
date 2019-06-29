@@ -26,6 +26,7 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.landawn.abacus.annotation.SequentialOnly;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
@@ -402,6 +403,12 @@ public abstract class FloatStream
     @SequentialOnly
     @Override
     public FloatIterator iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -941,7 +948,7 @@ public abstract class FloatStream
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();

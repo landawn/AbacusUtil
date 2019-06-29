@@ -53,6 +53,7 @@ import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.Charsets;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.Duration;
@@ -2377,6 +2378,12 @@ public abstract class Stream<T>
     @SequentialOnly
     @Override
     public ObjIterator<T> iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -4066,7 +4073,7 @@ public abstract class Stream<T>
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();
@@ -4362,7 +4369,7 @@ public abstract class Stream<T>
                             synchronized (iterators) {
                                 if (iterators.hasNext()) {
                                     s = iterators.next();
-                                    iter = s.iterator();
+                                    iter = s.iteratorEx();
                                 } else {
                                     break;
                                 }
@@ -7074,7 +7081,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -7087,7 +7094,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     public static <T, R> Stream<R> zip(final List<? extends Collection<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
@@ -7122,7 +7129,7 @@ public abstract class Stream<T>
         final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
 
         for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+            iterList.add(e.iteratorEx());
         }
 
         return zipp(iterList, zipFunction).onClose(newCloseHandler(c));
@@ -7305,7 +7312,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -7323,7 +7330,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> zip(final Stream<? extends A> a, final Stream<? extends B> b, final Stream<? extends C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -7866,7 +7873,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final BiFunction<? super A, ? super B, R> zipFunction,
             final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
+        return parallelZip(a.iteratorEx(), b.iteratorEx(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
@@ -7892,7 +7899,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b, c)));
+        return parallelZip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     public static <T, R> Stream<R> parallelZip(final List<? extends Collection<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
@@ -7958,7 +7965,7 @@ public abstract class Stream<T>
         final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
 
         for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+            iterList.add(e.iteratorEx());
         }
 
         return parallelZipp(iterList, zipFunction, queueSize).onClose(newCloseHandler(c));
@@ -8545,7 +8552,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
+        return parallelZip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -8592,7 +8599,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, queueSize)
+        return parallelZip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, queueSize)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -8671,7 +8678,7 @@ public abstract class Stream<T>
         final List<Iterator<? extends T>> iterList = new ArrayList<>(len);
 
         for (Stream<? extends T> e : c) {
-            iterList.add(e.iterator());
+            iterList.add(e.iteratorEx());
         }
 
         return parallelZipp(iterList, valuesForNone, zipFunction, queueSize).onClose(newCloseHandler(c));
@@ -8898,7 +8905,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> merge(final T[] a, final T[] b, final T[] c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).iterator(), Stream.of(c).iterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), Stream.of(c).iteratorEx(), nextSelector);
     }
 
     /**
@@ -9004,7 +9011,7 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b, final Iterator<? extends T> c,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).iterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), c, nextSelector);
     }
 
     /**
@@ -9015,7 +9022,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return merge(a.iterator(), b.iterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.iteratorEx(), b.iteratorEx(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     public static <T> Stream<T> merge(final Stream<? extends T> a, final Stream<? extends T> b, final Stream<? extends T> c,
@@ -9095,7 +9102,7 @@ public abstract class Stream<T>
         Stream<T> result = merge(iter.next(), iter.next(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.iterator(), iter.next(), nextSelector);
+            result = merge(result.iteratorEx(), iter.next(), nextSelector);
         }
 
         return result;
@@ -9253,16 +9260,16 @@ public abstract class Stream<T>
             final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             final Iterator<? extends T> a = iter.next();
             final Iterator<? extends T> b = iter.next();
-            return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(),
+            return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iteratorEx(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iteratorEx(),
                     nextSelector);
         } else if (c.size() == 3) {
             final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             final Iterator<? extends T> iterA = iter.next();
             final Iterator<? extends T> iterB = iter.next();
             final Iterator<? extends T> iterC = iter.next();
-            return merge(iterA instanceof QueuedIterator ? iterA : Stream.of(iterA).queued().iterator(),
-                    iterB instanceof QueuedIterator ? iterB : Stream.of(iterB).queued().iterator(),
-                    iterC instanceof QueuedIterator ? iterC : Stream.of(iterC).queued().iterator(), nextSelector);
+            return merge(iterA instanceof QueuedIterator ? iterA : Stream.of(iterA).queued().iteratorEx(),
+                    iterB instanceof QueuedIterator ? iterB : Stream.of(iterB).queued().iteratorEx(),
+                    iterC instanceof QueuedIterator ? iterC : Stream.of(iterC).queued().iteratorEx(), nextSelector);
         }
 
         final Queue<Iterator<? extends T>> queue = N.newLinkedList(c);
@@ -9291,8 +9298,8 @@ public abstract class Stream<T>
                                 }
                             }
 
-                            c = (Iterator<? extends T>) ObjIteratorEx.of(merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(),
-                                    b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(), nextSelector).toArray());
+                            c = (Iterator<? extends T>) ObjIteratorEx.of(merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iteratorEx(),
+                                    b instanceof QueuedIterator ? b : Stream.of(b).queued().iteratorEx(), nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
@@ -9310,7 +9317,7 @@ public abstract class Stream<T>
         final Iterator<? extends T> a = queue.poll();
         final Iterator<? extends T> b = queue.poll();
 
-        return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(),
+        return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iteratorEx(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iteratorEx(),
                 nextSelector);
     }
 

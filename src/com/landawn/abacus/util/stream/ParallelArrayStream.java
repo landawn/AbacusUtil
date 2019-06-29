@@ -386,7 +386,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         assertNotClosed();
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, asyncExecutor,
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iteratorEx(), false, null, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
         }
 
@@ -436,7 +436,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         assertNotClosed();
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, asyncExecutor,
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iteratorEx(), false, null, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
         }
 
@@ -509,7 +509,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         checkArgNotNull(mapperForElse);
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
+            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iteratorEx(), false, null, maxThreadNum, splitor,
                     asyncExecutor, closeHandlers);
         }
 
@@ -1089,7 +1089,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1156,7 +1156,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                                 };
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1242,7 +1242,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1310,7 +1310,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1396,7 +1396,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1464,7 +1464,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1550,7 +1550,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1618,7 +1618,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1704,7 +1704,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1772,7 +1772,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1858,7 +1858,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -1926,7 +1926,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -2012,7 +2012,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -2080,7 +2080,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -2166,7 +2166,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -2234,7 +2234,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                             }
 
-                            cur = s.iterator();
+                            cur = s.iteratorEx();
                         }
 
                         return cur != null && cur.hasNext();
@@ -3461,7 +3461,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         try {
                             while (cursor < to && eHolder.value() == null) {
                                 try (Stream<? extends K> ks = flatKeyMapper.apply(elements[cursor])) {
-                                    keyIter = ks.iterator();
+                                    keyIter = ks.iteratorEx();
 
                                     while (keyIter.hasNext()) {
                                         k = keyIter.next();
@@ -3503,7 +3503,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                                 }
 
                                 try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
-                                    keyIter = ks.iterator();
+                                    keyIter = ks.iteratorEx();
 
                                     while (keyIter.hasNext()) {
                                         k = keyIter.next();
@@ -4863,7 +4863,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         assertNotClosed();
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, asyncExecutor,
+            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iteratorEx(), sorted, cmp, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
         }
 
@@ -4886,7 +4886,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         assertNotClosed();
 
         if (maxThreadNum <= 1 || toIndex - fromIndex <= 1) {
-            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, asyncExecutor,
+            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iteratorEx(), sorted, cmp, maxThreadNum, splitor, asyncExecutor,
                     closeHandlers);
         }
 

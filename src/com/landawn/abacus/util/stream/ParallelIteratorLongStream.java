@@ -939,7 +939,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         Stream<Long> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<>(iterator(), sorted, sorted ? LONG_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
+            tmp = new ParallelIteratorStream<>(iteratorEx(), sorted, sorted ? LONG_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
             boxed = tmp;
         }
 

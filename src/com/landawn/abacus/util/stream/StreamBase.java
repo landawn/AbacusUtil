@@ -41,6 +41,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
@@ -777,7 +778,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
         //        return;
         //    }
 
-        logger.info("Closing Stream");
+        if (logger.isInfoEnabled()) {
+            logger.info("## Closing " + ClassUtil.getSimpleClassName(getClass()));
+        }
 
         isClosed = true;
 

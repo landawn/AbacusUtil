@@ -975,7 +975,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      */
     @SequentialOnly
     public BiIterator<K, V> iterator() {
-        final ObjIterator<Entry<K, V>> iter = s.iterator();
+        final ObjIterator<Entry<K, V>> iter = s.iteratorEx();
 
         final BooleanSupplier hasNext = new BooleanSupplier() {
             @Override
@@ -1383,7 +1383,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
         try {
             final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseCachedBuffer(true);
-            final Iterator<Entry<K, V>> iter = s.iterator();
+            final Iterator<Entry<K, V>> iter = s.iteratorEx();
 
             while (iter.hasNext()) {
                 joiner.appendEntry(iter.next());

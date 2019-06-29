@@ -64,7 +64,7 @@ import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Cell;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
@@ -343,7 +343,7 @@ public abstract class CQLBuilder {
         final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.length));
 
         for (String propName : propNames) {
-            m.put(propName, L.QME);
+            m.put(propName, CF.QME);
         }
 
         return m;
@@ -354,7 +354,7 @@ public abstract class CQLBuilder {
         final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.size()));
 
         for (String propName : propNames) {
-            m.put(propName, L.QME);
+            m.put(propName, CF.QME);
         }
 
         return m;
@@ -1035,29 +1035,8 @@ public abstract class CQLBuilder {
      * @param entity
      * @return
      */
-    @SuppressWarnings("deprecation")
     public CQLBuilder set(final Object entity) {
-        if (entity instanceof String) {
-            return set(N.asArray((String) entity));
-        } else if (entity instanceof Map) {
-            return set((Map<String, Object>) entity);
-        } else {
-            this.entityClass = entity.getClass();
-
-            if (ClassUtil.isDirtyMarker(entity.getClass())) {
-                final DirtyMarker dirtyMarkerEntity = ((DirtyMarker) entity);
-                final Set<String> updatedPropNames = dirtyMarkerEntity.dirtyPropNames();
-                final Map<String, Object> updateProps = new HashMap<>();
-
-                for (String propName : updatedPropNames) {
-                    updateProps.put(propName, ClassUtil.getPropValue(dirtyMarkerEntity, propName));
-                }
-
-                return set(updateProps);
-            } else {
-                return set(Maps.entity2Map(entity));
-            }
-        }
+        return set(entity, null);
     }
 
     /**
@@ -1080,21 +1059,19 @@ public abstract class CQLBuilder {
                 return set(props);
             }
         } else {
-            this.entityClass = entity.getClass();
+            final Class<?> entityClass = entity.getClass();
+            this.entityClass = entityClass;
+            final Collection<String> propNames = getUpdatePropNamesByClass(entityClass, excludedPropNames);
+            final Set<String> dirtyPropNames = ClassUtil.isDirtyMarker(entityClass) ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
-            if (ClassUtil.isDirtyMarker(entity.getClass())) {
-                final Map<String, Object> props = new HashMap<>();
-
-                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+            for (String propName : propNames) {
+                if (dirtyPropNames == null || dirtyPropNames.contains(propName)) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
-
-                Maps.removeKeys(props, excludedPropNames);
-
-                return set(props);
-            } else {
-                return set(N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames));
             }
+
+            return set(props);
         }
     }
 
@@ -1282,7 +1259,7 @@ public abstract class CQLBuilder {
     }
 
     private void setParameterForCQL(final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
@@ -1292,7 +1269,7 @@ public abstract class CQLBuilder {
     }
 
     private void setParameterForRawCQL(final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
@@ -1304,7 +1281,7 @@ public abstract class CQLBuilder {
     }
 
     private void setParameterForNamedCQL(final String propName, final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(":");
             sb.append(propName);
         } else if (propValue instanceof Condition) {

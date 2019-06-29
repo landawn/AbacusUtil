@@ -939,7 +939,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
         Stream<Double> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
+            tmp = new ParallelIteratorStream<>(iteratorEx(), sorted, sorted ? DOUBLE_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
             boxed = tmp;
         }
 

@@ -1104,7 +1104,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1172,7 +1172,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1240,7 +1240,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1308,7 +1308,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1376,7 +1376,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1444,7 +1444,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1512,7 +1512,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1580,7 +1580,7 @@ class ArrayStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -2850,7 +2850,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
             for (int i = fromIndex; i < toIndex; i++) {
                 try (Stream<? extends K> ks = flatKeyMapper.apply(elements[i])) {
-                    keyIter = ks.iterator();
+                    keyIter = ks.iteratorEx();
 
                     while (keyIter.hasNext()) {
                         k = keyIter.next();

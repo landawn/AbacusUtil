@@ -754,7 +754,7 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public FloatStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<float[], float[]>() {
@@ -931,7 +931,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public IndexedFloat apply(float t) {
                 return IndexedFloat.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_FLOAT_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_FLOAT_COMPARATOR);
     }
 
     @Override

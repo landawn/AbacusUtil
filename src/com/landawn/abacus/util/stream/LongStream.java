@@ -29,6 +29,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.annotation.SequentialOnly;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
@@ -413,6 +414,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     @SequentialOnly
     @Override
     public LongIterator iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -1306,7 +1313,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();

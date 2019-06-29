@@ -25,6 +25,7 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.landawn.abacus.annotation.SequentialOnly;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
@@ -385,6 +386,12 @@ public abstract class ShortStream
     @SequentialOnly
     @Override
     public ShortIterator iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -1146,7 +1153,7 @@ public abstract class ShortStream
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();

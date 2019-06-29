@@ -407,7 +407,7 @@ class ArrayShortStream extends AbstractShortStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -475,7 +475,7 @@ class ArrayShortStream extends AbstractShortStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -543,7 +543,7 @@ class ArrayShortStream extends AbstractShortStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1612,7 +1612,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
     }
 
     //    @Override

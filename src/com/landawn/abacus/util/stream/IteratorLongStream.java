@@ -383,7 +383,7 @@ class IteratorLongStream extends AbstractLongStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -450,7 +450,7 @@ class IteratorLongStream extends AbstractLongStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -517,7 +517,7 @@ class IteratorLongStream extends AbstractLongStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -584,7 +584,7 @@ class IteratorLongStream extends AbstractLongStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -651,7 +651,7 @@ class IteratorLongStream extends AbstractLongStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1711,7 +1711,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<Long> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? LONG_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? LONG_COMPARATOR : null, closeHandlers);
     }
 
     @Override

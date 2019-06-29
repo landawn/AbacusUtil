@@ -316,7 +316,7 @@ class IteratorByteStream extends AbstractByteStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -383,7 +383,7 @@ class IteratorByteStream extends AbstractByteStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -450,7 +450,7 @@ class IteratorByteStream extends AbstractByteStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1349,7 +1349,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
     @Override

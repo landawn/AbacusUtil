@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import com.landawn.abacus.annotation.Id;
 import com.landawn.abacus.annotation.ReadOnly;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.JdbcUtil.Dao;
@@ -259,7 +259,7 @@ public class Jdbc {
         User userFromDB = userMapper.gett(100L);
         System.out.println(userFromDB);
 
-        userMapper.update(N.asProps("firstName", "Tom", "lastName", "Hanks"), L.eq("id", 100));
+        userMapper.update(N.asProps("firstName", "Tom", "lastName", "Hanks"), CF.eq("id", 100));
 
         userMapper.delete(100L);
 

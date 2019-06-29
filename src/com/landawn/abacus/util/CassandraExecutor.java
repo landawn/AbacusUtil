@@ -62,7 +62,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.pool.KeyedObjectPool;
@@ -502,13 +502,13 @@ public final class CassandraExecutor implements Closeable {
         final Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
 
         if (keyNameSet == null && ids.length == 1) {
-            return L.eq(ID, ids[0]);
+            return CF.eq(ID, ids[0]);
         } else if (keyNameSet != null && ids.length <= keyNameSet.size()) {
             final Iterator<String> iter = keyNameSet.iterator();
             final And and = new And();
 
             for (Object id : ids) {
-                and.add(L.eq(iter.next(), id));
+                and.add(CF.eq(iter.next(), id));
             }
 
             return and;
@@ -523,7 +523,7 @@ public final class CassandraExecutor implements Closeable {
         final Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
 
         if (keyNameSet == null) {
-            return L.eq(ID, ClassUtil.getPropValue(entity, ID));
+            return CF.eq(ID, ClassUtil.getPropValue(entity, ID));
         } else {
             final And and = new And();
             Object propVal = null;
@@ -535,7 +535,7 @@ public final class CassandraExecutor implements Closeable {
                     break;
                 }
 
-                and.add(L.eq(keyName, ClassUtil.getPropValue(entity, keyName)));
+                and.add(CF.eq(keyName, ClassUtil.getPropValue(entity, keyName)));
             }
 
             if (N.isNullOrEmpty(and.getConditions())) {
@@ -739,7 +739,7 @@ public final class CassandraExecutor implements Closeable {
 
         for (String keyName : primaryKeyNames) {
             String propName = ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, keyName));
-            and.add(L.eq(propName, ClassUtil.getPropValue(entity, propName)));
+            and.add(CF.eq(propName, ClassUtil.getPropValue(entity, propName)));
             keyNameSet.add(propName);
         }
 
@@ -842,7 +842,7 @@ public final class CassandraExecutor implements Closeable {
             final And and = new And();
 
             for (String keyName : primaryKeyNames) {
-                and.add(L.eq(keyName, tmp.remove(keyName)));
+                and.add(CF.eq(keyName, tmp.remove(keyName)));
             }
 
             final CP cp = prepareUpdate(targetClass, tmp, and);

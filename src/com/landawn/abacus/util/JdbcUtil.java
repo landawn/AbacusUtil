@@ -94,7 +94,7 @@ import com.landawn.abacus.Transaction;
 import com.landawn.abacus.Transaction.Status;
 import com.landawn.abacus.annotation.Column;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.dataSource.DataSourceConfiguration;
 import com.landawn.abacus.dataSource.DataSourceManagerConfiguration;
@@ -183,8 +183,8 @@ public final class JdbcUtil {
     private static final Set<String> sqlStateForTableNotExists = new HashSet<>();
 
     static {
-        sqlStateForTableNotExists.add("42S02"); // for MySQL.
-        sqlStateForTableNotExists.add("42P01"); // for PostgreSQL.
+        sqlStateForTableNotExists.add("42S02"); // for MySQCF.
+        sqlStateForTableNotExists.add("42P01"); // for PostgreSQCF.
         sqlStateForTableNotExists.add("42501"); // for HSQLDB.
     }
 
@@ -534,19 +534,45 @@ public final class JdbcUtil {
         }
     }
 
-    public static Connection getConnection(final javax.sql.DataSource ds) throws SQLException {
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be returned. Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be returned.
+     * 
+     * @param ds
+     * @return
+     */
+    public static Connection getConnection(final javax.sql.DataSource ds) {
         if (isInSpring) {
             try {
                 return org.springframework.jdbc.datasource.DataSourceUtils.getConnection(ds);
             } catch (NoClassDefFoundError e) {
                 isInSpring = false;
-                return ds.getConnection();
+
+                try {
+                    return ds.getConnection();
+                } catch (SQLException e1) {
+                    throw new UncheckedSQLException(e1);
+                }
             }
         } else {
-            return ds.getConnection();
+            try {
+                return ds.getConnection();
+            } catch (SQLException e) {
+                throw new UncheckedSQLException(e);
+            }
         }
     }
 
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the specified {@code Connection} won't be returned to {@code DataSource}(Connection pool) until the transaction is committed or rolled back. Otherwise the specified {@code Connection} will be directly returned back to {@code DataSource}(Connection pool).
+     * 
+     * 
+     * @param conn
+     * @param ds
+     */
     public static void releaseConnection(final Connection conn, final javax.sql.DataSource ds) {
         if (conn == null) {
             return;
@@ -564,7 +590,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static Runnable createCloseHandler(final Connection conn, final javax.sql.DataSource ds) {
+    static Runnable createCloseHandler(final Connection conn, final javax.sql.DataSource ds) {
         return new Runnable() {
             @Override
             public void run() {
@@ -1075,6 +1101,14 @@ public final class JdbcUtil {
     }
 
     /**  
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * That's to say the Spring transaction will have the final control on commit/roll back over the {@code Connection}. 
+     * 
+     * <br />
+     * <br />
+     * 
      * The transaction will be shared by {@code JdbcUtil.beginTransaction(javax.sql.DataSource, IsolationLevel)} in the same thread for the same {@code DataSource}, but not auto-shared by {@code JdbcUtil.prepareQuery/prepareCallableQuery(javax.sql.DataSource, ...)}.
      * To include {@code jdbcUtil.prepareQuery/prepareCallableQuery} in the transaction, need to call {@code JdbcUtil.prepareQuery/prepareCallableQuery(transaction.connection(), ...)}.
      * 
@@ -1156,6 +1190,8 @@ public final class JdbcUtil {
      * @param isolationLevel
      * @return
      * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static SimpleTransaction beginTransaction(final javax.sql.DataSource dataSource, final IsolationLevel isolationLevel) throws UncheckedSQLException {
         return beginTransaction(dataSource, isolationLevel, false);
@@ -1249,6 +1285,19 @@ public final class JdbcUtil {
         return tran;
     }
 
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
         PreparedQuery result = null;
         Connection conn = null;
@@ -1265,6 +1314,20 @@ public final class JdbcUtil {
         return result;
     }
 
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @param autoGeneratedKeys
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql, final boolean autoGeneratedKeys) throws SQLException {
         PreparedQuery result = null;
         Connection conn = null;
@@ -1317,13 +1380,18 @@ public final class JdbcUtil {
     }
 
     /** 
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
      * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
-     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     @SuppressWarnings("resource")
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
@@ -1363,6 +1431,19 @@ public final class JdbcUtil {
         return new PreparedQuery(stmtCreator.apply(conn));
     }
 
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
         PreparedCallableQuery result = null;
         Connection conn = null;
@@ -1391,18 +1472,26 @@ public final class JdbcUtil {
      * @param sql
      * @return
      * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final String sql) throws SQLException {
         return new PreparedCallableQuery(conn.prepareCall(sql));
     }
 
     /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
      * @param ds
      * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
      * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
      * @return
      * @throws SQLException
-     * @see {@link JdbcUtil#prepareCall(Connection, String, Object...)}
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     @SuppressWarnings("resource")
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds,
@@ -7967,8 +8056,6 @@ public final class JdbcUtil {
      * 
      * <br />
      * 
-     * @implSpec
-     * 
      * <li>The SQL operations/methods should be annotated with SQL scripts by {@code @Select/@Insert/@Update/@Delete/@NamedSelect/@NamedInsert/@NamedUpdate/@NamedDelete}.</li>
      * 
      * <li>The Order of the parameters in the method should be consistent with parameter order in SQL scripts.</li>
@@ -8051,6 +8138,26 @@ public final class JdbcUtil {
      * <br />
      * <br />
      * 
+     * Here is a simple {@code UserDao} sample.
+     * 
+     * <pre>
+     * <code> 
+     * public static interface UserDao extends JdbcUtil.CrudDao<User, Long, SQLBuilder.PSC> {
+     *     &#064NamedInsert("INSERT INTO user (id, first_name, last_name, email) VALUES (:id, :firstName, :lastName, :email)")
+     *     void insertWithId(User user) throws SQLException;
+     * 
+     *     &#064NamedUpdate("UPDATE user SET first_name = :firstName, last_name = :lastName WHERE id = :id")
+     *     int updateFirstAndLastName(String newFirstName, String newLastName, long id) throws SQLException;
+     *     
+     *     &#064NamedSelect("SELECT first_name, last_name FROM user WHERE id = :id")
+     *     User getFirstAndLastNameBy(long id) throws SQLException;
+     *     
+     *     &#064NamedSelect("SELECT id, first_name, last_name, email FROM user")
+     *     Stream<User> allUsers() throws SQLException;
+     * }
+     * </code>
+     * </pre> 
+     * 
      * Here is the generate way to work with transaction started by {@code SQLExecutor}.
      * 
      * <pre>
@@ -8071,33 +8178,9 @@ public final class JdbcUtil {
      *      tran.rollbackIfNotCommitted();
      * }
      * </code>
-     * </pre>
+     * </pre> 
      * 
-     * @see PreparedQuery#setParameters(int, Collection)
-     * @see PreparedQuery#settParameters(ParametersSetter)
-     * @see PreparedQuery#queryForBoolean()
-     * @see PreparedQuery#queryForChar()
-     * @see PreparedQuery#queryForByte()
-     * @see PreparedQuery#queryForShort()
-     * @see PreparedQuery#queryForInt()
-     * @see PreparedQuery#queryForLong()
-     * @see PreparedQuery#queryForFloat()
-     * @see PreparedQuery#queryForDouble() 
-     * @see PreparedQuery#queryForSingleResult(Class)
-     * @see PreparedQuery#queryForSingleNonNull(Class)
-     * @see PreparedQuery#findFirst(Class)
-     * @see PreparedQuery#findFirst(RowMapper)
-     * @see PreparedQuery#findFirst(BiRowMapper)
-     * @see PreparedQuery#list(Class)
-     * @see PreparedQuery#list(RowMapper)
-     * @see PreparedQuery#list(BiRowMapper)
-     * @see PreparedQuery#query()
-     * @see PreparedQuery#query(ResultExtractor)
-     * @see PreparedQuery#query(BiResultExtractor)
-     * @see PreparedQuery#stream(Class)
-     * @see PreparedQuery#stream(RowMapper)
-     * @see PreparedQuery#stream(BiRowMapper)
-     * 
+     * @see PreparedQuery
      * @see CrudDao
      * @see SQLExecutor.Mapper
      * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
@@ -8452,26 +8535,26 @@ public final class JdbcUtil {
                             String sql_deleteById = null;
 
                             if (sbc.equals(PSC.class)) {
-                                sql_getById = PSC.selectFrom(entityClass).where(L.eq(idPropName)).sql();
-                                sql_existsById = PSC.select(SQLBuilder._1).from(entityClass).where(L.eq(idPropName)).sql();
+                                sql_getById = PSC.selectFrom(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_existsById = PSC.select(SQLBuilder._1).from(entityClass).where(CF.eq(idPropName)).sql();
                                 sql_insertWithId = NSC.insertInto(entityClass).sql();
                                 sql_insertWithoutId = NSC.insertInto(entityClass, N.asSet(idPropName)).sql();
-                                sql_updateById = NSC.update(entityClass).where(L.eq(idPropName)).sql();
-                                sql_deleteById = PSC.deleteFrom(entityClass).where(L.eq(idPropName)).sql();
+                                sql_updateById = NSC.update(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_deleteById = PSC.deleteFrom(entityClass).where(CF.eq(idPropName)).sql();
                             } else if (sbc.equals(PAC.class)) {
-                                sql_getById = PAC.selectFrom(entityClass).where(L.eq(idPropName)).sql();
-                                sql_existsById = PAC.select(SQLBuilder._1).from(entityClass).where(L.eq(idPropName)).sql();
-                                sql_updateById = NAC.update(entityClass).where(L.eq(idPropName)).sql();
+                                sql_getById = PAC.selectFrom(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_existsById = PAC.select(SQLBuilder._1).from(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_updateById = NAC.update(entityClass).where(CF.eq(idPropName)).sql();
                                 sql_insertWithId = NAC.insertInto(entityClass).sql();
                                 sql_insertWithoutId = NAC.insertInto(entityClass, N.asSet(idPropName)).sql();
-                                sql_deleteById = PAC.deleteFrom(entityClass).where(L.eq(idPropName)).sql();
+                                sql_deleteById = PAC.deleteFrom(entityClass).where(CF.eq(idPropName)).sql();
                             } else {
-                                sql_getById = PLC.selectFrom(entityClass).where(L.eq(idPropName)).sql();
-                                sql_existsById = PLC.select(SQLBuilder._1).from(entityClass).where(L.eq(idPropName)).sql();
+                                sql_getById = PLC.selectFrom(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_existsById = PLC.select(SQLBuilder._1).from(entityClass).where(CF.eq(idPropName)).sql();
                                 sql_insertWithId = NLC.insertInto(entityClass).sql();
                                 sql_insertWithoutId = NLC.insertInto(entityClass, N.asSet(idPropName)).sql();
-                                sql_updateById = NLC.update(entityClass).where(L.eq(idPropName)).sql();
-                                sql_deleteById = PLC.deleteFrom(entityClass).where(L.eq(idPropName)).sql();
+                                sql_updateById = NLC.update(entityClass).where(CF.eq(idPropName)).sql();
+                                sql_deleteById = PLC.deleteFrom(entityClass).where(CF.eq(idPropName)).sql();
                             }
                             if (m.getName().equals("insert")) {
                                 final String insertWithId = sql_insertWithId;
@@ -8505,17 +8588,17 @@ public final class JdbcUtil {
                                 } else {
                                     if (sbc.equals(PSC.class)) {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PSC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PSC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .get(entityClass);
                                     } else if (sbc.equals(PAC.class)) {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PAC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PAC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .get(entityClass);
                                     } else {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PLC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PLC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .get(entityClass);
                                     }
@@ -8528,17 +8611,17 @@ public final class JdbcUtil {
                                 } else {
                                     if (sbc.equals(PSC.class)) {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PSC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PSC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .gett(entityClass);
                                     } else if (sbc.equals(PAC.class)) {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PAC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PAC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .gett(entityClass);
                                     } else {
                                         call = (proxy, args) -> proxy
-                                                .prepareQuery(PLC.select((Collection<String>) args[0]).from(entityClass).where(L.eq(idPropName)).sql())
+                                                .prepareQuery(PLC.select((Collection<String>) args[0]).from(entityClass).where(CF.eq(idPropName)).sql())
                                                 .setObject(1, args[1])
                                                 .gett(entityClass);
                                     }
@@ -8582,6 +8665,42 @@ public final class JdbcUtil {
                                         return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).queryForInt().orZero();
                                     };
                                 }
+                            } else if (m.getName().equals("findFirst")) {
+                                if (m.getParameterTypes().length == 1) {
+                                    if (sbc.equals(PSC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PSC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    } else if (sbc.equals(PAC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PAC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    } else {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PLC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    }
+                                } else {
+                                    if (sbc.equals(PSC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PSC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    } else if (sbc.equals(PAC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PAC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    } else {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PLC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).findFirst(entityClass);
+                                        };
+                                    }
+                                }
                             } else if (m.getName().equals("list")) {
                                 if (m.getParameterTypes().length == 1) {
                                     if (sbc.equals(PSC.class)) {
@@ -8618,6 +8737,42 @@ public final class JdbcUtil {
                                         };
                                     }
                                 }
+                            } else if (m.getName().equals("query")) {
+                                if (m.getParameterTypes().length == 1) {
+                                    if (sbc.equals(PSC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PSC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    } else if (sbc.equals(PAC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PAC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    } else {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PLC.selectFrom(entityClass).where((Condition) args[0]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    }
+                                } else {
+                                    if (sbc.equals(PSC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PSC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    } else if (sbc.equals(PAC.class)) {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PAC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    } else {
+                                        call = (proxy, args) -> {
+                                            final SP sp = PLC.select((Collection<String>) args[0]).from(entityClass).where((Condition) args[1]).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).query();
+                                        };
+                                    }
+                                }
                             } else if (m.getName().equals("update")) {
                                 if (m.getParameters().length == 1) {
                                     final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
@@ -8629,7 +8784,7 @@ public final class JdbcUtil {
                                         call = (proxy, args) -> {
                                             final Map<String, Object> props = (Map<String, Object>) args[0];
                                             N.checkArgNotNull(props, "updateProps");
-                                            final String query = PSC.update(entityClass).set(props.keySet()).where(L.eq(idPropName)).sql();
+                                            final String query = PSC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
 
                                             return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
                                         };
@@ -8637,7 +8792,7 @@ public final class JdbcUtil {
                                         call = (proxy, args) -> {
                                             final Map<String, Object> props = (Map<String, Object>) args[0];
                                             N.checkArgNotNull(props, "updateProps");
-                                            final String query = PAC.update(entityClass).set(props.keySet()).where(L.eq(idPropName)).sql();
+                                            final String query = PAC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
 
                                             return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
                                         };
@@ -8645,7 +8800,7 @@ public final class JdbcUtil {
                                         call = (proxy, args) -> {
                                             final Map<String, Object> props = (Map<String, Object>) args[0];
                                             N.checkArgNotNull(props, "updateProps");
-                                            final String query = PLC.update(entityClass).set(props.keySet()).where(L.eq(idPropName)).sql();
+                                            final String query = PLC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
 
                                             return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
                                         };
@@ -9191,6 +9346,8 @@ public final class JdbcUtil {
      * @param <T>
      * @param <ID>
      * @param <SB> {@code SQLBuilder} used to generate sql scripts. Only can be {@code SQLBulider.PSC/PAC/PLC}
+     * 
+     * @see PreparedQuery
      * @see Dao
      * @see SQLExecutor.Mapper
      * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
@@ -9212,9 +9369,17 @@ public final class JdbcUtil {
 
         int count(Condition cond);
 
+        Optional<T> findFirst(Condition cond);
+
+        Optional<T> findFirst(Collection<String> selectPropNames, Condition cond);
+
         List<T> list(Condition cond);
 
         List<T> list(Collection<String> selectPropNames, Condition cond);
+
+        DataSet query(Condition cond);
+
+        DataSet query(Collection<String> selectPropNames, Condition cond);
 
         int update(T entityToUpdate);
 

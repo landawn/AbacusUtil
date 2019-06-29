@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.landawn.abacus.annotation.Id;
 import com.landawn.abacus.annotation.ReadOnly;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.SQLBuilder.NSC;
@@ -65,7 +65,7 @@ public class SQLExecutorTest {
 
     @Test
     public void batch_01() {
-        
+
         List<User> users = N.fill(User.class, 99);
         String sql_insert = NSC.insertInto(User.class, N.asSet("id")).sql();
         JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(1000);
@@ -75,7 +75,7 @@ public class SQLExecutorTest {
 
         assertEquals(users.size(), ids.size());
 
-        SP sp = NSC.selectFrom(User.class).where(L.in("id", ids)).pair();
+        SP sp = NSC.selectFrom(User.class).where(CF.in("id", ids)).pair();
         sqlExecutor.query(sp.sql, sp.parameters).println();
 
         // insert 3001 users, bigger the specified batch size.
@@ -85,7 +85,7 @@ public class SQLExecutorTest {
 
         assertEquals(users.size(), ids.size());
 
-        sp = NSC.selectFrom(User.class).where(L.in("id", ids)).pair();
+        sp = NSC.selectFrom(User.class).where(CF.in("id", ids)).pair();
         sqlExecutor.query(sp.sql, sp.parameters).println();
     }
 }

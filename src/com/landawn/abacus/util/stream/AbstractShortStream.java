@@ -752,7 +752,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public ShortStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<short[], short[]>() {
@@ -929,7 +929,7 @@ abstract class AbstractShortStream extends ShortStream {
             public IndexedShort apply(short t) {
                 return IndexedShort.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_SHORT_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_SHORT_COMPARATOR);
     }
 
     @Override

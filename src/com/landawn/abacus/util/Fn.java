@@ -1923,13 +1923,6 @@ public abstract class Fn extends Comparators {
         };
     }
 
-    private static Function<String, Integer> PARSE_INT_FUNC = new Function<String, Integer>() {
-        @Override
-        public Integer apply(String t) {
-            return N.parseInt(t);
-        }
-    };
-
     private static Function<String, Byte> PARSE_BYTE_FUNC = new Function<String, Byte>() {
         @Override
         public Byte apply(String t) {
@@ -1951,6 +1944,13 @@ public abstract class Fn extends Comparators {
     public static Function<String, Short> parseShort() {
         return PARSE_SHORT_FUNC;
     }
+
+    private static Function<String, Integer> PARSE_INT_FUNC = new Function<String, Integer>() {
+        @Override
+        public Integer apply(String t) {
+            return N.parseInt(t);
+        }
+    };
 
     public static Function<String, Integer> parseInt() {
         return PARSE_INT_FUNC;

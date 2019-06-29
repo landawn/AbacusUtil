@@ -1,3 +1,12 @@
+### 1.7.9
+
+* Add `CrudDao.findFirst/query`.
+
+* Improve Java Docs
+
+* Improvements and bug fix.
+
+
 ### 1.7.8
 
 * Fix issue #21

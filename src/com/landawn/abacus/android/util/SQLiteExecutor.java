@@ -43,7 +43,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
@@ -528,7 +528,7 @@ public final class SQLiteExecutor {
      * @throws DuplicatedResultException if more than one records are found.
      */
     public <T> T gett(Class<T> targetClass, long id, Collection<String> selectPropNames) throws DuplicatedResultException {
-        final Condition whereClause = L.eq(ID, id);
+        final Condition whereClause = CF.eq(ID, id);
         final List<T> entities = list(targetClass, selectPropNames, whereClause, null, 0, 2);
 
         if (entities.size() > 1) {
@@ -1037,7 +1037,7 @@ public final class SQLiteExecutor {
             throw new IllegalArgumentException("Please specify value for the id property");
         }
 
-        return update(getTableNameByEntity(entity), entity, L.eq(ID, id));
+        return update(getTableNameByEntity(entity), entity, CF.eq(ID, id));
     }
 
     /**
@@ -1118,7 +1118,7 @@ public final class SQLiteExecutor {
             throw new IllegalArgumentException("Please specify value for the id property");
         }
 
-        return delete(getTableNameByEntity(entity), L.eq(ID, id));
+        return delete(getTableNameByEntity(entity), CF.eq(ID, id));
     }
 
     /**
@@ -1128,7 +1128,7 @@ public final class SQLiteExecutor {
     * @return
     */
     public int delete(String table, long id) {
-        return delete(table, L.eq(ID, id));
+        return delete(table, CF.eq(ID, id));
     }
 
     /**
@@ -1140,7 +1140,7 @@ public final class SQLiteExecutor {
     * @since 0.8.10
     */
     public int delete(Class<?> entityClass, long id) {
-        return delete(entityClass, L.eq(ID, id));
+        return delete(entityClass, CF.eq(ID, id));
     }
 
     /**

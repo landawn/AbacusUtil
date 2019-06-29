@@ -1677,7 +1677,7 @@ public abstract class Collectors {
             @Override
             public void accept(final A a, final T t) {
                 try (Stream<? extends U> stream = mapper.apply(t)) {
-                    final ObjIterator<? extends U> iter = stream.iterator();
+                    final ObjIterator<? extends U> iter = stream.iteratorEx();
 
                     while (iter.hasNext()) {
                         downstreamAccumulator.accept(a, iter.next());
@@ -1726,7 +1726,7 @@ public abstract class Collectors {
             @Override
             public void accept(final A a, final T t) {
                 try (Stream<? extends T2> stream = flatMapper.apply(t)) {
-                    final ObjIterator<? extends T2> iter = stream.iterator();
+                    final ObjIterator<? extends T2> iter = stream.iteratorEx();
 
                     while (iter.hasNext()) {
                         downstreamAccumulator.accept(a, mapper.apply(t, iter.next()));
@@ -2190,8 +2190,7 @@ public abstract class Collectors {
 
     /**
      * Use occurrences to save the count of largest objects if {@code areAllLargestSame = true}(e.g. {@code Number/String/...}) and return a list by repeat the largest object {@code n} times.
-     *  
-     * @implSpec
+     * 
      * The default implementation is equivalent to, for this {@code map}:
      * <pre> 
      * <code>

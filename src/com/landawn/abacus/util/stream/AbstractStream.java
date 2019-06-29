@@ -1604,7 +1604,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Stream<T> intersperse(final T delimiter) {
         return newStream(new ObjIteratorEx<T>() {
-            private final Iterator<T> iter = iterator();
+            private final Iterator<T> iter = iteratorEx();
             private boolean toInsert = false;
 
             @Override
@@ -2743,7 +2743,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         assertNotClosed();
 
         try {
-            final Iterator<T> iter = this.iterator();
+            final Iterator<T> iter = this.iteratorEx();
 
             if (iter.hasNext() == false) {
                 return Optional.empty();
@@ -2760,7 +2760,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         assertNotClosed();
 
         try {
-            final Iterator<T> iter = this.iterator();
+            final Iterator<T> iter = this.iteratorEx();
 
             if (iter.hasNext() == false) {
                 return Optional.empty();
@@ -2816,7 +2816,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).iterator(), sorted, cmp);
+        }).iteratorEx(), sorted, cmp);
     }
 
     @Override
@@ -2828,7 +2828,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) > 0;
             }
-        }).iterator(), sorted, cmp);
+        }).iteratorEx(), sorted, cmp);
     }
 
     @Override
@@ -2840,7 +2840,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).iterator(), sorted, cmp);
+        }).iteratorEx(), sorted, cmp);
     }
 
     @Override
@@ -2852,7 +2852,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return multiset.getAndRemove(mapper.apply(value)) < 1;
             }
-        }).iterator(), sorted, cmp);
+        }).iteratorEx(), sorted, cmp);
     }
 
     @Override
@@ -2869,7 +2869,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        })).iterator(), false, null);
+        })).iteratorEx(), false, null);
     }
 
     @Override
@@ -3050,7 +3050,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Comparator<? super T> cmp = comparator == null ? NATURAL_COMPARATOR : comparator;
 
         if (sorted && cmp == this.cmp) {
-            return newStream(iterator(), sorted, cmp);
+            return newStream(iteratorEx(), sorted, cmp);
         }
 
         return lazyLoad(new Function<Object[], Object[]>() {
@@ -3148,7 +3148,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public boolean test(T value) {
                 return set.add(hashKey(value));
             }
-        }).iterator(), sorted, cmp);
+        }).iteratorEx(), sorted, cmp);
     }
 
     @Override
@@ -3253,7 +3253,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 public Stream<List<T>> apply(int value) {
                     return combinations(value);
                 }
-            }).iterator(), false, null);
+            }).iteratorEx(), false, null);
         } else {
             return newStream((T[]) toArray(), false, null).combinations();
         }
@@ -3480,7 +3480,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         try {
             if (isFirstTitle) {
-                final ObjIterator<T> iter = this.iterator();
+                final ObjIterator<T> iter = this.iteratorEx();
 
                 if (iter.hasNext() == false) {
                     return N.newDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
@@ -3546,7 +3546,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         try {
             final Set<T> set = new HashSet<>();
-            final Iterator<T> iter = iterator();
+            final Iterator<T> iter = iteratorEx();
 
             while (iter.hasNext()) {
                 if (set.add(iter.next()) == false) {
@@ -3601,7 +3601,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             public Indexed<T> apply(T t) {
                 return Indexed.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_COMPARATOR);
     }
 
     @Override
@@ -3699,7 +3699,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         try {
             boolean isBufferedWriter = writer instanceof BufferedWriter || writer instanceof java.io.BufferedWriter;
             final Writer bw = isBufferedWriter ? writer : Objectory.createBufferedWriter(writer);
-            final Iterator<T> iter = iterator();
+            final Iterator<T> iter = iteratorEx();
             long cnt = 0;
 
             try {
@@ -3744,7 +3744,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         assertNotClosed();
 
         try {
-            final Iterator<T> iter = iterator();
+            final Iterator<T> iter = iteratorEx();
 
             long cnt = 0;
             while (iter.hasNext()) {

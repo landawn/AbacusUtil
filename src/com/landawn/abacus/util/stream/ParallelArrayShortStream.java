@@ -231,7 +231,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
 
     @Override
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<ShortList>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor,
+        return new ParallelIteratorStream<ShortList>(sequential().slidingToList(windowSize, increment).iteratorEx(), false, null, maxThreadNum, splitor,
                 asyncExecutor, closeHandlers);
     }
 
@@ -1438,7 +1438,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         Stream<Short> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Short>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
+            tmp = new ParallelIteratorStream<Short>(iteratorEx(), sorted, sorted ? SHORT_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
             boxed = tmp;
         }
 

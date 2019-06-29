@@ -752,7 +752,7 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public IntStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<int[], int[]>() {
@@ -929,7 +929,7 @@ abstract class AbstractIntStream extends IntStream {
             public IndexedInt apply(int t) {
                 return IndexedInt.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_INT_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_INT_COMPARATOR);
     }
 
     @Override

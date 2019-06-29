@@ -29,6 +29,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
@@ -603,6 +604,12 @@ public abstract class CharStream
     @SequentialOnly
     @Override
     public CharIterator iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -1448,7 +1455,7 @@ public abstract class CharStream
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();

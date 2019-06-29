@@ -48,7 +48,7 @@ import com.landawn.abacus.condition.Between;
 import com.landawn.abacus.condition.Binary;
 import com.landawn.abacus.condition.Cell;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.condition.Expression;
 import com.landawn.abacus.condition.In;
 import com.landawn.abacus.condition.Junction;
@@ -557,7 +557,7 @@ public abstract class SQLBuilder {
         final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.length));
 
         for (String propName : propNames) {
-            m.put(propName, L.QME);
+            m.put(propName, CF.QME);
         }
 
         return m;
@@ -568,7 +568,7 @@ public abstract class SQLBuilder {
         final Map<String, Expression> m = new LinkedHashMap<>(N.initHashCapacity(propNames.size()));
 
         for (String propName : propNames) {
-            m.put(propName, L.QME);
+            m.put(propName, CF.QME);
         }
 
         return m;
@@ -1916,7 +1916,7 @@ public abstract class SQLBuilder {
             final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
             for (String propName : propNames) {
-                if (N.isNullOrEmpty(dirtyPropNames) || dirtyPropNames.contains(propName)) {
+                if (dirtyPropNames == null|| dirtyPropNames.contains(propName)) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
             }
@@ -2019,7 +2019,7 @@ public abstract class SQLBuilder {
     }
 
     private void setParameterForSQL(final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
@@ -2029,7 +2029,7 @@ public abstract class SQLBuilder {
     }
 
     private void setParameterForRawSQL(final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(WD._QUESTION_MARK);
         } else if (propValue instanceof Condition) {
             appendCondition((Condition) propValue);
@@ -2041,7 +2041,7 @@ public abstract class SQLBuilder {
     }
 
     private void setParameterForIbatisNamedSQL(final String propName, final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append("#{");
             sb.append(propName);
             sb.append('}');
@@ -2057,7 +2057,7 @@ public abstract class SQLBuilder {
     }
 
     private void setParameterForNamedSQL(final String propName, final Object propValue) {
-        if (L.QME.equals(propValue)) {
+        if (CF.QME.equals(propValue)) {
             sb.append(":");
             sb.append(propName);
         } else if (propValue instanceof Condition) {

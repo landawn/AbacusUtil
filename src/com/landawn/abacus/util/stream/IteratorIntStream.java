@@ -470,7 +470,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -537,7 +537,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -605,7 +605,7 @@ class IteratorIntStream extends AbstractIntStream {
 
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -672,7 +672,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -739,7 +739,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -806,7 +806,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -873,7 +873,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -940,7 +940,7 @@ class IteratorIntStream extends AbstractIntStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -2025,7 +2025,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public Stream<Integer> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
     }
 
     @Override

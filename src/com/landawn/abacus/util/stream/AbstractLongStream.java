@@ -751,7 +751,7 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public LongStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<long[], long[]>() {
@@ -928,7 +928,7 @@ abstract class AbstractLongStream extends LongStream {
             public IndexedLong apply(long t) {
                 return IndexedLong.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_LONG_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_LONG_COMPARATOR);
     }
 
     @Override

@@ -747,7 +747,7 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public ByteStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<byte[], byte[]>() {
@@ -924,7 +924,7 @@ abstract class AbstractByteStream extends ByteStream {
             public IndexedByte apply(byte t) {
                 return IndexedByte.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_BYTE_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_BYTE_COMPARATOR);
     }
 
     @Override

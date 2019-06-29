@@ -406,7 +406,7 @@ class ArrayCharStream extends AbstractCharStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -474,7 +474,7 @@ class ArrayCharStream extends AbstractCharStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -542,7 +542,7 @@ class ArrayCharStream extends AbstractCharStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1527,7 +1527,7 @@ class ArrayCharStream extends AbstractCharStream {
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
     }
 
     //    @Override

@@ -498,7 +498,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -566,7 +566,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -634,7 +634,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -702,7 +702,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -770,7 +770,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1813,7 +1813,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iteratorEx(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
     }
 
     //    @Override

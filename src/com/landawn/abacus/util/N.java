@@ -38,7 +38,6 @@ import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -734,7 +733,13 @@ public final class N {
 
                 return invoke(ClassUtil.getDeclaredConstructor(cls, instance.getClass()), instance);
             } else {
-                return invoke(ClassUtil.getDeclaredConstructor(cls));
+                final Constructor<T> constructor = ClassUtil.getDeclaredConstructor(cls);
+
+                if (constructor == null) {
+                    throw new IllegalArgumentException("No default constructor found in class: " + ClassUtil.getCanonicalClassName(cls));
+                }
+
+                return invoke(constructor);
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw N.toRuntimeException(e);
@@ -9802,50 +9807,7 @@ public final class N {
      * @param entity an entity object with getter/setter method
      */
     public static void fill(Object entity) {
-        final Class<?> entityClass = entity.getClass();
-
-        if (ClassUtil.isEntity(entityClass) == false) {
-            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
-        }
-
-        Type<Object> type = null;
-        Class<?> parameterClass = null;
-        Object propValue = null;
-
-        for (Method method : ClassUtil.getPropSetMethodList(entityClass).values()) {
-            parameterClass = method.getParameterTypes()[0];
-            type = N.typeOf(parameterClass);
-
-            if (String.class.equals(parameterClass)) {
-                propValue = N.uuid().substring(0, 16);
-            } else if (boolean.class.equals(parameterClass) || Boolean.class.equals(parameterClass)) {
-                propValue = RAND.nextInt() % 2 == 0 ? false : true;
-            } else if (char.class.equals(parameterClass) || Character.class.equals(parameterClass)) {
-                propValue = (char) ('a' + RAND.nextInt() % 26);
-            } else if (int.class.equals(parameterClass) || Integer.class.equals(parameterClass)) {
-                propValue = RAND.nextInt();
-            } else if (long.class.equals(parameterClass) || Long.class.equals(parameterClass)) {
-                propValue = RAND.nextLong();
-            } else if (float.class.equals(parameterClass) || Float.class.equals(parameterClass)) {
-                propValue = RAND.nextFloat();
-            } else if (double.class.equals(parameterClass) || Double.class.equals(parameterClass)) {
-                propValue = RAND.nextDouble();
-            } else if (byte.class.equals(parameterClass) || Byte.class.equals(parameterClass)) {
-                propValue = Integer.valueOf(RAND.nextInt()).byteValue();
-            } else if (short.class.equals(parameterClass) || Short.class.equals(parameterClass)) {
-                propValue = Integer.valueOf(RAND.nextInt()).shortValue();
-            } else if (Number.class.isAssignableFrom(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(RAND.nextInt()));
-            } else if (java.util.Date.class.isAssignableFrom(parameterClass) || Calendar.class.isAssignableFrom(parameterClass)) {
-                propValue = type.valueOf(String.valueOf(System.currentTimeMillis()));
-            } else if (ClassUtil.isEntity(parameterClass)) {
-                propValue = fill(parameterClass);
-            } else {
-                propValue = type.defaultValue();
-            }
-
-            ClassUtil.setPropValue(entity, method, propValue);
-        }
+        TestUtil.fill(entity);
     }
 
     /**
@@ -9855,15 +9817,7 @@ public final class N {
      * @return
      */
     public static <T> T fill(Class<T> entityClass) {
-        if (ClassUtil.isEntity(entityClass) == false) {
-            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
-        }
-
-        final T entity = N.newInstance(entityClass);
-
-        fill(entity);
-
-        return entity;
+        return TestUtil.fill(entityClass);
     }
 
     /**
@@ -9874,19 +9828,7 @@ public final class N {
      * @return
      */
     public static <T> List<T> fill(Class<T> entityClass, int count) {
-        if (ClassUtil.isEntity(entityClass) == false) {
-            throw new IllegalArgumentException(entityClass.getCanonicalName() + " is not a valid entity class with property getter/setter method");
-        }
-
-        final List<T> resultList = new ArrayList<>(count);
-
-        for (int i = 0; i < count; i++) {
-            final T entity = N.newInstance(entityClass);
-            fill(entity);
-            resultList.add(entity);
-        }
-
-        return resultList;
+        return TestUtil.fill(entityClass, count);
     }
 
     public static <T> List<T> repeat(final T value, final int n) {

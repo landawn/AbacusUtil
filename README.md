@@ -146,7 +146,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [DynamicSQLBuilder](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DynamicSQLBuilder_view.html),
 [JdbcUtil](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JdbcUtil_view.html), 
 [JdbcUtil.Dao/CrudDao](https://static.javadoc.io/com.landawn/abacus-util/1.7.8/com/landawn/abacus/util/JdbcUtil.Dao.html), 
-[ConditionFactory(L)](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ConditionFactory_view.html)...
+[ConditionFactory(CF)](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ConditionFactory_view.html)...
 
 * ORMs for NoSQL: 
 [MongoCollectionExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MongoCollectionExecutor_view.html), 

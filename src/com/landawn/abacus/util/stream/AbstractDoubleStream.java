@@ -748,7 +748,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public DoubleStream sorted() {
         if (sorted) {
-            return newStream(iterator(), sorted);
+            return newStream(iteratorEx(), sorted);
         }
 
         return lazyLoad(new Function<double[], double[]>() {
@@ -925,7 +925,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public IndexedDouble apply(double t) {
                 return IndexedDouble.of(t, idx.getAndIncrement());
             }
-        }).iterator(), true, INDEXED_DOUBLE_COMPARATOR);
+        }).iteratorEx(), true, INDEXED_DOUBLE_COMPARATOR);
     }
 
     @Override

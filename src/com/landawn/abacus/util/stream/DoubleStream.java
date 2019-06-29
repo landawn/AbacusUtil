@@ -27,6 +27,7 @@ import java.util.Queue;
 import java.util.Random;
 
 import com.landawn.abacus.annotation.SequentialOnly;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
@@ -402,6 +403,12 @@ public abstract class DoubleStream
      */
     @Override
     public DoubleIterator iterator() {
+        if (isEmptyCloseHandlers(closeHandlers) == false) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("### Remember to close " + ClassUtil.getSimpleClassName(getClass()));
+            }
+        }
+
         return iteratorEx();
     }
 
@@ -1043,7 +1050,7 @@ public abstract class DoubleStream
                     }
 
                     cur = iterators.next();
-                    iter = cur.iterator();
+                    iter = cur.iteratorEx();
                 }
 
                 return iter != null && iter.hasNext();

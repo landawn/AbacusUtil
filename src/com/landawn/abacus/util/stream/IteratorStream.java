@@ -113,7 +113,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     IteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final Deque<Runnable> closeHandlers) {
-        this(stream.iterator(), sorted, comparator, mergeCloseHandlers(stream, closeHandlers));
+        this(stream.iteratorEx(), sorted, comparator, mergeCloseHandlers(stream, closeHandlers));
     }
 
     @Override
@@ -877,7 +877,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -944,7 +944,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1011,7 +1011,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1078,7 +1078,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1145,7 +1145,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1212,7 +1212,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1279,7 +1279,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1346,7 +1346,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                         };
                     }
 
-                    cur = s.iterator();
+                    cur = s.iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -2817,7 +2817,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 next = elements.next();
 
                 try (Stream<? extends K> ks = flatKeyMapper.apply(next)) {
-                    keyIter = ks.iterator();
+                    keyIter = ks.iteratorEx();
 
                     while (keyIter.hasNext()) {
                         k = keyIter.next();
@@ -3333,7 +3333,7 @@ class IteratorStream<T> extends AbstractStream<T> {
      */
     @Override
     public Stream<T> queued(int queueSize) {
-        final Iterator<T> iter = iterator();
+        final Iterator<T> iter = iteratorEx();
 
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
             return newStream(elements, sorted, cmp);
