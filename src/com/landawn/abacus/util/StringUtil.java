@@ -6315,6 +6315,46 @@ public abstract class StringUtil {
         }
     }
 
+    private static boolean[] alphanumerics = new boolean[128];
+
+    static {
+        alphanumerics['0'] = true;
+        alphanumerics['1'] = true;
+        alphanumerics['2'] = true;
+        alphanumerics['3'] = true;
+        alphanumerics['4'] = true;
+        alphanumerics['5'] = true;
+        alphanumerics['6'] = true;
+        alphanumerics['7'] = true;
+        alphanumerics['8'] = true;
+        alphanumerics['9'] = true;
+
+        alphanumerics['+'] = true;
+        alphanumerics['-'] = true;
+        alphanumerics['.'] = true;
+        alphanumerics['#'] = true;
+
+        alphanumerics['x'] = true;
+        alphanumerics['X'] = true;
+
+        alphanumerics['e'] = true;
+        alphanumerics['E'] = true;
+
+        alphanumerics['a'] = true;
+        alphanumerics['b'] = true;
+        alphanumerics['c'] = true;
+        alphanumerics['d'] = true;
+        alphanumerics['e'] = true;
+        alphanumerics['f'] = true;
+
+        alphanumerics['l'] = true;
+        alphanumerics['L'] = true;
+        alphanumerics['f'] = true;
+        alphanumerics['F'] = true;
+        alphanumerics['d'] = true;
+        alphanumerics['D'] = true;
+    }
+
     /**
      * <p>
      * Turns a string value into a java.lang.Number.
@@ -6356,6 +6396,13 @@ public abstract class StringUtil {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Optional<Number> createNumber(final String str) {
         if (N.isNullOrEmptyOrBlank(str)) {
+            return Optional.empty();
+        }
+
+        char ch = 0;
+
+        if (!(((ch = str.charAt(0)) < 128 && alphanumerics[ch]) && ((ch = str.charAt(str.length() - 1)) < 128 && alphanumerics[ch])
+                && ((ch = str.charAt(str.length() / 2)) < 128 && alphanumerics[ch]))) {
             return Optional.empty();
         }
 

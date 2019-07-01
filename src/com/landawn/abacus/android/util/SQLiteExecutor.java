@@ -1201,7 +1201,7 @@ public final class SQLiteExecutor {
         } else {
             final NamedSQL namedSQL = parseSQL(sql);
             final Object[] args = prepareArguments(namedSQL, parameters);
-            sqliteDB.execSQL(namedSQL.getPureSQL(), args);
+            sqliteDB.execSQL(namedSQL.getParameterizedSQL(), args);
         }
     }
 
@@ -2035,7 +2035,7 @@ public final class SQLiteExecutor {
             strArgs[i] = N.stringOf(args[i]);
         }
 
-        return sqliteDB.rawQuery(namedSQL.getPureSQL(), strArgs);
+        return sqliteDB.rawQuery(namedSQL.getParameterizedSQL(), strArgs);
     }
 
     public void beginTransaction() {

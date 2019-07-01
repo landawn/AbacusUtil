@@ -93,7 +93,7 @@ public abstract class CQLBuilder {
     private static final Splitter spaceSplitter = Splitter.with(WD._COMMA).trim(true);
 
     public static final String DISTINCT = WD.DISTINCT;
-    public static final String COUNT_ALL = "count(*)";
+    public static final String COUNT_ALL = "count(*)"; 
 
     private static final Map<Class<?>, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<>(1024);
     private static final Map<Class<?>, Set<String>[]> defaultPropNamesPool = new ObjectPool<>(1024);

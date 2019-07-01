@@ -376,7 +376,7 @@ public final class MongoDB {
         Method idSetMethod = classIdSetMethodPool.get(targetClass);
 
         if (idSetMethod == null) {
-            final Set<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
+            final List<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
             Method idPropSetMethod = null;
             Class<?> parameterType = null;
 

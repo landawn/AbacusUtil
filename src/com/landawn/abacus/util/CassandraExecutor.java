@@ -113,9 +113,6 @@ import com.landawn.abacus.util.stream.Stream;
  * @see {@link com.datastax.driver.core.Session}
  */
 public final class CassandraExecutor implements Closeable {
-
-    static final String ID = "id";
-    static final ImmutableSet<String> ID_SET = ImmutableSet.of(ID);
     static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of("1");
     static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NSC.COUNT_ALL);
 
@@ -160,8 +157,6 @@ public final class CassandraExecutor implements Closeable {
         namedDataType.put("TUPLE", TupleValue.class);
         namedDataType.put("CUSTOM", ByteBuffer.class);
     }
-
-    private static final Map<Class<?>, Set<String>> entityKeyNamesMap = new ConcurrentHashMap<>();
 
     private final KeyedObjectPool<String, PoolableWrapper<Statement>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
     private final KeyedObjectPool<String, PoolableWrapper<PreparedStatement>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
@@ -250,6 +245,8 @@ public final class CassandraExecutor implements Closeable {
         return mappingManager.mapper(targetClass);
     }
 
+    private static final Map<Class<?>, List<String>> entityKeyNamesMap = new ConcurrentHashMap<>();
+
     public static void registerKeys(Class<?> entityClass, Collection<String> keyNames) {
         N.checkArgument(N.notNullOrEmpty(keyNames), "'keyNames' can't be null or empty");
 
@@ -259,7 +256,18 @@ public final class CassandraExecutor implements Closeable {
             keyNameSet.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(entityClass, keyName)));
         }
 
-        entityKeyNamesMap.put(entityClass, ImmutableSet.of(keyNameSet));
+        entityKeyNamesMap.put(entityClass, ImmutableList.copyOf(keyNameSet));
+    }
+
+    private static List<String> getKeyNames(final Class<?> entityClass) {
+        List<String> keyNames = entityKeyNamesMap.get(entityClass);
+
+        if (keyNames == null) {
+            keyNames = ClassUtil.getIdFieldNames(entityClass);
+            entityKeyNamesMap.put(entityClass, keyNames);
+        }
+
+        return keyNames;
     }
 
     public static DataSet extractData(final ResultSet resultSet) {
@@ -499,12 +507,12 @@ public final class CassandraExecutor implements Closeable {
     static Condition ids2Cond(final Class<?> targetClass, final Object... ids) {
         N.checkArgNotNullOrEmpty(ids, "ids");
 
-        final Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
+        final List<String> keyNames = getKeyNames(targetClass);
 
-        if (keyNameSet == null && ids.length == 1) {
-            return CF.eq(ID, ids[0]);
-        } else if (keyNameSet != null && ids.length <= keyNameSet.size()) {
-            final Iterator<String> iter = keyNameSet.iterator();
+        if (keyNames.size() == 1 && ids.length == 1) {
+            return CF.eq(keyNames.get(0), ids[0]);
+        } else if (ids.length <= keyNames.size()) {
+            final Iterator<String> iter = keyNames.iterator();
             final And and = new And();
 
             for (Object id : ids) {
@@ -514,21 +522,21 @@ public final class CassandraExecutor implements Closeable {
             return and;
         } else {
             throw new IllegalArgumentException("The number: " + ids.length + " of input ids doesn't match the (registered) key names: "
-                    + (keyNameSet == null ? "[id]" : N.toString(keyNameSet)) + " in class: " + ClassUtil.getCanonicalClassName(targetClass));
+                    + (keyNames == null ? "[id]" : N.toString(keyNames)) + " in class: " + ClassUtil.getCanonicalClassName(targetClass));
         }
     }
 
     static Condition entity2Cond(final Object entity) {
         final Class<?> targetClass = entity.getClass();
-        final Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
+        final List<String> keyNames = getKeyNames(targetClass);
 
-        if (keyNameSet == null) {
-            return CF.eq(ID, ClassUtil.getPropValue(entity, ID));
+        if (keyNames.size() == 1) {
+            return CF.eq(keyNames.get(0), ClassUtil.getPropValue(entity, keyNames.get(0)));
         } else {
             final And and = new And();
             Object propVal = null;
 
-            for (String keyName : keyNameSet) {
+            for (String keyName : keyNames) {
                 propVal = ClassUtil.getPropValue(entity, keyName);
 
                 if (propVal == null || (propVal instanceof CharSequence) && N.isNullOrEmpty(((CharSequence) propVal))) {
@@ -539,7 +547,7 @@ public final class CassandraExecutor implements Closeable {
             }
 
             if (N.isNullOrEmpty(and.getConditions())) {
-                throw new IllegalArgumentException("No property value specified in entity for key names: " + keyNameSet);
+                throw new IllegalArgumentException("No property value specified in entity for key names: " + keyNames);
             }
 
             return and;
@@ -685,7 +693,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SuppressWarnings("deprecation")
     private Map<String, Object> prepareUpdateProps(final Class<?> targetClass, final Object entity) {
-        final Set<String> keyNameSet = getKeyNameSet(targetClass);
+        final List<String> keyNames = getKeyNames(targetClass);
         final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
 
         if (isDirtyMarker) {
@@ -695,11 +703,11 @@ public final class CassandraExecutor implements Closeable {
                 props.put(propName, ClassUtil.getPropValue(entity, propName));
             }
 
-            Maps.removeKeys(props, keyNameSet);
+            Maps.removeKeys(props, keyNames);
 
             return props;
         } else {
-            return Maps.entity2Map(entity, keyNameSet);
+            return Maps.entity2Map(entity, keyNames);
         }
     }
 
@@ -756,9 +764,9 @@ public final class CassandraExecutor implements Closeable {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
 
         final Class<?> targetClass = N.first(entities).get().getClass();
-        final Set<String> keyNameSet = getKeyNameSet(targetClass);
+        final List<String> keyNames = getKeyNames(targetClass);
 
-        return batchUpdate(entities, keyNameSet, type);
+        return batchUpdate(entities, keyNames, type);
     }
 
     public ResultSet batchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames, final BatchStatement.Type type) {
@@ -944,15 +952,15 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public boolean exists(final Class<?> targetClass, final Condition whereCause) {
-        final Collection<String> selectPropNames = getKeyNameSet(targetClass);
-        final CP cp = prepareQuery(targetClass, selectPropNames, whereCause, 1);
+        final List<String> keyNames = getKeyNames(targetClass);
+        final CP cp = prepareQuery(targetClass, keyNames, whereCause, 1);
         final ResultSet resultSet = execute(cp);
 
         return resultSet.iterator().hasNext();
     }
 
     public long count(final Class<?> targetClass, final Condition whereCause) {
-        final CP cp = prepareQuery(targetClass, N.asList(NSC.COUNT_ALL), whereCause, 1);
+        final CP cp = prepareQuery(targetClass, N.asList(CQLBuilder.COUNT_ALL), whereCause, 1);
 
         return count(cp.cql, cp.parameters.toArray());
     }
@@ -1477,21 +1485,9 @@ public final class CassandraExecutor implements Closeable {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
 
         final Class<?> targetClass = N.first(entities).get().getClass();
-        final Set<String> keyNameSet = getKeyNameSet(targetClass);
+        final List<String> keyNames = getKeyNames(targetClass);
 
-        return asyncBatchUpdate(entities, keyNameSet, type);
-    }
-
-    private Set<String> getKeyNameSet(final Class<?> targetClass) {
-        Set<String> keyNameSet = entityKeyNamesMap.get(targetClass);
-
-        if (keyNameSet == null) {
-            keyNameSet = ClassUtil.getIdFieldNames(targetClass);
-            keyNameSet = N.isNullOrEmpty(keyNameSet) ? ID_SET : keyNameSet;
-            entityKeyNamesMap.put(targetClass, keyNameSet);
-        }
-
-        return keyNameSet;
+        return asyncBatchUpdate(entities, keyNames, type);
     }
 
     public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames,
@@ -1574,8 +1570,8 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ContinuableFuture<Boolean> asyncExists(final Class<?> targetClass, final Condition whereCause) {
-        final Collection<String> selectPropNames = getKeyNameSet(targetClass);
-        final CP cp = prepareQuery(targetClass, selectPropNames, whereCause, 1);
+        final List<String> keyNames = getKeyNames(targetClass);
+        final CP cp = prepareQuery(targetClass, keyNames, whereCause, 1);
 
         return asyncExists(cp.cql, cp.parameters.toArray());
     }

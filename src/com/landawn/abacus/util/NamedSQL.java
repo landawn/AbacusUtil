@@ -118,11 +118,11 @@ public final class NamedSQL {
         return namedSQL;
     }
 
-    public String getPureSQL() {
+    public String getParameterizedSQL() {
         return pureSQL;
     }
 
-    public String getPureSQL(boolean isForCouchbase) {
+    public String getParameterizedSQL(boolean isForCouchbase) {
         if (isForCouchbase) {
             if (N.isNullOrEmpty(couchbasePureSQL)) {
                 parseForCouchbase();

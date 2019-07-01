@@ -73,6 +73,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
@@ -1462,6 +1463,15 @@ public final class ClassUtil {
                     for (Method method : clazz.getMethods()) {
                         if (isFieldGetMethod(method, field)) {
                             propName = getPropNameByMethod(method);
+
+                            try {
+                                if (!field.equals(clazz.getDeclaredField(propName))) {
+                                    propName = field.getName();
+                                }
+                            } catch (Exception e) {
+                                // ignore.
+                            }
+
                             propName = (statisFinalFields.get(propName) != null) ? statisFinalFields.get(propName) : propName;
 
                             if (propGetMethodMap.containsKey(propName)) {
@@ -2194,40 +2204,57 @@ public final class ClassUtil {
         Objectory.recycle(tmp);
     }
 
-    static Set<String> getIdFieldNames(final Class<?> targetClass) {
-        final Set<String> idPropNames = new LinkedHashSet<>();
+    private static final Map<Class<?>, List<String>> idPropNamesMap = new ConcurrentHashMap<>();
 
-        final Set<Field> allFields = new LinkedHashSet<>();
+    static List<String> getIdFieldNames(final Class<?> targetClass) {
+        List<String> idPropNames = idPropNamesMap.get(targetClass);
 
-        for (Class<?> superClass : ClassUtil.getAllSuperclasses(targetClass)) {
-            allFields.addAll(Array.asList(superClass.getDeclaredFields()));
-        }
+        if (idPropNames == null) {
+            final Set<String> idPropNameSet = new LinkedHashSet<>();
+            final Set<Field> allFields = new LinkedHashSet<>();
 
-        allFields.addAll(Array.asList(targetClass.getDeclaredFields()));
-
-        for (Field field : allFields) {
-            if (ClassUtil.getPropGetMethod(targetClass, field.getName()) == null
-                    && ClassUtil.getPropGetMethod(targetClass, ClassUtil.formalizePropName(field.getName())) == null) {
-                continue;
+            for (Class<?> superClass : ClassUtil.getAllSuperclasses(targetClass)) {
+                allFields.addAll(Array.asList(superClass.getDeclaredFields()));
             }
 
-            if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
-                idPropNames.add(field.getName());
-            } else {
-                try {
-                    if (field.isAnnotationPresent(javax.persistence.Id.class)) {
-                        idPropNames.add(field.getName());
+            allFields.addAll(Array.asList(targetClass.getDeclaredFields()));
+
+            for (Field field : allFields) {
+                if (ClassUtil.getPropGetMethod(targetClass, field.getName()) == null
+                        && ClassUtil.getPropGetMethod(targetClass, ClassUtil.formalizePropName(field.getName())) == null) {
+                    continue;
+                }
+
+                if (field.isAnnotationPresent(Id.class) || field.isAnnotationPresent(ReadOnlyId.class)) {
+                    idPropNameSet.add(field.getName());
+                } else {
+                    try {
+                        if (field.isAnnotationPresent(javax.persistence.Id.class)) {
+                            idPropNameSet.add(field.getName());
+                        }
+                    } catch (Throwable e) {
+                        // ignore
                     }
-                } catch (Throwable e) {
-                    // ignore
                 }
             }
-        }
 
-        if (targetClass.isAnnotationPresent(Id.class)) {
-            String[] values = targetClass.getAnnotation(Id.class).value();
-            N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
-            idPropNames.addAll(Arrays.asList(values));
+            if (targetClass.isAnnotationPresent(Id.class)) {
+                String[] values = targetClass.getAnnotation(Id.class).value();
+                N.checkArgNotNullOrEmpty(values, "values for annotation @Id on Type/Class can't be null or empty");
+                idPropNameSet.addAll(Arrays.asList(values));
+            }
+
+            if (N.isNullOrEmpty(idPropNameSet)) {
+                final Field idField = ClassUtil.getPropField(targetClass, "id");
+                final Set<Class<?>> idType = N.<Class<?>> asSet(int.class, Integer.class, long.class, Long.class, String.class, Timestamp.class, UUID.class);
+
+                if (idField != null && idType.contains(idField.getType())) {
+                    idPropNameSet.add(idField.getName());
+                }
+            }
+
+            idPropNames = ImmutableList.copyOf(idPropNameSet);
+            idPropNamesMap.put(targetClass, idPropNames);
         }
 
         return idPropNames;

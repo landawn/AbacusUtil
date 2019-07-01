@@ -154,7 +154,7 @@ public final class CouchbaseExecutor implements Closeable {
      * @param cls
      * @param idPropertyName
      */
-    public static void registerIdProeprty(Class<?> cls, String idPropertyName) {
+    public static void registerIdProperty(Class<?> cls, String idPropertyName) {
         if (ClassUtil.getPropGetMethod(cls, idPropertyName) == null || ClassUtil.getPropSetMethod(cls, idPropertyName) == null) {
             throw new IllegalArgumentException("The specified class: " + ClassUtil.getCanonicalClassName(cls)
                     + " doesn't have getter or setter method for the specified id propery: " + idPropertyName);
@@ -329,7 +329,7 @@ public final class CouchbaseExecutor implements Closeable {
         Method idSetMethod = classIdSetMethodPool.get(targetClass);
 
         if (idSetMethod == null) {
-            final Set<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
+            final List<String> idFieldNames = ClassUtil.getIdFieldNames(targetClass);
             Method idPropSetMethod = null;
             Class<?> parameterType = null;
 
@@ -1696,7 +1696,7 @@ public final class CouchbaseExecutor implements Closeable {
         }
 
         final NamedSQL namedSQL = getNamedSQL(query);
-        final String sql = namedSQL.getPureSQL(true);
+        final String sql = namedSQL.getParameterizedSQL(true);
         final int parameterCount = namedSQL.getParameterCount(true);
         final List<String> namedParameters = namedSQL.getNamedParameters(true);
 

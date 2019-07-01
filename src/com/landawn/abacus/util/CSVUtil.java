@@ -728,7 +728,7 @@ public final class CSVUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(namedSQL.getPureSQL(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            stmt = conn.prepareStatement(namedSQL.getParameterizedSQL(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             stmt.setFetchDirection(ResultSet.FETCH_FORWARD);
             stmt.setFetchSize(200);
 

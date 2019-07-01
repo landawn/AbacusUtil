@@ -1,5 +1,7 @@
 ### 1.7.9
 
+* Add `JdbcUtil.NamedQuery`.
+
 * Add `CrudDao.findFirst/query`.
 
 * Improve Java Docs

@@ -61,6 +61,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -144,6 +145,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.IntStream.IntStreamEx;
 import com.landawn.abacus.util.stream.Stream;
 import com.landawn.abacus.util.stream.Stream.StreamEx;
 
@@ -1411,6 +1413,39 @@ public final class JdbcUtil {
         return result;
     }
 
+    /** 
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    @SuppressWarnings("resource")
+    public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        PreparedQuery result = null;
+        Connection conn = null;
+
+        try {
+            conn = getConnection(ds);
+            result = new PreparedQuery(stmtCreator.apply(conn, sql)).onClose(createCloseHandler(conn, ds));
+        } finally {
+            if (result == null) {
+                releaseConnection(conn, ds);
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
@@ -1429,6 +1464,196 @@ public final class JdbcUtil {
     public static PreparedQuery prepareQuery(final Connection conn, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
             throws SQLException {
         return new PreparedQuery(stmtCreator.apply(conn));
+    }
+
+    /**
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareQuery(dataSource.getConnection(), sql, stmtCreator);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
+     * @param sql
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
+     */
+    public static PreparedQuery prepareQuery(final Connection conn, final String sql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        return new PreparedQuery(stmtCreator.apply(conn, sql));
+    }
+
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql) throws SQLException {
+        NamedQuery result = null;
+        Connection conn = null;
+
+        try {
+            conn = getConnection(ds);
+            result = prepareNamedQuery(conn, namedSql).onClose(createCloseHandler(conn, ds));
+        } finally {
+            if (result == null) {
+                releaseConnection(conn, ds);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @param autoGeneratedKeys
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql, final boolean autoGeneratedKeys) throws SQLException {
+        NamedQuery result = null;
+        Connection conn = null;
+
+        try {
+            conn = getConnection(ds);
+            result = prepareNamedQuery(conn, namedSql, autoGeneratedKeys).onClose(createCloseHandler(conn, ds));
+        } finally {
+            if (result == null) {
+                releaseConnection(conn, ds);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareNamedQuery(dataSource.getConnection(), namedSql);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @return
+     * @throws SQLException
+     */
+    public static NamedQuery prepareNamedQuery(final Connection conn, final String namedSql) throws SQLException {
+        final NamedSQL namedSQL = createNamedSQL(namedSql);
+
+        return new NamedQuery(conn.prepareStatement(namedSQL.getParameterizedSQL()), namedSQL);
+    }
+
+    /** 
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareNamedQuery(dataSource.getConnection(), namedSql, autoGeneratedKeys);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @param autoGeneratedKeys
+     * @return
+     * @throws SQLException
+     */
+    public static NamedQuery prepareNamedQuery(final Connection conn, final String namedSql, final boolean autoGeneratedKeys) throws SQLException {
+        final NamedSQL namedSQL = createNamedSQL(namedSql);
+
+        return new NamedQuery(
+                conn.prepareStatement(namedSQL.getParameterizedSQL(), autoGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS),
+                namedSQL);
+    }
+
+    /** 
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code NamedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    @SuppressWarnings("resource")
+    public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        final NamedSQL namedSQL = createNamedSQL(namedSql);
+        NamedQuery result = null;
+        Connection conn = null;
+
+        try {
+            conn = getConnection(ds);
+            result = new NamedQuery(stmtCreator.apply(conn, namedSQL.getParameterizedSQL()), namedSQL).onClose(createCloseHandler(conn, ds));
+        } finally {
+            if (result == null) {
+                releaseConnection(conn, ds);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareNamedQuery(dataSource.getConnection(), namedSql, stmtCreator);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code NamedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
+     */
+    public static NamedQuery prepareNamedQuery(final Connection conn, final String namedSql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        final NamedSQL namedSQL = createNamedSQL(namedSql);
+
+        return new NamedQuery(stmtCreator.apply(conn, namedSQL.getParameterizedSQL()), namedSQL);
+    }
+
+    private static NamedSQL createNamedSQL(final String namedSql) {
+        N.checkArgNotNullOrEmpty(namedSql, "namedSql");
+
+        final NamedSQL namedSQL = NamedSQL.parse(namedSql);
+
+        if (namedSQL.getNamedParameters().size() != namedSQL.getParameterCount()) {
+            throw new IllegalArgumentException("\"" + namedSql + "\" is not a valid named sql:");
+        }
+
+        return namedSQL;
     }
 
     /**
@@ -1512,6 +1737,39 @@ public final class JdbcUtil {
     }
 
     /**
+     * Spring Transaction is supported and Integrated. 
+     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * the {@code Connection} started the Spring Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    @SuppressWarnings("resource")
+    public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql,
+            final Try.BiFunction<Connection, String, CallableStatement, SQLException> stmtCreator) throws SQLException {
+        PreparedCallableQuery result = null;
+        Connection conn = null;
+
+        try {
+            conn = getConnection(ds);
+            result = new PreparedCallableQuery(stmtCreator.apply(conn, sql)).onClose(createCloseHandler(conn, ds));
+        } finally {
+            if (result == null) {
+                releaseConnection(conn, ds);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
      * <code>
@@ -1531,10 +1789,31 @@ public final class JdbcUtil {
         return new PreparedCallableQuery(stmtCreator.apply(conn));
     }
 
+    /**
+     * Never write below code because it will definitely cause {@code Connection} leak:
+     * <pre>
+     * <code>
+     * JdbcUtil.prepareCallableQuery(dataSource.getConnection(), sql, stmtCreator);
+     * </code>
+     * </pre>
+     * 
+     * @param conn the specified {@code conn} won't be close after this query is executed.
+     * @param sql
+     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see {@link JdbcUtil#prepareCall(Connection, String, Object...)}
+     */
+    public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final String sql,
+            final Try.BiFunction<Connection, String, CallableStatement, SQLException> stmtCreator) throws SQLException {
+        return new PreparedCallableQuery(stmtCreator.apply(conn, sql));
+    }
+
     @SafeVarargs
     public static PreparedStatement prepareStatement(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
-        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
+        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getParameterizedSQL());
 
         if (N.notNullOrEmpty(parameters)) {
             StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
@@ -1546,7 +1825,7 @@ public final class JdbcUtil {
     @SafeVarargs
     public static CallableStatement prepareCall(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
-        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
+        final CallableStatement stmt = conn.prepareCall(namedSQL.getParameterizedSQL());
 
         if (N.notNullOrEmpty(parameters)) {
             StatementSetter.DEFAULT.setParameters(namedSQL, stmt, parameters);
@@ -1557,7 +1836,7 @@ public final class JdbcUtil {
 
     public static PreparedStatement batchPrepareStatement(final Connection conn, final String sql, final List<?> parametersList) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
-        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
+        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getParameterizedSQL());
 
         for (Object parameters : parametersList) {
             StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
@@ -1569,7 +1848,7 @@ public final class JdbcUtil {
 
     public static CallableStatement batchPrepareCall(final Connection conn, final String sql, final List<?> parametersList) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
-        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
+        final CallableStatement stmt = conn.prepareCall(namedSQL.getParameterizedSQL());
 
         for (Object parameters : parametersList) {
             StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(parameters));
@@ -1656,7 +1935,7 @@ public final class JdbcUtil {
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(namedSQL.getPureSQL());
+            stmt = conn.prepareStatement(namedSQL.getParameterizedSQL());
 
             int res = 0;
             int idx = 0;
@@ -5989,269 +6268,339 @@ public final class JdbcUtil {
         }
     }
 
-    static class AbstractPreparedCallableQuery<S extends CallableStatement, Q extends AbstractPreparedCallableQuery<S, Q>> extends AbstractPreparedQuery<S, Q> {
-        final S stmt;
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...). 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
+     * @author haiyangl
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
+     */
+    public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
 
-        AbstractPreparedCallableQuery(S stmt) {
+        PreparedQuery(PreparedStatement stmt) {
+            super(stmt);
+        }
+
+        PreparedQuery(PreparedStatement stmt, AsyncExecutor asyncExecutor) {
+            super(stmt, asyncExecutor);
+        }
+    }
+
+    /**
+     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
+     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * Generally, don't cache or reuse the instance of this class, 
+     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
+     * 
+     * <br />
+     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
+     * 
+     * <br />
+     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
+     * 
+     * @author haiyangl
+     * 
+     * @see {@link com.landawn.abacus.annotation.ReadOnly}
+     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
+     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
+     * @see {@link com.landawn.abacus.annotation.Transient}
+     * @see {@link com.landawn.abacus.annotation.Table}
+     * @see {@link com.landawn.abacus.annotation.Column} 
+     * 
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
+     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
+     */
+    public static class PreparedCallableQuery extends AbstractPreparedQuery<CallableStatement, PreparedCallableQuery> {
+
+        final CallableStatement stmt;
+
+        PreparedCallableQuery(CallableStatement stmt) {
             super(stmt);
             this.stmt = stmt;
         }
 
-        AbstractPreparedCallableQuery(S stmt, AsyncExecutor asyncExecutor) {
+        PreparedCallableQuery(CallableStatement stmt, AsyncExecutor asyncExecutor) {
             super(stmt, asyncExecutor);
             this.stmt = stmt;
         }
 
-        public Q setNull(String parameterName, int sqlType) throws SQLException {
+        public PreparedCallableQuery setNull(String parameterName, int sqlType) throws SQLException {
             stmt.setNull(parameterName, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNull(String parameterName, int sqlType, String typeName) throws SQLException {
+        public PreparedCallableQuery setNull(String parameterName, int sqlType, String typeName) throws SQLException {
             stmt.setNull(parameterName, sqlType, typeName);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBoolean(String parameterName, boolean x) throws SQLException {
+        public PreparedCallableQuery setBoolean(String parameterName, boolean x) throws SQLException {
             stmt.setBoolean(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBoolean(String parameterName, Boolean x) throws SQLException {
+        public PreparedCallableQuery setBoolean(String parameterName, Boolean x) throws SQLException {
             stmt.setBoolean(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setByte(String parameterName, byte x) throws SQLException {
+        public PreparedCallableQuery setByte(String parameterName, byte x) throws SQLException {
             stmt.setByte(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setByte(String parameterName, Byte x) throws SQLException {
+        public PreparedCallableQuery setByte(String parameterName, Byte x) throws SQLException {
             stmt.setByte(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setShort(String parameterName, short x) throws SQLException {
+        public PreparedCallableQuery setShort(String parameterName, short x) throws SQLException {
             stmt.setShort(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setShort(String parameterName, Short x) throws SQLException {
+        public PreparedCallableQuery setShort(String parameterName, Short x) throws SQLException {
             stmt.setShort(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setInt(String parameterName, int x) throws SQLException {
+        public PreparedCallableQuery setInt(String parameterName, int x) throws SQLException {
             stmt.setInt(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setInt(String parameterName, Integer x) throws SQLException {
+        public PreparedCallableQuery setInt(String parameterName, Integer x) throws SQLException {
             stmt.setInt(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setLong(String parameterName, long x) throws SQLException {
+        public PreparedCallableQuery setLong(String parameterName, long x) throws SQLException {
             stmt.setLong(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setLong(String parameterName, Long x) throws SQLException {
+        public PreparedCallableQuery setLong(String parameterName, Long x) throws SQLException {
             stmt.setLong(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setFloat(String parameterName, float x) throws SQLException {
+        public PreparedCallableQuery setFloat(String parameterName, float x) throws SQLException {
             stmt.setFloat(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setFloat(String parameterName, Float x) throws SQLException {
+        public PreparedCallableQuery setFloat(String parameterName, Float x) throws SQLException {
             stmt.setFloat(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setDouble(String parameterName, double x) throws SQLException {
+        public PreparedCallableQuery setDouble(String parameterName, double x) throws SQLException {
             stmt.setDouble(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setDouble(String parameterName, Double x) throws SQLException {
+        public PreparedCallableQuery setDouble(String parameterName, Double x) throws SQLException {
             stmt.setDouble(parameterName, Primitives.unboxOrDefault(x));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
+        public PreparedCallableQuery setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
             stmt.setBigDecimal(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setString(String parameterName, String x) throws SQLException {
+        public PreparedCallableQuery setString(String parameterName, String x) throws SQLException {
             stmt.setString(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setDate(String parameterName, java.sql.Date x) throws SQLException {
+        public PreparedCallableQuery setDate(String parameterName, java.sql.Date x) throws SQLException {
             stmt.setDate(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setDate(String parameterName, java.util.Date x) throws SQLException {
+        public PreparedCallableQuery setDate(String parameterName, java.util.Date x) throws SQLException {
             stmt.setDate(parameterName, x == null ? null : x instanceof java.sql.Date ? (java.sql.Date) x : new java.sql.Date(x.getTime()));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setTime(String parameterName, java.sql.Time x) throws SQLException {
+        public PreparedCallableQuery setTime(String parameterName, java.sql.Time x) throws SQLException {
             stmt.setTime(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setTime(String parameterName, java.util.Date x) throws SQLException {
+        public PreparedCallableQuery setTime(String parameterName, java.util.Date x) throws SQLException {
             stmt.setTime(parameterName, x == null ? null : x instanceof java.sql.Time ? (java.sql.Time) x : new java.sql.Time(x.getTime()));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+        public PreparedCallableQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
             stmt.setTimestamp(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setTimestamp(String parameterName, java.util.Date x) throws SQLException {
+        public PreparedCallableQuery setTimestamp(String parameterName, java.util.Date x) throws SQLException {
             stmt.setTimestamp(parameterName, x == null ? null : x instanceof java.sql.Timestamp ? (java.sql.Timestamp) x : new java.sql.Timestamp(x.getTime()));
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBytes(String parameterName, byte[] x) throws SQLException {
+        public PreparedCallableQuery setBytes(String parameterName, byte[] x) throws SQLException {
             stmt.setBytes(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setAsciiStream(String parameterName, InputStream inputStream) throws SQLException {
+        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setAsciiStream(parameterName, inputStream);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setAsciiStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public PreparedCallableQuery setAsciiStream(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setAsciiStream(parameterName, inputStream, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
+        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setBinaryStream(parameterName, inputStream);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBinaryStream(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public PreparedCallableQuery setBinaryStream(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setBinaryStream(parameterName, inputStream, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setCharacterStream(String parameterName, Reader reader) throws SQLException {
+        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader) throws SQLException {
             stmt.setCharacterStream(parameterName, reader);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+        public PreparedCallableQuery setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setCharacterStream(parameterName, reader, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNCharacterStream(String parameterName, Reader reader) throws SQLException {
+        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader) throws SQLException {
             stmt.setNCharacterStream(parameterName, reader);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
+        public PreparedCallableQuery setNCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setNCharacterStream(parameterName, reader, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBlob(String parameterName, java.sql.Blob x) throws SQLException {
+        public PreparedCallableQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
             stmt.setBlob(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBlob(String parameterName, InputStream inputStream) throws SQLException {
+        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream) throws SQLException {
             stmt.setBlob(parameterName, inputStream);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
+        public PreparedCallableQuery setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
             stmt.setBlob(parameterName, inputStream, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setClob(String parameterName, java.sql.Clob x) throws SQLException {
+        public PreparedCallableQuery setClob(String parameterName, java.sql.Clob x) throws SQLException {
             stmt.setClob(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setClob(String parameterName, Reader reader) throws SQLException {
+        public PreparedCallableQuery setClob(String parameterName, Reader reader) throws SQLException {
             stmt.setClob(parameterName, reader);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setClob(String parameterName, Reader reader, long length) throws SQLException {
+        public PreparedCallableQuery setClob(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setClob(parameterName, reader, length);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNClob(String parameterName, java.sql.NClob x) throws SQLException {
+        public PreparedCallableQuery setNClob(String parameterName, java.sql.NClob x) throws SQLException {
             stmt.setNClob(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNClob(String parameterName, Reader reader) throws SQLException {
+        public PreparedCallableQuery setNClob(String parameterName, Reader reader) throws SQLException {
             stmt.setNClob(parameterName, reader);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setNClob(String parameterName, Reader reader, long length) throws SQLException {
+        public PreparedCallableQuery setNClob(String parameterName, Reader reader, long length) throws SQLException {
             stmt.setNClob(parameterName, reader, length);
 
-            return (Q) this;
+            return this;
         }
 
         /** 
@@ -6261,10 +6610,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q setURL(String parameterName, URL x) throws SQLException {
+        public PreparedCallableQuery setURL(String parameterName, URL x) throws SQLException {
             stmt.setURL(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
         /** 
@@ -6274,10 +6623,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
+        public PreparedCallableQuery setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
             stmt.setSQLXML(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
         /** 
@@ -6287,42 +6636,42 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q setRowId(String parameterName, java.sql.RowId x) throws SQLException {
+        public PreparedCallableQuery setRowId(String parameterName, java.sql.RowId x) throws SQLException {
             stmt.setRowId(parameterName, x);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setObject(String parameterName, Object x) throws SQLException {
+        public PreparedCallableQuery setObject(String parameterName, Object x) throws SQLException {
             if (x == null) {
                 stmt.setObject(parameterName, x);
             } else {
                 N.typeOf(x.getClass()).set(stmt, parameterName, x);
             }
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setObject(String parameterName, Object x, int sqlType) throws SQLException {
+        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType) throws SQLException {
             stmt.setObject(parameterName, x, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
+        public PreparedCallableQuery setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
             stmt.setObject(parameterName, x, sqlType, scaleOrLength);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q setParameters(Map<String, Object> parameters) throws SQLException {
+        public PreparedCallableQuery setParameters(Map<String, Object> parameters) throws SQLException {
             checkArgNotNull(parameters, "parameters");
 
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
                 setObject(entry.getKey(), entry.getValue());
             }
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6336,7 +6685,7 @@ public final class JdbcUtil {
          * @see {@link ClassUtil#getPropNameListExclusively(Class, Collection)} 
          * @see {@link JdbcUtil#getNamedParameters(String)}
          */
-        public Q setParameters(List<String> parameterNames, Object entity) throws SQLException {
+        public PreparedCallableQuery setParameters(List<String> parameterNames, Object entity) throws SQLException {
             checkArgNotNull(parameterNames, "parameterNames");
             checkArgNotNull(entity, "entity");
 
@@ -6344,7 +6693,7 @@ public final class JdbcUtil {
                 setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
             }
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6354,10 +6703,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6368,10 +6717,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6382,28 +6731,28 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, int sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, int sqlType) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, scale);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, typeName);
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6413,10 +6762,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6427,10 +6776,10 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, scale);
 
-            return (Q) this;
+            return this;
         }
 
         /**
@@ -6441,31 +6790,31 @@ public final class JdbcUtil {
          * @return
          * @throws SQLException
          */
-        public Q registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(int parameterIndex, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterIndex, sqlType, typeName);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, int scale) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, scale);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
+        public PreparedCallableQuery registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
             stmt.registerOutParameter(parameterName, sqlType, typeName);
 
-            return (Q) this;
+            return this;
         }
 
-        public Q registerOutParameters(final ParametersSetter<? super CallableStatement> register) throws SQLException {
+        public PreparedCallableQuery registerOutParameters(final ParametersSetter<? super CallableStatement> register) throws SQLException {
             checkArgNotNull(register, "register");
 
             boolean noException = false;
@@ -6480,10 +6829,11 @@ public final class JdbcUtil {
                 }
             }
 
-            return (Q) this;
+            return this;
         }
 
-        public <T> Q registerOutParameters(final T parameter, final BiParametersSetter<? super T, ? super CallableStatement> register) throws SQLException {
+        public <T> PreparedCallableQuery registerOutParameters(final T parameter, final BiParametersSetter<? super T, ? super CallableStatement> register)
+                throws SQLException {
             checkArgNotNull(register, "register");
 
             boolean noException = false;
@@ -6498,7 +6848,7 @@ public final class JdbcUtil {
                 }
             }
 
-            return (Q) this;
+            return this;
         }
 
         public <R1> Optional<R1> call(final ResultExtractor<R1> resultExtrator1) throws SQLException {
@@ -6699,6 +7049,7 @@ public final class JdbcUtil {
 
             return Tuple.of(result1, result2, result3, result4, result5);
         }
+
     }
 
     /**
@@ -6730,83 +7081,2133 @@ public final class JdbcUtil {
      * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
      * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
      */
-    public static class PreparedQuery extends AbstractPreparedQuery<PreparedStatement, PreparedQuery> {
+    public static class NamedQuery extends AbstractPreparedQuery<PreparedStatement, NamedQuery> {
 
-        PreparedQuery(PreparedStatement stmt) {
+        private final NamedSQL namedSQL;
+        private final List<String> parameterNames;
+        private final int paramCount;
+        private Map<String, IntList> paramNameIndexMap;
+
+        NamedQuery(final PreparedStatement stmt, final NamedSQL namedSQL) {
             super(stmt);
+            this.namedSQL = namedSQL;
+            this.parameterNames = namedSQL.getNamedParameters();
+            this.paramCount = namedSQL.getParameterCount();
         }
 
-        PreparedQuery(PreparedStatement stmt, AsyncExecutor asyncExecutor) {
+        NamedQuery(final PreparedStatement stmt, final NamedSQL namedSQL, AsyncExecutor asyncExecutor) {
             super(stmt, asyncExecutor);
+            this.namedSQL = namedSQL;
+            this.parameterNames = namedSQL.getNamedParameters();
+            this.paramCount = namedSQL.getParameterCount();
+        }
+
+        private void initParamNameIndexMap() {
+            paramNameIndexMap = new HashMap<>(paramCount);
+            int index = 1;
+
+            for (String paramName : parameterNames) {
+                IntList indexes = paramNameIndexMap.get(paramName);
+
+                if (indexes == null) {
+                    indexes = new IntList(1);
+                    paramNameIndexMap.put(paramName, indexes);
+                }
+
+                indexes.add(index++);
+            }
+        }
+
+        public NamedQuery setNull(String parameterName, int sqlType) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNull(i + 1, sqlType);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNull(indexes.get(0), sqlType);
+                    } else if (indexes.size() == 2) {
+                        setNull(indexes.get(0), sqlType);
+                        setNull(indexes.get(1), sqlType);
+                    } else if (indexes.size() == 3) {
+                        setNull(indexes.get(0), sqlType);
+                        setNull(indexes.get(1), sqlType);
+                        setNull(indexes.get(2), sqlType);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNull(indexes.get(i), sqlType);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNull(String parameterName, int sqlType, String typeName) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNull(i + 1, sqlType, typeName);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNull(indexes.get(0), sqlType, typeName);
+                    } else if (indexes.size() == 2) {
+                        setNull(indexes.get(0), sqlType, typeName);
+                        setNull(indexes.get(1), sqlType, typeName);
+                    } else if (indexes.size() == 3) {
+                        setNull(indexes.get(0), sqlType, typeName);
+                        setNull(indexes.get(1), sqlType, typeName);
+                        setNull(indexes.get(2), sqlType, typeName);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNull(indexes.get(i), sqlType, typeName);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBoolean(String parameterName, boolean x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBoolean(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBoolean(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBoolean(indexes.get(0), x);
+                        setBoolean(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBoolean(indexes.get(0), x);
+                        setBoolean(indexes.get(1), x);
+                        setBoolean(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBoolean(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBoolean(String parameterName, Boolean x) throws SQLException {
+            setBoolean(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setByte(String parameterName, byte x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setByte(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setByte(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setByte(indexes.get(0), x);
+                        setByte(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setByte(indexes.get(0), x);
+                        setByte(indexes.get(1), x);
+                        setByte(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setByte(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setByte(String parameterName, Byte x) throws SQLException {
+            setByte(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setShort(String parameterName, short x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setShort(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setShort(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setShort(indexes.get(0), x);
+                        setShort(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setShort(indexes.get(0), x);
+                        setShort(indexes.get(1), x);
+                        setShort(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setShort(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setShort(String parameterName, Short x) throws SQLException {
+            setShort(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setInt(String parameterName, int x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setInt(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setInt(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setInt(indexes.get(0), x);
+                        setInt(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setInt(indexes.get(0), x);
+                        setInt(indexes.get(1), x);
+                        setInt(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setInt(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setInt(String parameterName, Integer x) throws SQLException {
+            setInt(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setLong(String parameterName, long x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setLong(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setLong(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setLong(indexes.get(0), x);
+                        setLong(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setLong(indexes.get(0), x);
+                        setLong(indexes.get(1), x);
+                        setLong(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setLong(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setLong(String parameterName, Long x) throws SQLException {
+            setLong(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setFloat(String parameterName, float x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setFloat(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setFloat(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setFloat(indexes.get(0), x);
+                        setFloat(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setFloat(indexes.get(0), x);
+                        setFloat(indexes.get(1), x);
+                        setFloat(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setFloat(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setFloat(String parameterName, Float x) throws SQLException {
+            setFloat(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setDouble(String parameterName, double x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setDouble(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setDouble(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setDouble(indexes.get(0), x);
+                        setDouble(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setDouble(indexes.get(0), x);
+                        setDouble(indexes.get(1), x);
+                        setDouble(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setDouble(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setDouble(String parameterName, Double x) throws SQLException {
+            setDouble(parameterName, Primitives.unboxOrDefault(x));
+
+            return this;
+        }
+
+        public NamedQuery setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBigDecimal(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBigDecimal(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBigDecimal(indexes.get(0), x);
+                        setBigDecimal(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBigDecimal(indexes.get(0), x);
+                        setBigDecimal(indexes.get(1), x);
+                        setBigDecimal(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBigDecimal(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setString(String parameterName, String x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setString(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setString(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setString(indexes.get(0), x);
+                        setString(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setString(indexes.get(0), x);
+                        setString(indexes.get(1), x);
+                        setString(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setString(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setDate(String parameterName, java.sql.Date x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setDate(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setDate(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setDate(indexes.get(0), x);
+                        setDate(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setDate(indexes.get(0), x);
+                        setDate(indexes.get(1), x);
+                        setDate(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setDate(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setDate(String parameterName, java.util.Date x) throws SQLException {
+            setDate(parameterName, x == null ? null : x instanceof java.sql.Date ? (java.sql.Date) x : new java.sql.Date(x.getTime()));
+
+            return this;
+        }
+
+        public NamedQuery setTime(String parameterName, java.sql.Time x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setTime(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setTime(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setTime(indexes.get(0), x);
+                        setTime(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setTime(indexes.get(0), x);
+                        setTime(indexes.get(1), x);
+                        setTime(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setTime(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setTime(String parameterName, java.util.Date x) throws SQLException {
+            setTime(parameterName, x == null ? null : x instanceof java.sql.Time ? (java.sql.Time) x : new java.sql.Time(x.getTime()));
+
+            return this;
+        }
+
+        public NamedQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setTimestamp(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setTimestamp(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setTimestamp(indexes.get(0), x);
+                        setTimestamp(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setTimestamp(indexes.get(0), x);
+                        setTimestamp(indexes.get(1), x);
+                        setTimestamp(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setTimestamp(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setTimestamp(String parameterName, java.util.Date x) throws SQLException {
+            setTimestamp(parameterName, x == null ? null : x instanceof java.sql.Timestamp ? (java.sql.Timestamp) x : new java.sql.Timestamp(x.getTime()));
+
+            return this;
+        }
+
+        public NamedQuery setBytes(String parameterName, byte[] x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBytes(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBytes(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBytes(indexes.get(0), x);
+                        setBytes(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBytes(indexes.get(0), x);
+                        setBytes(indexes.get(1), x);
+                        setBytes(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBytes(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setAsciiStream(String parameterName, InputStream x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setAsciiStream(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setAsciiStream(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setAsciiStream(indexes.get(0), x);
+                        setAsciiStream(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setAsciiStream(indexes.get(0), x);
+                        setAsciiStream(indexes.get(1), x);
+                        setAsciiStream(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setAsciiStream(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setAsciiStream(String parameterName, InputStream x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setAsciiStream(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setAsciiStream(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setAsciiStream(indexes.get(0), x, length);
+                        setAsciiStream(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setAsciiStream(indexes.get(0), x, length);
+                        setAsciiStream(indexes.get(1), x, length);
+                        setAsciiStream(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setAsciiStream(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBinaryStream(String parameterName, InputStream x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBinaryStream(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBinaryStream(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBinaryStream(indexes.get(0), x);
+                        setBinaryStream(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBinaryStream(indexes.get(0), x);
+                        setBinaryStream(indexes.get(1), x);
+                        setBinaryStream(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBinaryStream(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBinaryStream(String parameterName, InputStream x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBinaryStream(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBinaryStream(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setBinaryStream(indexes.get(0), x, length);
+                        setBinaryStream(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setBinaryStream(indexes.get(0), x, length);
+                        setBinaryStream(indexes.get(1), x, length);
+                        setBinaryStream(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBinaryStream(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setCharacterStream(String parameterName, Reader x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setCharacterStream(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setCharacterStream(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setCharacterStream(indexes.get(0), x);
+                        setCharacterStream(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setCharacterStream(indexes.get(0), x);
+                        setCharacterStream(indexes.get(1), x);
+                        setCharacterStream(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setCharacterStream(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setCharacterStream(String parameterName, Reader x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setCharacterStream(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setCharacterStream(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setCharacterStream(indexes.get(0), x, length);
+                        setCharacterStream(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setCharacterStream(indexes.get(0), x, length);
+                        setCharacterStream(indexes.get(1), x, length);
+                        setCharacterStream(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setCharacterStream(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNCharacterStream(String parameterName, Reader x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNCharacterStream(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNCharacterStream(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setNCharacterStream(indexes.get(0), x);
+                        setNCharacterStream(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setNCharacterStream(indexes.get(0), x);
+                        setNCharacterStream(indexes.get(1), x);
+                        setNCharacterStream(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNCharacterStream(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNCharacterStream(String parameterName, Reader x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNCharacterStream(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNCharacterStream(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setNCharacterStream(indexes.get(0), x, length);
+                        setNCharacterStream(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setNCharacterStream(indexes.get(0), x, length);
+                        setNCharacterStream(indexes.get(1), x, length);
+                        setNCharacterStream(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNCharacterStream(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBlob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBlob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBlob(indexes.get(0), x);
+                        setBlob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBlob(indexes.get(0), x);
+                        setBlob(indexes.get(1), x);
+                        setBlob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBlob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBlob(String parameterName, InputStream x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBlob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBlob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setBlob(indexes.get(0), x);
+                        setBlob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setBlob(indexes.get(0), x);
+                        setBlob(indexes.get(1), x);
+                        setBlob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBlob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setBlob(String parameterName, InputStream x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setBlob(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setBlob(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setBlob(indexes.get(0), x, length);
+                        setBlob(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setBlob(indexes.get(0), x, length);
+                        setBlob(indexes.get(1), x, length);
+                        setBlob(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setBlob(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setClob(String parameterName, java.sql.Clob x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setClob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setClob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setClob(indexes.get(0), x);
+                        setClob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setClob(indexes.get(0), x);
+                        setClob(indexes.get(1), x);
+                        setClob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setClob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setClob(String parameterName, Reader x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setClob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setClob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setClob(indexes.get(0), x);
+                        setClob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setClob(indexes.get(0), x);
+                        setClob(indexes.get(1), x);
+                        setClob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setClob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setClob(String parameterName, Reader x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setClob(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setClob(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setClob(indexes.get(0), x, length);
+                        setClob(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setClob(indexes.get(0), x, length);
+                        setClob(indexes.get(1), x, length);
+                        setClob(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setClob(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNClob(String parameterName, java.sql.NClob x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNClob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNClob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setNClob(indexes.get(0), x);
+                        setNClob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setNClob(indexes.get(0), x);
+                        setNClob(indexes.get(1), x);
+                        setNClob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNClob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNClob(String parameterName, Reader x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNClob(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNClob(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setNClob(indexes.get(0), x);
+                        setNClob(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setNClob(indexes.get(0), x);
+                        setNClob(indexes.get(1), x);
+                        setNClob(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNClob(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setNClob(String parameterName, Reader x, long length) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setNClob(i + 1, x, length);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setNClob(indexes.get(0), x, length);
+                    } else if (indexes.size() == 2) {
+                        setNClob(indexes.get(0), x, length);
+                        setNClob(indexes.get(1), x, length);
+                    } else if (indexes.size() == 3) {
+                        setNClob(indexes.get(0), x, length);
+                        setNClob(indexes.get(1), x, length);
+                        setNClob(indexes.get(2), x, length);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setNClob(indexes.get(i), x, length);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setURL(String parameterName, URL x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setURL(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setURL(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setURL(indexes.get(0), x);
+                        setURL(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setURL(indexes.get(0), x);
+                        setURL(indexes.get(1), x);
+                        setURL(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setURL(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setSQLXML(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setSQLXML(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setSQLXML(indexes.get(0), x);
+                        setSQLXML(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setSQLXML(indexes.get(0), x);
+                        setSQLXML(indexes.get(1), x);
+                        setSQLXML(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setSQLXML(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setRowId(String parameterName, java.sql.RowId x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setRowId(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setRowId(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setRowId(indexes.get(0), x);
+                        setRowId(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setRowId(indexes.get(0), x);
+                        setRowId(indexes.get(1), x);
+                        setRowId(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setRowId(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setRef(String parameterName, java.sql.Ref x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setRef(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setRef(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setRef(indexes.get(0), x);
+                        setRef(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setRef(indexes.get(0), x);
+                        setRef(indexes.get(1), x);
+                        setRef(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setRef(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /** 
+         * 
+         * @param parameterName
+         * @param x
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setArray(String parameterName, java.sql.Array x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setArray(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setArray(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setArray(indexes.get(0), x);
+                        setArray(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setArray(indexes.get(0), x);
+                        setArray(indexes.get(1), x);
+                        setArray(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setArray(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setObject(String parameterName, Object x) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setObject(i + 1, x);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setObject(indexes.get(0), x);
+                    } else if (indexes.size() == 2) {
+                        setObject(indexes.get(0), x);
+                        setObject(indexes.get(1), x);
+                    } else if (indexes.size() == 3) {
+                        setObject(indexes.get(0), x);
+                        setObject(indexes.get(1), x);
+                        setObject(indexes.get(2), x);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setObject(indexes.get(i), x);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setObject(String parameterName, Object x, int sqlType) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setObject(i + 1, x, sqlType);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setObject(indexes.get(0), x, sqlType);
+                    } else if (indexes.size() == 2) {
+                        setObject(indexes.get(0), x, sqlType);
+                        setObject(indexes.get(1), x, sqlType);
+                    } else if (indexes.size() == 3) {
+                        setObject(indexes.get(0), x, sqlType);
+                        setObject(indexes.get(1), x, sqlType);
+                        setObject(indexes.get(2), x, sqlType);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setObject(indexes.get(i), x, sqlType);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setObject(i + 1, x, sqlType, scaleOrLength);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                    } else if (indexes.size() == 2) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(1), x, sqlType, scaleOrLength);
+                    } else if (indexes.size() == 3) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(1), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(2), x, sqlType, scaleOrLength);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setObject(indexes.get(i), x, sqlType, scaleOrLength);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setObject(String parameterName, Object x, SQLType sqlType) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setObject(i + 1, x, sqlType);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setObject(indexes.get(0), x, sqlType);
+                    } else if (indexes.size() == 2) {
+                        setObject(indexes.get(0), x, sqlType);
+                        setObject(indexes.get(1), x, sqlType);
+                    } else if (indexes.size() == 3) {
+                        setObject(indexes.get(0), x, sqlType);
+                        setObject(indexes.get(1), x, sqlType);
+                        setObject(indexes.get(2), x, sqlType);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setObject(indexes.get(i), x, sqlType);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public NamedQuery setObject(String parameterName, Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
+            if (paramCount < 5) {
+                int cnt = 0;
+
+                for (int i = 0; i < paramCount; i++) {
+                    if (parameterNames.get(i).equals(parameterName)) {
+                        setObject(i + 1, x, sqlType, scaleOrLength);
+                        cnt++;
+                    }
+
+                    if (cnt == 0) {
+                        close();
+                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                    }
+                }
+            } else {
+                if (paramNameIndexMap == null) {
+                    initParamNameIndexMap();
+                }
+
+                final IntList indexes = paramNameIndexMap.get(parameterName);
+
+                if (indexes == null) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
+                } else {
+                    if (indexes.size() == 1) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                    } else if (indexes.size() == 2) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(1), x, sqlType, scaleOrLength);
+                    } else if (indexes.size() == 3) {
+                        setObject(indexes.get(0), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(1), x, sqlType, scaleOrLength);
+                        setObject(indexes.get(2), x, sqlType, scaleOrLength);
+                    } else {
+                        for (int i = 0, size = indexes.size(); i < size; i++) {
+                            setObject(indexes.get(i), x, sqlType, scaleOrLength);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        /**
+         * 
+         * @param parameters
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setParameters(final Map<String, ?> parameters) throws SQLException {
+            checkArgNotNull(parameters, "parameters");
+
+            for (String paramName : parameterNames) {
+                if (parameters.containsKey(paramName)) {
+                    setObject(paramName, parameters.get(paramName));
+                }
+            }
+
+            return this;
+        }
+
+        /**
+         * 
+         * @param entity with getter/setter methods
+         * @return
+         * @throws SQLException
+         */
+        public NamedQuery setParameters(final Object entity) throws SQLException {
+            checkArgNotNull(entity, "entity");
+
+            if (entity instanceof Map) {
+                return setParameters((Map<String, ?>) entity);
+            }
+
+            final Class<?> cls = entity.getClass();
+            Method getMethod = null;
+
+            for (String paramName : parameterNames) {
+                getMethod = ClassUtil.getPropGetMethod(cls, paramName);
+
+                if (getMethod != null) {
+                    setObject(paramName, ClassUtil.getPropValue(entity, getMethod));
+                }
+            }
+
+            return this;
+        }
+
+        public <T> NamedQuery setParameters(final T paramaters, TriParametersSetter<NamedQuery, T> parametersSetter) throws SQLException {
+            checkArgNotNull(parametersSetter, "parametersSetter");
+
+            boolean noException = false;
+
+            try {
+                parametersSetter.accept(namedSQL, this, paramaters);
+
+                noException = true;
+            } finally {
+                if (noException == false) {
+                    close();
+                }
+            }
+
+            return this;
         }
     }
-
-    /**
-     * The backed {@code PreparedStatement/CallableStatement} will be closed by default
-     * after any execution methods(which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/...).
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * Generally, don't cache or reuse the instance of this class, 
-     * except the {@code 'closeAfterExecution'} flag is set to {@code false} by calling {@code #closeAfterExecution(false)}.
-     * 
-     * <br />
-     * The {@code ResultSet} returned by query will always be closed after execution, even {@code 'closeAfterExecution'} flag is set to {@code false}.
-     * 
-     * <br />
-     * Remember: parameter/column index in {@code PreparedStatement/ResultSet} starts from 1, not 0.
-     * 
-     * @author haiyangl
-     * 
-     * @see {@link com.landawn.abacus.annotation.ReadOnly}
-     * @see {@link com.landawn.abacus.annotation.ReadOnlyId}
-     * @see {@link com.landawn.abacus.annotation.NonUpdatable}
-     * @see {@link com.landawn.abacus.annotation.Transient}
-     * @see {@link com.landawn.abacus.annotation.Table}
-     * @see {@link com.landawn.abacus.annotation.Column} 
-     * 
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html">http://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html</a>
-     * @see <a href="http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html">http://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html</a>
-     */
-    public static class PreparedCallableQuery extends AbstractPreparedCallableQuery<CallableStatement, PreparedCallableQuery> {
-        PreparedCallableQuery(CallableStatement stmt) {
-            super(stmt);
-        }
-
-        PreparedCallableQuery(CallableStatement stmt, AsyncExecutor asyncExecutor) {
-            super(stmt, asyncExecutor);
-        }
-    }
-
-    //    public static class PreparedCallableQueryII extends AbstractPreparedCallableQuery<CallableStatement, PreparedCallableQueryII> {
-    //        private final NamedSQL namedSQL;
-    //
-    //        PreparedCallableQueryII(String sql, CallableStatement stmt) {
-    //            super(stmt);
-    //            this.namedSQL = NamedSQL.parse(sql);
-    //        }
-    //
-    //        PreparedCallableQueryII(String sql, CallableStatement stmt, AsyncExecutor asyncExecutor) {
-    //            super(stmt, asyncExecutor);
-    //            this.namedSQL = NamedSQL.parse(sql);
-    //        }
-    //
-    //        /**
-    //         * 
-    //         * @param entity
-    //         * @return
-    //         * @throws SQLException
-    //         */
-    //        public PreparedCallableQueryII setParameters(final Object entity) throws SQLException {
-    //            checkArgNotNull(entity, "entity");
-    //
-    //            StatementSetter.DEFAULT.setParameters(namedSQL, stmt, N.asArray(entity));
-    //
-    //            return this;
-    //        }
-    //    }
 
     public static class SimpleTransaction {
         private static final Logger logger = LoggerFactory.getLogger(SimpleTransaction.class);
@@ -7143,6 +9544,11 @@ public final class JdbcUtil {
     public static interface BiParametersSetter<QS, T> extends Try.BiConsumer<QS, T, SQLException> {
         @Override
         void accept(QS preparedQuery, T t) throws SQLException;
+    }
+
+    public static interface TriParametersSetter<QS, T> extends Try.TriConsumer<NamedSQL, QS, T, SQLException> {
+        @Override
+        void accept(NamedSQL namedSQL, QS preparedQuery, T t) throws SQLException;
     }
 
     public static interface ResultExtractor<T> extends Try.Function<ResultSet, T, SQLException> {
@@ -8323,6 +10729,12 @@ public final class JdbcUtil {
             String sql() default "";
         }
 
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.PARAMETER)
+        public static @interface Bind {
+            String value() default "";
+        }
+
         public javax.sql.DataSource dataSource();
 
         //    /**
@@ -8437,14 +10849,60 @@ public final class JdbcUtil {
             }
         }
 
-        default PreparedCallableQuery prepareCallableQuery(final String query) throws SQLException {
+        default PreparedQuery prepareQuery(final String sql, final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator)
+                throws SQLException {
             final javax.sql.DataSource ds = dataSource();
             final SQLTransaction tran = SQLTransaction.getTransaction(ds);
 
             if (tran != null && tran.autoSharedByPrepareQuery()) {
-                return JdbcUtil.prepareCallableQuery(tran.connection(), query);
+                return JdbcUtil.prepareQuery(tran.connection(), sql, stmtCreator);
             } else {
-                return JdbcUtil.prepareCallableQuery(ds, query);
+                return JdbcUtil.prepareQuery(ds, sql, stmtCreator);
+            }
+        }
+
+        default NamedQuery prepareNamedQuery(final String namedQuery) throws SQLException {
+            final javax.sql.DataSource ds = dataSource();
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
+
+            if (tran != null && tran.autoSharedByPrepareQuery()) {
+                return JdbcUtil.prepareNamedQuery(tran.connection(), namedQuery);
+            } else {
+                return JdbcUtil.prepareNamedQuery(ds, namedQuery);
+            }
+        }
+
+        default NamedQuery prepareNamedQuery(final String namedQuery, final boolean generateKeys) throws SQLException {
+            final javax.sql.DataSource ds = dataSource();
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
+
+            if (tran != null && tran.autoSharedByPrepareQuery()) {
+                return JdbcUtil.prepareNamedQuery(tran.connection(), namedQuery, generateKeys);
+            } else {
+                return JdbcUtil.prepareNamedQuery(ds, namedQuery, generateKeys);
+            }
+        }
+
+        default NamedQuery prepareNamedQuery(final String namedQuery, final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator)
+                throws SQLException {
+            final javax.sql.DataSource ds = dataSource();
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
+
+            if (tran != null && tran.autoSharedByPrepareQuery()) {
+                return JdbcUtil.prepareNamedQuery(tran.connection(), namedQuery, stmtCreator);
+            } else {
+                return JdbcUtil.prepareNamedQuery(ds, namedQuery, stmtCreator);
+            }
+        }
+
+        default PreparedCallableQuery prepareCallableQuery(final String namedSql) throws SQLException {
+            final javax.sql.DataSource ds = dataSource();
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
+
+            if (tran != null && tran.autoSharedByPrepareQuery()) {
+                return JdbcUtil.prepareCallableQuery(tran.connection(), namedSql);
+            } else {
+                return JdbcUtil.prepareCallableQuery(ds, namedSql);
             }
         }
 
@@ -8456,6 +10914,18 @@ public final class JdbcUtil {
                 return JdbcUtil.prepareCallableQuery(tran.connection(), stmtCreator);
             } else {
                 return JdbcUtil.prepareCallableQuery(ds, stmtCreator);
+            }
+        }
+
+        default PreparedCallableQuery prepareCallableQuery(final String sql,
+                final Try.BiFunction<Connection, String, CallableStatement, SQLException> stmtCreator) throws SQLException {
+            final javax.sql.DataSource ds = dataSource();
+            final SQLTransaction tran = SQLTransaction.getTransaction(ds);
+
+            if (tran != null && tran.autoSharedByPrepareQuery()) {
+                return JdbcUtil.prepareCallableQuery(tran.connection(), sql, stmtCreator);
+            } else {
+                return JdbcUtil.prepareCallableQuery(ds, sql, stmtCreator);
             }
         }
 
@@ -8568,14 +11038,14 @@ public final class JdbcUtil {
                                     if (isDefaultIdValue) {
                                         final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
 
-                                        return proxy.prepareQuery(namedSQL.getPureSQL(), true)
+                                        return proxy.prepareQuery(namedSQL.getParameterizedSQL(), true)
                                                 .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
                                                 .insert()
                                                 .ifPresent(id -> ClassUtil.setPropValue(args[0], idPropName, id));
                                     } else {
                                         final NamedSQL namedSQL = NamedSQL.parse(insertWithId);
 
-                                        return proxy.prepareQuery(namedSQL.getPureSQL())
+                                        return proxy.prepareQuery(namedSQL.getParameterizedSQL())
                                                 .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
                                                 .update();
                                     }
@@ -8776,7 +11246,7 @@ public final class JdbcUtil {
                             } else if (m.getName().equals("update")) {
                                 if (m.getParameters().length == 1) {
                                     final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
-                                    call = (proxy, args) -> proxy.prepareQuery(namedSQL.getPureSQL())
+                                    call = (proxy, args) -> proxy.prepareQuery(namedSQL.getParameterizedSQL())
                                             .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
                                             .update();
                                 } else {
@@ -8866,64 +11336,12 @@ public final class JdbcUtil {
 
                             final boolean isNamedQuery = sqlAnno.annotationType().getSimpleName().startsWith("Named");
 
-                            final NamedSQL namedSQL = isNamedQuery ? NamedSQL.parse(query) : null;
-
-                            final BiParametersSetter<AbstractPreparedQuery, Object[]> paramSetter = paramLen == 0 ? null
-                                    // parameter setters
-                                    : (JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])
-                                            ? new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
-                                                @Override
-                                                public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
-                                                    preparedQuery.settParameters((JdbcUtil.ParametersSetter) args[0]);
-                                                }
-                                            }
-                                            // Collection parameters
-                                            : (Collection.class.isAssignableFrom(paramTypes[0]) ? new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
-                                                @Override
-                                                public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
-                                                    preparedQuery.setParameters(1, (Collection) args[0]);
-                                                }
-                                            }
-                                                    // last parameter is ResultExtractor or RowMapper
-                                                    : ((ResultExtractor.class.isAssignableFrom(lastParamType)
-                                                            || BiResultExtractor.class.isAssignableFrom(lastParamType)
-                                                            || RowMapper.class.isAssignableFrom(lastParamType)
-                                                            || BiRowMapper.class.isAssignableFrom(lastParamType))
-                                                                    ? (paramLen == 1 ? null : new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
-                                                                        @Override
-                                                                        public void accept(AbstractPreparedQuery preparedQuery, Object[] args)
-                                                                                throws SQLException {
-                                                                            if (namedSQL == null) {
-                                                                                if (paramLen == 2) {
-                                                                                    preparedQuery.setObject(1, args[0]);
-                                                                                } else {
-                                                                                    preparedQuery.setParameters(1,
-                                                                                            Array.asList(N.copyOfRange(args, 0, paramLen - 1)));
-                                                                                }
-                                                                            } else {
-                                                                                StatementSetter.DEFAULT.setParameters(namedSQL, preparedQuery.stmt,
-                                                                                        N.copyOfRange(args, 0, paramLen - 1));
-                                                                            }
-                                                                        }
-                                                                    }) : new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
-                                                                        @Override
-                                                                        public void accept(AbstractPreparedQuery preparedQuery, Object[] args)
-                                                                                throws SQLException {
-                                                                            if (namedSQL == null) {
-                                                                                if (paramLen == 1) {
-                                                                                    preparedQuery.setObject(1, args[0]);
-                                                                                } else {
-                                                                                    preparedQuery.setParameters(1, Array.asList(args));
-                                                                                }
-                                                                            } else {
-                                                                                StatementSetter.DEFAULT.setParameters(namedSQL, preparedQuery.stmt, args);
-                                                                            }
-                                                                        }
-                                                                    })));
-
-                            if (paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                            if ((paramLen > 0 && JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0]))
+                                    || (paramLen > 1 && JdbcUtil.BiParametersSetter.class.isAssignableFrom(paramTypes[1]))
+                                    || (paramLen > 1 && JdbcUtil.TriParametersSetter.class.isAssignableFrom(paramTypes[1]))) {
                                 throw new UnsupportedOperationException(
-                                        "Setting parameters by 'ParametersSetter' is disabled. Can't use it in method: " + m.getName());
+                                        "Setting parameters by 'ParametersSetter/BiParametersSetter/TriParametersSetter' is disabled. Can't use it in method: "
+                                                + m.getName());
                             }
 
                             if (paramLen > 0
@@ -8949,6 +11367,131 @@ public final class JdbcUtil {
                                         "Using named query: @NamedSelect/Update/Insert/Delete when parameter type is Map or entity with Getter/Setter methods");
                             }
 
+                            BiParametersSetter<AbstractPreparedQuery, Object[]> parametersSetter = null;
+
+                            if (paramLen == 0) {
+                                parametersSetter = null;
+                            } else if (JdbcUtil.ParametersSetter.class.isAssignableFrom(paramTypes[0])) {
+                                parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                    @Override
+                                    public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                        preparedQuery.settParameters((JdbcUtil.ParametersSetter) args[0]);
+                                    }
+                                };
+                            } else if (paramLen > 1 && JdbcUtil.BiParametersSetter.class.isAssignableFrom(paramTypes[1])) {
+                                parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                    @Override
+                                    public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                        preparedQuery.settParameters(args[0], (JdbcUtil.BiParametersSetter) args[1]);
+                                    }
+                                };
+                            } else if (paramLen > 1 && JdbcUtil.TriParametersSetter.class.isAssignableFrom(paramTypes[1])) {
+                                parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                    @Override
+                                    public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                        ((NamedQuery) preparedQuery).setParameters(args[0], (JdbcUtil.TriParametersSetter) args[1]);
+                                    }
+                                };
+                            } else if (Collection.class.isAssignableFrom(paramTypes[0])) {
+                                parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                    @Override
+                                    public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                        preparedQuery.setParameters(1, (Collection) args[0]);
+                                    }
+                                };
+                            } else {
+                                final boolean isLastParameterMapperOrExtractor = ResultExtractor.class.isAssignableFrom(lastParamType)
+                                        || BiResultExtractor.class.isAssignableFrom(lastParamType) || RowMapper.class.isAssignableFrom(lastParamType)
+                                        || BiRowMapper.class.isAssignableFrom(lastParamType);
+
+                                if (isLastParameterMapperOrExtractor && paramLen == 1) {
+                                    // ignore
+                                } else if ((isLastParameterMapperOrExtractor && paramLen == 2) || (!isLastParameterMapperOrExtractor && paramLen == 1)) {
+                                    if (isNamedQuery) {
+                                        final Dao.Bind binder = StreamEx.of(m.getParameterAnnotations())
+                                                .limit(1)
+                                                .flatMapp(e -> e)
+                                                .select(Dao.Bind.class)
+                                                .first()
+                                                .orNull();
+
+                                        if (binder != null) {
+                                            parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                                @Override
+                                                public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                    ((NamedQuery) preparedQuery).setObject(binder.value(), args[0]);
+                                                }
+                                            };
+                                        } else if (Map.class.isAssignableFrom(m.getParameterTypes()[0])) {
+                                            parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                                @Override
+                                                public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                    ((NamedQuery) preparedQuery).setParameters((Map<String, ?>) args[0]);
+                                                }
+                                            };
+                                        } else if (ClassUtil.isEntity(m.getParameterTypes()[0])) {
+                                            parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                                @Override
+                                                public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                    ((NamedQuery) preparedQuery).setParameters(args[0]);
+                                                }
+                                            };
+                                        } else {
+                                            throw new UnsupportedOperationException(
+                                                    "In method: " + ClassUtil.getSimpleClassName(daoInterface) + "." + m.getName()
+                                                            + ", parameters for named query have to be binded with names through annotation @Binder, or Map/Entity with getter/setter methods. Can not be: "
+                                                            + ClassUtil.getSimpleClassName(m.getParameterTypes()[0]));
+                                        }
+                                    } else {
+                                        parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                            @Override
+                                            public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                preparedQuery.setObject(1, args[0]);
+                                            }
+                                        };
+                                    }
+                                } else if (paramLen > 2 || !isLastParameterMapperOrExtractor) {
+                                    if (isNamedQuery) {
+                                        final List<Dao.Bind> binders = IntStreamEx.range(0, paramLen - (isLastParameterMapperOrExtractor ? 1 : 0))
+                                                .mapToObj(
+                                                        i -> StreamEx.of(m.getParameterAnnotations()[i])
+                                                                .select(Dao.Bind.class)
+                                                                .first()
+                                                                .orElseThrow(() -> new UnsupportedOperationException("In method: "
+                                                                        + ClassUtil.getSimpleClassName(daoInterface) + "." + m.getName() + ", parameters[" + i
+                                                                        + "]: " + ClassUtil.getSimpleClassName(m.getParameterTypes()[i])
+                                                                        + " is not binded with parameter named through annotation @Binder")))
+                                                .toList();
+
+                                        parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                            @Override
+                                            public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                final NamedQuery namedQuery = ((NamedQuery) preparedQuery);
+
+                                                for (int i = 0, count = binders.size(); i < count; i++) {
+                                                    namedQuery.setObject(binders.get(i).value(), args[i]);
+                                                }
+                                            }
+                                        };
+                                    } else {
+                                        parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
+                                            @Override
+                                            public void accept(AbstractPreparedQuery preparedQuery, Object[] args) throws SQLException {
+                                                if (isLastParameterMapperOrExtractor) {
+                                                    preparedQuery.setParameters(1, Arrays.asList(N.copyOfRange(args, 0, args.length - 1)));
+                                                } else {
+                                                    preparedQuery.setParameters(1, Arrays.asList(args));
+                                                }
+                                            }
+                                        };
+                                    }
+                                } else {
+                                    // ignore.
+                                }
+                            }
+
+                            final BiParametersSetter<AbstractPreparedQuery, Object[]> finalParametersSetter = parametersSetter;
+
                             if (sqlAnno.annotationType().equals(Dao.Select.class) || sqlAnno.annotationType().equals(Dao.NamedSelect.class)) {
                                 final Try.BiFunction<AbstractPreparedQuery, Object[], T, Exception> queryFunc = createQueryFunctionByMethod(m);
 
@@ -8959,22 +11502,22 @@ public final class JdbcUtil {
                                     @Override
                                     public Object apply(Dao proxy, Object[] args) throws Exception {
                                         return queryFunc.apply(
-                                                JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter),
+                                                JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter),
                                                 args);
                                     }
                                 };
                             } else if (sqlAnno.annotationType().equals(Dao.Insert.class) || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) {
                                 if (void.class.equals(returnType)) {
                                     call = (proxy, args) -> {
-                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
                                         return null;
                                     };
                                 } else if (Optional.class.equals(returnType)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).insert();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).insert();
                                 } else {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter)
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter)
                                             .insert()
                                             .orNull();
                                 }
@@ -8990,16 +11533,16 @@ public final class JdbcUtil {
 
                                 if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
                                 } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update() > 0;
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update() > 0;
                                 } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).largeUpate();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).largeUpate();
                                 } else {
                                     call = (proxy, args) -> {
-                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, namedSQL, fetchSize, returnGeneratedKeys, args, paramSetter).update();
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
                                         return null;
                                     };
                                 }
@@ -9274,22 +11817,36 @@ public final class JdbcUtil {
     }
 
     @SuppressWarnings("rawtypes")
-    static AbstractPreparedQuery prepareQuery(final Dao proxy, final String query, final boolean isNamedQuery, final NamedSQL namedSQL, final int fetchSize,
+    static AbstractPreparedQuery prepareQuery(final Dao proxy, final String query, final boolean isNamedQuery, final int fetchSize,
             final boolean returnGeneratedKeys, final Object[] args, final BiParametersSetter<? super AbstractPreparedQuery, Object[]> paramSetter)
             throws SQLException, Exception {
-        final String sql = isNamedQuery ? namedSQL.getPureSQL() : query;
-
-        if (fetchSize > 0) {
-            if (paramSetter == null) {
-                return proxy.prepareQuery(sql, returnGeneratedKeys).setFetchSize(fetchSize);
+        if (isNamedQuery) {
+            if (fetchSize > 0) {
+                if (paramSetter == null) {
+                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).setFetchSize(fetchSize);
+                } else {
+                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
+                }
             } else {
-                return proxy.prepareQuery(sql, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
+                if (paramSetter == null) {
+                    return proxy.prepareNamedQuery(query, returnGeneratedKeys);
+                } else {
+                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).settParameters(args, paramSetter);
+                }
             }
         } else {
-            if (paramSetter == null) {
-                return proxy.prepareQuery(sql, returnGeneratedKeys);
+            if (fetchSize > 0) {
+                if (paramSetter == null) {
+                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize);
+                } else {
+                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
+                }
             } else {
-                return proxy.prepareQuery(sql, returnGeneratedKeys).settParameters(args, paramSetter);
+                if (paramSetter == null) {
+                    return proxy.prepareQuery(query, returnGeneratedKeys);
+                } else {
+                    return proxy.prepareQuery(query, returnGeneratedKeys).settParameters(args, paramSetter);
+                }
             }
         }
     }
