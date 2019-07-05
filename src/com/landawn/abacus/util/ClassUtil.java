@@ -780,7 +780,7 @@ public final class ClassUtil {
 
         if (parameterizedTypeName == null) {
             parameterizedTypeName = formatParameterizedTypeName(
-                    (N.isNullOrEmpty(method.getGenericParameterTypes()) ? method.getGenericReturnType() : method.getGenericParameterTypes()[0]).getTypeName());
+                    (N.isNullOrEmpty(method.getGenericParameterTypes()) ? method.getGenericReturnType() : method.getGenericParameterTypes()[0]).toString());
 
             methodParameterizedTypeNamePool.put(method, parameterizedTypeName);
         }
@@ -1829,7 +1829,7 @@ public final class ClassUtil {
         try {
             propSetMethod.invoke(entity, propValue == null ? N.defaultValueOf(propSetMethod.getParameterTypes()[0]) : propValue);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            propValue = N.convert(propValue, ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).type);
+            propValue = N.convert(propValue, ParserUtil.getEntityInfo(entity.getClass()).getPropInfo(propSetMethod.getName()).jsonXmlType);
 
             try {
                 propSetMethod.invoke(entity, propValue);
@@ -2205,8 +2205,13 @@ public final class ClassUtil {
     }
 
     private static final Map<Class<?>, List<String>> idPropNamesMap = new ConcurrentHashMap<>();
+    private static final List<String> fakeIds = ImmutableList.of("not_defined_fake_id_in_abacus_" + N.uuid());
 
     static List<String> getIdFieldNames(final Class<?> targetClass) {
+        return getIdFieldNames(targetClass, false);
+    }
+
+    static List<String> getIdFieldNames(final Class<?> targetClass, boolean fakeIdForEmpty) {
         List<String> idPropNames = idPropNamesMap.get(targetClass);
 
         if (idPropNames == null) {
@@ -2257,7 +2262,15 @@ public final class ClassUtil {
             idPropNamesMap.put(targetClass, idPropNames);
         }
 
-        return idPropNames;
+        return N.isNullOrEmpty(idPropNames) && fakeIdForEmpty ? fakeIds : idPropNames;
+    }
+
+    static boolean isFakeId(List<String> idPropNames) {
+        if (idPropNames != null && idPropNames.size() == 1 && fakeIds.get(0).equals(idPropNames.get(0))) {
+            return true;
+        }
+
+        return false;
     }
 
     static Map<String, Method> checkPropGetMethodList(final Class<?> cls) {

@@ -338,7 +338,7 @@ public final class CSVUtil {
                     }
 
                     if (propInfo != null) {
-                        columnTypes[i] = propInfo.type;
+                        columnTypes[i] = propInfo.jsonXmlType;
                         columnNameList.add(titles[i]);
                         columnList.add(new ArrayList<>());
                     }

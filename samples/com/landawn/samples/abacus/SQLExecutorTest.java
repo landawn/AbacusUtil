@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 public class SQLExecutorTest {
     static final DataSource dataSource = JdbcUtil.createDataSource("jdbc:h2:~/test", "sa", "");
     static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
-    static final Mapper<User> userMapper = sqlExecutor.mapper(User.class);
+    static final Mapper<User, Long> userMapper = sqlExecutor.mapper(User.class);
 
     // initialize DB schema.
     static {

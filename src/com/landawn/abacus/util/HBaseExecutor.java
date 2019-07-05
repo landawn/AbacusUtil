@@ -322,8 +322,8 @@ public final class HBaseExecutor implements Closeable {
                     familyColumnValueTypeMap.put(family, columnValueTypeMap);
                 }
 
-                if (familyPropInfo.type.isEntity()) {
-                    final Class<?> propEntityClass = familyPropInfo.type.clazz();
+                if (familyPropInfo.jsonXmlType.isEntity()) {
+                    final Class<?> propEntityClass = familyPropInfo.jsonXmlType.clazz();
                     final EntityInfo propEntityInfo = ParserUtil.getEntityInfo(propEntityClass);
                     Object propEntity = ClassUtil.getPropValue(entity, ClassUtil.getPropGetMethod(targetClass, family));
 
@@ -340,7 +340,7 @@ public final class HBaseExecutor implements Closeable {
                         continue;
                     }
 
-                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
+                    if (columnPropInfo.jsonXmlType.isMap() && columnPropInfo.jsonXmlType.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
                         addMethod = ClassUtil.getDeclaredMethod(propEntityClass, getAddMethodName(columnPropInfo.setMethod), HBaseColumn.class);
                         columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                         columnValueTypeMap.put(qualifier, columnValueType);
@@ -356,7 +356,7 @@ public final class HBaseExecutor implements Closeable {
                         }
 
                         columnMapMap.put(qualifier, columnMap);
-                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.isCollection() && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                         addMethod = ClassUtil.getDeclaredMethod(propEntityClass, getAddMethodName(columnPropInfo.setMethod), HBaseColumn.class);
                         columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                         columnValueTypeMap.put(qualifier, columnValueType);
@@ -372,11 +372,11 @@ public final class HBaseExecutor implements Closeable {
                         }
 
                         columnCollectionMap.put(qualifier, columnColl);
-                    } else if (columnPropInfo.type.clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.clazz().equals(HBaseColumn.class)) {
                         columnValueType = columnValueTypeMap.get(qualifier);
 
                         if (columnValueType == null) {
-                            columnValueType = columnPropInfo.type.getParameterTypes()[0];
+                            columnValueType = columnPropInfo.jsonXmlType.getParameterTypes()[0];
                             columnValueTypeMap.put(qualifier, columnValueType);
                         }
 
@@ -384,10 +384,10 @@ public final class HBaseExecutor implements Closeable {
 
                         ClassUtil.setPropValue(propEntity, columnPropInfo.setMethod, column);
                     } else {
-                        ClassUtil.setPropValue(propEntity, columnPropInfo.setMethod, columnPropInfo.type.valueOf(getValueString(cell)));
+                        ClassUtil.setPropValue(propEntity, columnPropInfo.setMethod, columnPropInfo.jsonXmlType.valueOf(getValueString(cell)));
                     }
 
-                } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.jsonXmlType.isMap() && familyPropInfo.jsonXmlType.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
                     addMethod = ClassUtil.getDeclaredMethod(targetClass, getAddMethodName(familyPropInfo.setMethod), HBaseColumn.class);
                     columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                     columnValueTypeMap.put(qualifier, columnValueType);
@@ -403,7 +403,7 @@ public final class HBaseExecutor implements Closeable {
                     }
 
                     columnMapMap.put(qualifier, columnMap);
-                } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.jsonXmlType.isCollection() && familyPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                     addMethod = ClassUtil.getDeclaredMethod(targetClass, getAddMethodName(familyPropInfo.setMethod), HBaseColumn.class);
                     columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                     columnValueTypeMap.put(qualifier, columnValueType);
@@ -419,11 +419,11 @@ public final class HBaseExecutor implements Closeable {
                     }
 
                     columnCollectionMap.put(qualifier, columnColl);
-                } else if (familyPropInfo.type.clazz().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.jsonXmlType.clazz().equals(HBaseColumn.class)) {
                     columnValueType = columnValueTypeMap.get(qualifier);
 
                     if (columnValueType == null) {
-                        columnValueType = familyPropInfo.type.getParameterTypes()[0];
+                        columnValueType = familyPropInfo.jsonXmlType.getParameterTypes()[0];
                         columnValueTypeMap.put(qualifier, columnValueType);
                     }
 
@@ -431,7 +431,7 @@ public final class HBaseExecutor implements Closeable {
 
                     ClassUtil.setPropValue(entity, familyPropInfo.setMethod, column);
                 } else {
-                    ClassUtil.setPropValue(entity, familyPropInfo.setMethod, familyPropInfo.type.valueOf(getValueString(cell)));
+                    ClassUtil.setPropValue(entity, familyPropInfo.setMethod, familyPropInfo.jsonXmlType.valueOf(getValueString(cell)));
                 }
             }
 
@@ -551,8 +551,8 @@ public final class HBaseExecutor implements Closeable {
                 continue;
             }
 
-            if (familyPropInfo.type.isEntity()) {
-                final Class<?> propEntityClass = familyPropInfo.type.clazz();
+            if (familyPropInfo.jsonXmlType.isEntity()) {
+                final Class<?> propEntityClass = familyPropInfo.jsonXmlType.clazz();
                 final EntityInfo propEntityInfo = ParserUtil.getEntityInfo(propEntityClass);
                 final Object propEntity = propValue;
 
@@ -568,42 +568,42 @@ public final class HBaseExecutor implements Closeable {
                         continue;
                     }
 
-                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
+                    if (columnPropInfo.jsonXmlType.isMap() && columnPropInfo.jsonXmlType.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
                         columnMap = (Map<Long, HBaseColumn<?>>) propValue;
 
                         for (HBaseColumn<?> e : columnMap.values()) {
                             anyPut.addColumn(familyName, columnName, e.version(), e.value());
 
                         }
-                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.isCollection() && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                         columnColl = (Collection<HBaseColumn<?>>) propValue;
 
                         for (HBaseColumn<?> e : columnColl) {
                             anyPut.addColumn(familyName, columnName, e.version(), e.value());
 
                         }
-                    } else if (columnPropInfo.type.clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.clazz().equals(HBaseColumn.class)) {
                         column = (HBaseColumn<?>) propValue;
                         anyPut.addColumn(familyName, columnName, column.version(), column.value());
                     } else {
                         anyPut.addColumn(familyName, columnName, propValue);
                     }
                 }
-            } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.jsonXmlType.isMap() && familyPropInfo.jsonXmlType.getParameterTypes()[1].clazz().equals(HBaseColumn.class)) {
                 columnMap = (Map<Long, HBaseColumn<?>>) propValue;
 
                 for (HBaseColumn<?> e : columnMap.values()) {
                     anyPut.addColumn(familyName, EMPTY_QULIFIER, e.version(), e.value());
 
                 }
-            } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.jsonXmlType.isCollection() && familyPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                 columnColl = (Collection<HBaseColumn<?>>) propValue;
 
                 for (HBaseColumn<?> e : columnColl) {
                     anyPut.addColumn(familyName, EMPTY_QULIFIER, e.version(), e.value());
 
                 }
-            } else if (familyPropInfo.type.clazz().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.jsonXmlType.clazz().equals(HBaseColumn.class)) {
                 column = (HBaseColumn<?>) propValue;
                 anyPut.addColumn(familyName, EMPTY_QULIFIER, column.version(), column.value());
             } else {

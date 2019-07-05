@@ -455,7 +455,7 @@ public final class DynamoDBExecutor implements Closeable {
 
                 propInfo = entityInfo.getPropInfo(entry.getKey());
 
-                ClassUtil.setPropValue(entity, propSetMethod, propInfo.type.valueOf(attrValueType.stringOf(entry.getValue())));
+                ClassUtil.setPropValue(entity, propSetMethod, propInfo.jsonXmlType.valueOf(attrValueType.stringOf(entry.getValue())));
             }
 
             if (ClassUtil.isDirtyMarker(entity.getClass())) {

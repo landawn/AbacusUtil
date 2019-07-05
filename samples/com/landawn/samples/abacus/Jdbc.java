@@ -35,13 +35,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * All I want to do is: insert -> read -> update -> delete a record in DB table.
+ * CRUD: insert -> read -> update -> delete a record in DB table.
  */
 public class Jdbc {
     static final DataSource dataSource = JdbcUtil.createDataSource("jdbc:h2:~/test", "sa", "");
     static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
     static final UserDao userDao = Dao.newInstance(UserDao.class, dataSource);
-    static final Mapper<User> userMapper = sqlExecutor.mapper(User.class);
+    static final Mapper<User, Long> userMapper = sqlExecutor.mapper(User.class);
 
     // initialize DB schema.
     static {
@@ -218,10 +218,10 @@ public class Jdbc {
         void insertWithId(User user) throws SQLException;
 
         @NamedUpdate("UPDATE user SET first_name = :firstName, last_name = :lastName WHERE id = :id")
-        int updateFirstAndLastName(String newFirstName, String newLastName, long id) throws SQLException;
+        int updateFirstAndLastName(@Bind("firstName") String newFirstName, @Bind("lastName") String newLastName, @Bind("id") long id) throws SQLException;
 
         @NamedSelect("SELECT first_name, last_name FROM user WHERE id = :id")
-        User getFirstAndLastNameBy(long id) throws SQLException;
+        User getFirstAndLastNameBy(@Bind("id") long id) throws SQLException;
 
         @NamedSelect("SELECT id, first_name, last_name, email FROM user")
         Stream<User> allUsers() throws SQLException;
@@ -239,7 +239,7 @@ public class Jdbc {
 
         userDao.allUsers().map(e -> e.getFirstName() + " " + e.getLastName()).forEach(Fn.println());
 
-        userDao.delete(100L);
+        userDao.deleteById(100L);
 
         // As we see, the problems here are:
         // 1, No need to manually create/open and close Connection/Statement/ResultSet.
@@ -261,7 +261,7 @@ public class Jdbc {
 
         userMapper.update(N.asProps("firstName", "Tom", "lastName", "Hanks"), CF.eq("id", 100));
 
-        userMapper.delete(100L);
+        userMapper.deleteById(100L);
 
         // How about transaction?
         // See last sample.
@@ -288,7 +288,7 @@ public class Jdbc {
 
         tran = sqlExecutor.beginTransaction();
         try {
-            userDao.delete(100L);
+            userDao.deleteById(100L);
 
             // tran.commit();
         } finally {
@@ -297,7 +297,7 @@ public class Jdbc {
 
         assertNotNull(userDao.gett(100L).getFirstName());
 
-        userDao.delete(100L);
+        userDao.deleteById(100L);
         assertNull(userDao.gett(100L));
 
         // In you're in Spring and want to use Spring transaction management, 

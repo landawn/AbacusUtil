@@ -112,6 +112,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
+import com.landawn.abacus.parser.ParserUtil.PropInfo;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.ExceptionalStream.ExceptionalIterator;
 import com.landawn.abacus.util.Fn.FN;
@@ -2196,7 +2197,7 @@ public final class JdbcUtil {
                                 throw new IllegalArgumentException(
                                         "No property in class: " + ClassUtil.getCanonicalClassName(targetClass) + " mapping to column: " + columnLabels[i]);
                             } else {
-                                columnTypes[i] = entityInfo.getPropInfo(columnLabels[i]).type;
+                                columnTypes[i] = entityInfo.getPropInfo(columnLabels[i]).dbType;
                             }
                         }
 
@@ -5857,56 +5858,41 @@ public final class JdbcUtil {
         }
 
         /**
-         * Generally, this method should be executed in transaction.
+         * All will be done in one batch. Exception may occur if the size of {@code batchParameters} is too big.
          * 
-         * @param batchSize
          * @param batchParameters
-         * @param paramSetter
+         * @param parametersSetter
          * @return
          * @throws SQLException
          */
-        public <T, ID> List<ID> batchInsert(final int batchSize, final Collection<T> batchParameters, BiParametersSetter<? super Q, ? super T> paramSetter)
+        public <T, ID> List<ID> batchInsert(final Collection<T> batchParameters, BiParametersSetter<? super Q, ? super T> parametersSetter)
                 throws SQLException {
-            return batchInsert(batchSize, batchParameters.iterator(), paramSetter);
+            return batchInsert(batchParameters.iterator(), parametersSetter);
         }
 
         /**
-         * Generally, this method should be executed in transaction.
-         * 
-         * @param batchSize
+         * All will be done in one batch. Exception may occur if the size of {@code batchParameters} is too big.
+         *  
          * @param batchParameters
-         * @param paramSetter
+         * @param parametersSetter
          * @return
          * @throws SQLException
          */
-        public <T, ID> List<ID> batchInsert(final int batchSize, final Iterator<T> batchParameters, BiParametersSetter<? super Q, ? super T> paramSetter)
-                throws SQLException {
-            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
-            checkArgNotNull(paramSetter, "paramSetter");
-
-            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
-            final List<ID> result = new ArrayList<>();
+        public <T, ID> List<ID> batchInsert(final Iterator<T> batchParameters, BiParametersSetter<? super Q, ? super T> parametersSetter) throws SQLException {
+            checkArgNotNull(parametersSetter, "parametersSetter");
 
             try {
-                long cnt = 0;
+                final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
 
                 while (iter.hasNext()) {
-                    paramSetter.accept((Q) this, iter.next());
+                    parametersSetter.accept((Q) this, iter.next());
                     addBatch();
-
-                    if (++cnt % batchSize == 0) {
-                        result.addAll(this.<ID> executeBatchInsert());
-                    }
                 }
 
-                if (cnt % batchSize != 0) {
-                    result.addAll(this.<ID> executeBatchInsert());
-                }
+                return executeBatchInsert();
             } finally {
                 closeAfterExecutionIfAllowed();
             }
-
-            return result;
         }
 
         private <ID> List<ID> executeBatchInsert() throws SQLException {
@@ -5968,57 +5954,40 @@ public final class JdbcUtil {
         }
 
         /**
-         * Generally, this method should be executed in transaction.
+         * All will be done in one batch. Exception may occur if the size of {@code batchParameters} is too big.
          * 
-         * @param batchSize
          * @param batchParameters
-         * @param paramSetter
+         * @param parametersSetter
          * @return
          * @throws SQLException
          */
-        public <T> int batchUpdate(final int batchSize, final Collection<T> batchParameters, BiParametersSetter<? super Q, ? super T> paramSetter)
-                throws SQLException {
-            return batchUpdate(batchSize, batchParameters == null ? N.<T> emptyIterator() : batchParameters.iterator(), paramSetter);
+        public <T> int batchUpdate(final Collection<T> batchParameters, BiParametersSetter<? super Q, ? super T> parametersSetter) throws SQLException {
+            return batchUpdate(batchParameters == null ? N.<T> emptyIterator() : batchParameters.iterator(), parametersSetter);
         }
 
         /**
-         * Generally, this method should be executed in transaction.
-         * 
-         * @param batchSize
+         * All will be done in one batch. Exception may occur if the size of {@code batchParameters} is too big.
+         *  
          * @param batchParameters
-         * @param paramSetter
+         * @param parametersSetter
          * @return
          * @throws SQLException
          */
-        public <T> int batchUpdate(final int batchSize, final Iterator<T> batchParameters, final BiParametersSetter<? super Q, ? super T> paramSetter)
-                throws SQLException {
-            checkArg(batchSize > 0, "'batchSize' must be bigger than 0");
-            checkArgNotNull(paramSetter, "paramSetter");
-
-            final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
-            long result = 0;
+        public <T> int batchUpdate(final Iterator<T> batchParameters, final BiParametersSetter<? super Q, ? super T> parametersSetter) throws SQLException {
+            checkArgNotNull(parametersSetter, "parametersSetter");
 
             try {
-                long cnt = 0;
+                final Iterator<T> iter = batchParameters == null ? N.<T> emptyIterator() : batchParameters;
 
                 while (iter.hasNext()) {
-                    paramSetter.accept((Q) this, iter.next());
+                    parametersSetter.accept((Q) this, iter.next());
                     addBatch();
-
-                    if (++cnt % batchSize == 0) {
-                        result += N.sum(executeBatchUpdate());
-                    }
                 }
 
-                if (cnt % batchSize != 0) {
-                    result += N.sum(executeBatchUpdate());
-                }
-
+                return N.sum(executeBatchUpdate());
             } finally {
                 closeAfterExecutionIfAllowed();
             }
-
-            return result >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
         }
 
         private int[] executeBatchUpdate() throws SQLException {
@@ -6689,8 +6658,13 @@ public final class JdbcUtil {
             checkArgNotNull(parameterNames, "parameterNames");
             checkArgNotNull(entity, "entity");
 
+            final Class<?> cls = entity.getClass();
+            final EntityInfo entityInfo = ParserUtil.getEntityInfo(cls);
+            PropInfo propInfo = null;
+
             for (String parameterName : parameterNames) {
-                setObject(parameterName, ClassUtil.getPropValue(entity, parameterName));
+                propInfo = entityInfo.getPropInfo(parameterName);
+                propInfo.dbType.set(stmt, parameterName, propInfo.getPropValue(entity));
             }
 
             return this;
@@ -7085,25 +7059,25 @@ public final class JdbcUtil {
 
         private final NamedSQL namedSQL;
         private final List<String> parameterNames;
-        private final int paramCount;
+        private final int parameterCount;
         private Map<String, IntList> paramNameIndexMap;
 
         NamedQuery(final PreparedStatement stmt, final NamedSQL namedSQL) {
             super(stmt);
             this.namedSQL = namedSQL;
             this.parameterNames = namedSQL.getNamedParameters();
-            this.paramCount = namedSQL.getParameterCount();
+            this.parameterCount = namedSQL.getParameterCount();
         }
 
         NamedQuery(final PreparedStatement stmt, final NamedSQL namedSQL, AsyncExecutor asyncExecutor) {
             super(stmt, asyncExecutor);
             this.namedSQL = namedSQL;
             this.parameterNames = namedSQL.getNamedParameters();
-            this.paramCount = namedSQL.getParameterCount();
+            this.parameterCount = namedSQL.getParameterCount();
         }
 
         private void initParamNameIndexMap() {
-            paramNameIndexMap = new HashMap<>(paramCount);
+            paramNameIndexMap = new HashMap<>(parameterCount);
             int index = 1;
 
             for (String paramName : parameterNames) {
@@ -7119,19 +7093,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNull(String parameterName, int sqlType) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNull(i + 1, sqlType);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7165,19 +7139,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNull(String parameterName, int sqlType, String typeName) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNull(i + 1, sqlType, typeName);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7211,19 +7185,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBoolean(String parameterName, boolean x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBoolean(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7263,19 +7237,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setByte(String parameterName, byte x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setByte(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7315,19 +7289,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setShort(String parameterName, short x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setShort(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7367,19 +7341,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setInt(String parameterName, int x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setInt(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7419,19 +7393,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setLong(String parameterName, long x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setLong(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7471,19 +7445,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setFloat(String parameterName, float x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setFloat(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7523,19 +7497,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setDouble(String parameterName, double x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setDouble(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7575,19 +7549,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBigDecimal(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7621,19 +7595,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setString(String parameterName, String x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setString(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7667,19 +7641,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setDate(String parameterName, java.sql.Date x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setDate(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7719,19 +7693,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setTime(String parameterName, java.sql.Time x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setTime(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7771,19 +7745,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setTimestamp(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7823,19 +7797,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBytes(String parameterName, byte[] x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBytes(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7869,19 +7843,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setAsciiStream(String parameterName, InputStream x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setAsciiStream(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7915,19 +7889,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setAsciiStream(String parameterName, InputStream x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setAsciiStream(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -7961,19 +7935,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBinaryStream(String parameterName, InputStream x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBinaryStream(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8007,19 +7981,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBinaryStream(String parameterName, InputStream x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBinaryStream(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8053,19 +8027,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setCharacterStream(String parameterName, Reader x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setCharacterStream(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8099,19 +8073,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setCharacterStream(String parameterName, Reader x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setCharacterStream(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8145,19 +8119,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNCharacterStream(String parameterName, Reader x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNCharacterStream(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8191,19 +8165,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNCharacterStream(String parameterName, Reader x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNCharacterStream(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8237,19 +8211,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBlob(String parameterName, java.sql.Blob x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBlob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8283,19 +8257,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBlob(String parameterName, InputStream x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBlob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8329,19 +8303,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBlob(String parameterName, InputStream x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setBlob(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8375,19 +8349,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setClob(String parameterName, java.sql.Clob x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setClob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8421,19 +8395,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setClob(String parameterName, Reader x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setClob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8467,19 +8441,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setClob(String parameterName, Reader x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setClob(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8513,19 +8487,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNClob(String parameterName, java.sql.NClob x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNClob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8559,19 +8533,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNClob(String parameterName, Reader x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNClob(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8605,19 +8579,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setNClob(String parameterName, Reader x, long length) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setNClob(i + 1, x, length);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8658,19 +8632,19 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public NamedQuery setURL(String parameterName, URL x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setURL(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8711,19 +8685,19 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public NamedQuery setSQLXML(String parameterName, java.sql.SQLXML x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setSQLXML(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8764,19 +8738,19 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public NamedQuery setRowId(String parameterName, java.sql.RowId x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setRowId(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8817,19 +8791,19 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public NamedQuery setRef(String parameterName, java.sql.Ref x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setRef(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8870,19 +8844,19 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public NamedQuery setArray(String parameterName, java.sql.Array x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setArray(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8916,19 +8890,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setObject(String parameterName, Object x) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setObject(i + 1, x);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -8962,19 +8936,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setObject(String parameterName, Object x, int sqlType) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setObject(i + 1, x, sqlType);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -9008,19 +8982,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setObject(String parameterName, Object x, int sqlType, int scaleOrLength) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setObject(i + 1, x, sqlType, scaleOrLength);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -9054,19 +9028,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setObject(String parameterName, Object x, SQLType sqlType) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setObject(i + 1, x, sqlType);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -9100,19 +9074,19 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setObject(String parameterName, Object x, SQLType sqlType, int scaleOrLength) throws SQLException {
-            if (paramCount < 5) {
+            if (parameterCount < 5) {
                 int cnt = 0;
 
-                for (int i = 0; i < paramCount; i++) {
+                for (int i = 0; i < parameterCount; i++) {
                     if (parameterNames.get(i).equals(parameterName)) {
                         setObject(i + 1, x, sqlType, scaleOrLength);
                         cnt++;
                     }
+                }
 
-                    if (cnt == 0) {
-                        close();
-                        throw new IllegalArgumentException("Not found named parameter: " + parameterName);
-                    }
+                if (cnt == 0) {
+                    close();
+                    throw new IllegalArgumentException("Not found named parameter: " + parameterName);
                 }
             } else {
                 if (paramNameIndexMap == null) {
@@ -9177,13 +9151,14 @@ public final class JdbcUtil {
             }
 
             final Class<?> cls = entity.getClass();
-            Method getMethod = null;
+            final EntityInfo entityInfo = ParserUtil.getEntityInfo(cls);
+            PropInfo propInfo = null;
 
-            for (String paramName : parameterNames) {
-                getMethod = ClassUtil.getPropGetMethod(cls, paramName);
+            for (int i = 0; i < parameterCount; i++) {
+                propInfo = entityInfo.getPropInfo(parameterNames.get(i));
 
-                if (getMethod != null) {
-                    setObject(paramName, ClassUtil.getPropValue(entity, getMethod));
+                if (propInfo != null) {
+                    propInfo.dbType.set(stmt, i + 1, propInfo.getPropValue(entity));
                 }
             }
 
@@ -10464,7 +10439,8 @@ public final class JdbcUtil {
      * 
      * <li>The SQL operations/methods should be annotated with SQL scripts by {@code @Select/@Insert/@Update/@Delete/@NamedSelect/@NamedInsert/@NamedUpdate/@NamedDelete}.</li>
      * 
-     * <li>The Order of the parameters in the method should be consistent with parameter order in SQL scripts.</li>
+     * <li>The Order of the parameters in the method should be consistent with parameter order in SQL scripts for parameterized SQL. 
+     * For named parameterized SQL, the parameters must be binded with names through {@code @Bind}, or {@code Map/Entity} with getter/setter methods.</li>
      * 
      * <li>SQL parameters can be set through input method parameters(by multiple parameters or a {@code Collection}, or a {@code Map/Entity} for named sql), or by {@code JdbcUtil.ParametersSetter<PreparedQuery/PreparedCallabeQuery...>}.</li>
      * 
@@ -10500,7 +10476,7 @@ public final class JdbcUtil {
      *          <li>Or else if the return type of the method is {@code Optional}, {@code PreparedQuery#findFirst(RowMapper/BiRowMapper)} will be called.</li>
      *      </ul>
      *      <ul>
-     *          <li>Or else, {@code PreparedQuery#findFirst(RowMapper/BiRowMapper).orNull()} will be called.</li>
+     *          <li>Or else, {@code PreparedQuery#findFirst(RowMapper/BiRowMapper).orElse(N.defaultValueOf(returnType))} will be called.</li>
      *      </ul>
      *   <li>Or else:</li>
      *      <ul>
@@ -10537,7 +10513,7 @@ public final class JdbcUtil {
      *          <li>Or else if the return type of the method is {@code List}, and the method name doesn't start with {@code "get"/"findFirst"/"findOne"}, {@code PreparedQuery#list(Class)} will be called.</li>
      *      </ul>
      *      <ul>
-     *          <li>Or else, {@code PreparedQuery#queryForSingleResult(Class).orNull()} will be called.</li>
+     *          <li>Or else, {@code PreparedQuery#queryForSingleResult(Class).orElse(N.defaultValueOf(returnType)} will be called.</li>
      *      </ul>
      * </ul> 
      * 
@@ -10553,10 +10529,10 @@ public final class JdbcUtil {
      *     void insertWithId(User user) throws SQLException;
      * 
      *     &#064NamedUpdate("UPDATE user SET first_name = :firstName, last_name = :lastName WHERE id = :id")
-     *     int updateFirstAndLastName(String newFirstName, String newLastName, long id) throws SQLException;
+     *     int updateFirstAndLastName(@Bind("firstName") String newFirstName, @Bind("lastName") String newLastName, @Bind("id") long id) throws SQLException;
      *     
      *     &#064NamedSelect("SELECT first_name, last_name FROM user WHERE id = :id")
-     *     User getFirstAndLastNameBy(long id) throws SQLException;
+     *     User getFirstAndLastNameBy(@Bind("id") long id) throws SQLException;
      *     
      *     &#064NamedSelect("SELECT id, first_name, last_name, email FROM user")
      *     Stream<User> allUsers() throws SQLException;
@@ -10611,6 +10587,12 @@ public final class JdbcUtil {
             default "";
 
             int fetchSize() default -1;
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10627,6 +10609,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10643,6 +10631,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10659,6 +10653,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10679,6 +10679,12 @@ public final class JdbcUtil {
             default "";
 
             int fetchSize() default -1;
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10695,6 +10701,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10711,6 +10723,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10727,6 +10745,12 @@ public final class JdbcUtil {
             default "";
 
             String sql() default "";
+
+            /**
+             * Unit is seconds.
+             * @return
+             */
+            int queryTimeout() default -1;
         }
 
         @Retention(RetentionPolicy.RUNTIME)
@@ -10929,7 +10953,7 @@ public final class JdbcUtil {
             }
         }
 
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings({ "rawtypes", "deprecation" })
         public static <T extends Dao> T newInstance(final Class<T> daoInterface, final javax.sql.DataSource ds) {
             N.checkArgNotNull(daoInterface, "daoInterface");
             N.checkArgNotNull(ds, "dataSource");
@@ -10953,9 +10977,12 @@ public final class JdbcUtil {
                                     "Entity Type parameter must be: Object.class or entity class with getter/setter methods. Can't be: " + typeArguments[0]);
                         }
 
-                        if (ClassUtil.getIdFieldNames((Class) typeArguments[0]).size() != 1) {
-                            throw new IllegalArgumentException("To support CRUD operations, the entity class: " + typeArguments[0]
-                                    + " must has one and only one field annotated with @Id");
+                        if (ClassUtil.getIdFieldNames((Class) typeArguments[0]).size() == 0 && !Void.class.equals(typeArguments[1])) {
+                            throw new IllegalArgumentException(
+                                    "The parameterized ID must be \"Void\" if No field annotated with @Id in entity class: " + typeArguments[0]);
+                        } else if (ClassUtil.getIdFieldNames((Class) typeArguments[0]).size() > 1) {
+                            throw new IllegalArgumentException(
+                                    "To support CRUD operations, the entity class: " + typeArguments[0] + " must have at most one field annotated with @Id");
                         }
                     }
 
@@ -10995,7 +11022,9 @@ public final class JdbcUtil {
                         Try.BiFunction<Dao, Object[], ?, Exception> call = null;
 
                         if (m.getDeclaringClass().equals(CrudDao.class)) {
-                            final String idPropName = ClassUtil.getIdFieldNames(entityClass).iterator().next();
+                            final List<String> idPropNames = ClassUtil.getIdFieldNames(entityClass, true);
+                            final boolean isFakeId = ClassUtil.isFakeId(idPropNames);
+                            final String idPropName = idPropNames.get(0);
 
                             String sql_getById = null;
                             String sql_existsById = null;
@@ -11026,30 +11055,125 @@ public final class JdbcUtil {
                                 sql_updateById = NLC.update(entityClass).where(CF.eq(idPropName)).sql();
                                 sql_deleteById = PLC.deleteFrom(entityClass).where(CF.eq(idPropName)).sql();
                             }
+
                             if (m.getName().equals("insert")) {
                                 final String insertWithId = sql_insertWithId;
                                 final String insertWithoutId = sql_insertWithoutId;
 
-                                call = (proxy, args) -> {
-                                    Object idPropValue = ClassUtil.getPropValue(args[0], idPropName);
-                                    boolean isDefaultIdValue = idPropValue == null
-                                            || (idPropValue instanceof Number && ((Number) idPropValue).longValue() == 0);
-
-                                    if (isDefaultIdValue) {
+                                if (isFakeId) {
+                                    call = (proxy, args) -> {
                                         final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
 
-                                        return proxy.prepareQuery(namedSQL.getParameterizedSQL(), true)
-                                                .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
-                                                .insert()
-                                                .ifPresent(id -> ClassUtil.setPropValue(args[0], idPropName, id));
-                                    } else {
-                                        final NamedSQL namedSQL = NamedSQL.parse(insertWithId);
-
-                                        return proxy.prepareQuery(namedSQL.getParameterizedSQL())
+                                        proxy.prepareQuery(namedSQL.getParameterizedSQL(), false)
                                                 .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
                                                 .update();
-                                    }
-                                };
+
+                                        if (args[0] instanceof DirtyMarker) {
+                                            ((DirtyMarker) args[0]).markDirty(false);
+                                        }
+
+                                        return N.defaultValueOf(returnType);
+                                    };
+                                } else {
+                                    call = (proxy, args) -> {
+                                        final Object idPropValue = ClassUtil.getPropValue(args[0], idPropName);
+                                        final boolean isDefaultIdValue = idPropValue == null
+                                                || (idPropValue instanceof Number && ((Number) idPropValue).longValue() == 0);
+
+                                        if (isDefaultIdValue) {
+                                            final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
+
+                                            final Object id = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true)
+                                                    .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
+                                                    .insert()
+                                                    .ifPresent(ret -> ClassUtil.setPropValue(args[0], idPropName, ret))
+                                                    .orElse(N.defaultValueOf(returnType));
+
+                                            if (args[0] instanceof DirtyMarker) {
+                                                ((DirtyMarker) args[0]).markDirty(false);
+                                            }
+
+                                            return id;
+                                        } else {
+                                            final NamedSQL namedSQL = NamedSQL.parse(insertWithId);
+
+                                            proxy.prepareQuery(namedSQL.getParameterizedSQL(), false)
+                                                    .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
+                                                    .update();
+
+                                            if (args[0] instanceof DirtyMarker) {
+                                                ((DirtyMarker) args[0]).markDirty(false);
+                                            }
+
+                                            return idPropValue;
+                                        }
+                                    };
+                                }
+                            } else if (m.getName().equals("batchInsert")) {
+                                final String insertWithId = sql_insertWithId;
+                                final String insertWithoutId = sql_insertWithoutId;
+
+                                if (isFakeId) {
+                                    call = (proxy, args) -> {
+                                        final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
+                                        final Collection<Object> batchParameters = (Collection<Object>) args[0];
+
+                                        proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(batchParameters,
+                                                (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
+
+                                        if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
+                                            for (Object e : batchParameters) {
+                                                ((DirtyMarker) e).markDirty(false);
+                                            }
+                                        }
+
+                                        return new ArrayList<>(0);
+                                    };
+                                } else {
+                                    call = (proxy, args) -> {
+                                        final Collection<Object> batchParameters = (Collection<Object>) args[0];
+                                        final Object idPropValue = N.isNullOrEmpty(batchParameters) ? null
+                                                : ClassUtil.getPropValue(N.first(batchParameters).get(), idPropName);
+                                        final boolean isDefaultIdValue = idPropValue == null
+                                                || (idPropValue instanceof Number && ((Number) idPropValue).longValue() == 0);
+
+                                        if (isDefaultIdValue) {
+                                            final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
+
+                                            final List<Object> ids = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true).batchInsert(batchParameters,
+                                                    (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
+
+                                            if (N.notNullOrEmpty(batchParameters) && ids.size() == N.size(batchParameters)) {
+                                                int idx = 0;
+
+                                                for (Object e : batchParameters) {
+                                                    ClassUtil.setPropValue(e, idPropName, ids.get(idx++));
+                                                }
+                                            }
+
+                                            if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
+                                                for (Object e : batchParameters) {
+                                                    ((DirtyMarker) e).markDirty(false);
+                                                }
+                                            }
+
+                                            return ids;
+                                        } else {
+                                            final NamedSQL namedSQL = NamedSQL.parse(insertWithId);
+
+                                            proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(batchParameters,
+                                                    (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
+
+                                            if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
+                                                for (Object e : batchParameters) {
+                                                    ((DirtyMarker) e).markDirty(false);
+                                                }
+                                            }
+
+                                            return StreamEx.of(batchParameters).map(e -> ClassUtil.getPropValue(e, idPropName)).toList();
+                                        }
+                                    };
+                                }
                             } else if (m.getName().equals("get")) {
                                 final String query = sql_getById;
 
@@ -11246,9 +11370,46 @@ public final class JdbcUtil {
                             } else if (m.getName().equals("update")) {
                                 if (m.getParameters().length == 1) {
                                     final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
-                                    call = (proxy, args) -> proxy.prepareQuery(namedSQL.getParameterizedSQL())
-                                            .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
-                                            .update();
+                                    call = (proxy, args) -> {
+                                        final int result = proxy.prepareQuery(namedSQL.getParameterizedSQL())
+                                                .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
+                                                .update();
+
+                                        if (args[0] instanceof DirtyMarker) {
+                                            ((DirtyMarker) args[0]).markDirty(namedSQL.getNamedParameters(), false);
+                                        }
+
+                                        return result;
+                                    };
+                                } else if (Condition.class.isAssignableFrom(m.getParameterTypes()[1])) {
+                                    if (sbc.equals(PSC.class)) {
+                                        call = (proxy, args) -> {
+                                            final Map<String, Object> props = (Map<String, Object>) args[0];
+                                            final Condition cond = (Condition) args[1];
+                                            N.checkArgNotNull(props, "updateProps");
+
+                                            final SP sp = PSC.update(entityClass).set(props).where(cond).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                        };
+                                    } else if (sbc.equals(PAC.class)) {
+                                        call = (proxy, args) -> {
+                                            final Map<String, Object> props = (Map<String, Object>) args[0];
+                                            final Condition cond = (Condition) args[1];
+                                            N.checkArgNotNull(props, "updateProps");
+
+                                            final SP sp = PAC.update(entityClass).set(props).where(cond).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                        };
+                                    } else {
+                                        call = (proxy, args) -> {
+                                            final Map<String, Object> props = (Map<String, Object>) args[0];
+                                            final Condition cond = (Condition) args[1];
+                                            N.checkArgNotNull(props, "updateProps");
+
+                                            final SP sp = PLC.update(entityClass).set(props).where(cond).pair();
+                                            return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                        };
+                                    }
                                 } else {
                                     if (sbc.equals(PSC.class)) {
                                         call = (proxy, args) -> {
@@ -11276,6 +11437,9 @@ public final class JdbcUtil {
                                         };
                                     }
                                 }
+                            } else if (m.getName().equals("deleteById")) {
+                                final String query = sql_deleteById;
+                                call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).update();
                             } else if (m.getName().equals("delete")) {
                                 if (Condition.class.isAssignableFrom(m.getParameterTypes()[0])) {
                                     if (sbc.equals(PSC.class)) {
@@ -11296,7 +11460,7 @@ public final class JdbcUtil {
                                     }
                                 } else {
                                     final String query = sql_deleteById;
-                                    call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).update();
+                                    call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, ClassUtil.getPropValue(args[0], idPropName)).update();
                                 }
                             } else {
                                 call = (proxy, args) -> {
@@ -11327,12 +11491,6 @@ public final class JdbcUtil {
                             final Class<?> lastParamType = paramLen == 0 ? null : paramTypes[paramLen - 1];
                             final String query = N.checkArgNotNullOrEmpty(JdbcUtil.sqlAnnoMap.get(sqlAnno.annotationType()).apply(sqlAnno),
                                     "sql can't be null or empty");
-
-                            final int fetchSize = sqlAnno instanceof Dao.Select ? ((Dao.Select) sqlAnno).fetchSize()
-                                    : (sqlAnno instanceof Dao.NamedSelect ? ((Dao.NamedSelect) sqlAnno).fetchSize() : -1);
-
-                            final boolean returnGeneratedKeys = (sqlAnno.annotationType().equals(Dao.Insert.class)
-                                    || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) && !returnType.equals(void.class);
 
                             final boolean isNamedQuery = sqlAnno.annotationType().getSimpleName().startsWith("Named");
 
@@ -11439,7 +11597,7 @@ public final class JdbcUtil {
                                         } else {
                                             throw new UnsupportedOperationException(
                                                     "In method: " + ClassUtil.getSimpleClassName(daoInterface) + "." + m.getName()
-                                                            + ", parameters for named query have to be binded with names through annotation @Binder, or Map/Entity with getter/setter methods. Can not be: "
+                                                            + ", parameters for named query have to be binded with names through annotation @Bind, or Map/Entity with getter/setter methods. Can not be: "
                                                             + ClassUtil.getSimpleClassName(m.getParameterTypes()[0]));
                                         }
                                     } else {
@@ -11460,7 +11618,7 @@ public final class JdbcUtil {
                                                                 .orElseThrow(() -> new UnsupportedOperationException("In method: "
                                                                         + ClassUtil.getSimpleClassName(daoInterface) + "." + m.getName() + ", parameters[" + i
                                                                         + "]: " + ClassUtil.getSimpleClassName(m.getParameterTypes()[i])
-                                                                        + " is not binded with parameter named through annotation @Binder")))
+                                                                        + " is not binded with parameter named through annotation @Bind")))
                                                 .toList();
 
                                         parametersSetter = new BiParametersSetter<AbstractPreparedQuery, Object[]>() {
@@ -11492,34 +11650,63 @@ public final class JdbcUtil {
 
                             final BiParametersSetter<AbstractPreparedQuery, Object[]> finalParametersSetter = parametersSetter;
 
+                            Tuple2<Integer, Integer> tp = null;
+
+                            if (sqlAnno instanceof Dao.Select) {
+                                tp = Tuple.of(((Dao.Select) sqlAnno).queryTimeout(), ((Dao.Select) sqlAnno).fetchSize());
+                            } else if (sqlAnno instanceof Dao.NamedSelect) {
+                                tp = Tuple.of(((Dao.NamedSelect) sqlAnno).queryTimeout(), ((Dao.NamedSelect) sqlAnno).fetchSize());
+                            } else if (sqlAnno instanceof Dao.Insert) {
+                                tp = Tuple.of(((Dao.Insert) sqlAnno).queryTimeout(), -1);
+                            } else if (sqlAnno instanceof Dao.NamedInsert) {
+                                tp = Tuple.of(((Dao.NamedInsert) sqlAnno).queryTimeout(), -1);
+                            } else if (sqlAnno instanceof Dao.Update) {
+                                tp = Tuple.of(((Dao.Update) sqlAnno).queryTimeout(), -1);
+                            } else if (sqlAnno instanceof Dao.NamedUpdate) {
+                                tp = Tuple.of(((Dao.NamedUpdate) sqlAnno).queryTimeout(), -1);
+                            } else if (sqlAnno instanceof Dao.Delete) {
+                                tp = Tuple.of(((Dao.Delete) sqlAnno).queryTimeout(), -1);
+                            } else if (sqlAnno instanceof Dao.NamedDelete) {
+                                tp = Tuple.of(((Dao.NamedDelete) sqlAnno).queryTimeout(), -1);
+                            } else {
+                                tp = Tuple.of(-1, -1);
+                            }
+
+                            final int queryTimeout = tp._1;
+                            final int fetchSize = tp._2;
+
+                            final boolean returnGeneratedKeys = (sqlAnno.annotationType().equals(Dao.Insert.class)
+                                    || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) && !returnType.equals(void.class);
+
                             if (sqlAnno.annotationType().equals(Dao.Select.class) || sqlAnno.annotationType().equals(Dao.NamedSelect.class)) {
                                 final Try.BiFunction<AbstractPreparedQuery, Object[], T, Exception> queryFunc = createQueryFunctionByMethod(m);
 
                                 // Getting ClassCastException. Not sure why query result is being casted Dao. It seems there is a bug in JDk compiler. 
-                                //   call = (proxy, args) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, paramSetter), args);
+                                //   call = (proxy, args) -> queryFunc.apply(JdbcUtil.prepareQuery(proxy, ds, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, paramSetter), args);
 
                                 call = new Try.BiFunction<Dao, Object[], Object, Exception>() {
                                     @Override
                                     public Object apply(Dao proxy, Object[] args) throws Exception {
-                                        return queryFunc.apply(
-                                                JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter),
-                                                args);
+                                        return queryFunc.apply(JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys,
+                                                args, finalParametersSetter), args);
                                     }
                                 };
                             } else if (sqlAnno.annotationType().equals(Dao.Insert.class) || sqlAnno.annotationType().equals(Dao.NamedInsert.class)) {
                                 if (void.class.equals(returnType)) {
                                     call = (proxy, args) -> {
-                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args,
+                                                finalParametersSetter).update();
                                         return null;
                                     };
                                 } else if (Optional.class.equals(returnType)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).insert();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, finalParametersSetter)
+                                            .insert();
                                 } else {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter)
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, finalParametersSetter)
                                             .insert()
-                                            .orNull();
+                                            .orElse(N.defaultValueOf(returnType));
                                 }
                             } else if (sqlAnno.annotationType().equals(Dao.Update.class) || sqlAnno.annotationType().equals(Dao.Delete.class)
                                     || sqlAnno.annotationType().equals(Dao.NamedUpdate.class) || sqlAnno.annotationType().equals(Dao.NamedDelete.class)) {
@@ -11533,16 +11720,20 @@ public final class JdbcUtil {
 
                                 if (returnType.equals(int.class) || returnType.equals(Integer.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, finalParametersSetter)
+                                            .update();
                                 } else if (returnType.equals(boolean.class) || returnType.equals(Boolean.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update() > 0;
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, finalParametersSetter)
+                                            .update() > 0;
                                 } else if (returnType.equals(long.class) || returnType.equals(Long.class)) {
                                     call = (proxy, args) -> JdbcUtil
-                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).largeUpate();
+                                            .prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args, finalParametersSetter)
+                                            .largeUpate();
                                 } else {
                                     call = (proxy, args) -> {
-                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, returnGeneratedKeys, args, finalParametersSetter).update();
+                                        JdbcUtil.prepareQuery(proxy, query, isNamedQuery, fetchSize, queryTimeout, returnGeneratedKeys, args,
+                                                finalParametersSetter).update();
                                         return null;
                                     };
                                 }
@@ -11713,7 +11904,7 @@ public final class JdbcUtil {
                                 "The return type of method: " + method.getName() + " can't be: " + returnType + " when RowMapper/BiRowMapper is specified");
                     }
 
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RowMapper) args[paramLen - 1]).orNull();
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((RowMapper) args[paramLen - 1]).orElse(N.defaultValueOf(returnType));
                 }
             } else if (BiRowMapper.class.isAssignableFrom(lastParamType)) {
                 if (isListQuery) {
@@ -11730,7 +11921,7 @@ public final class JdbcUtil {
                                 "The return type of method: " + method.getName() + " can't be: " + returnType + " when RowMapper/BiRowMapper is specified");
                     }
 
-                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRowMapper) args[paramLen - 1]).orNull();
+                    return (preparedQuery, args) -> (R) preparedQuery.findFirst((BiRowMapper) args[paramLen - 1]).orElse(N.defaultValueOf(returnType));
                 }
             } else {
                 if (method.getGenericParameterTypes()[paramLen - 1] instanceof ParameterizedType) {
@@ -11812,43 +12003,31 @@ public final class JdbcUtil {
                 return (preparedQuery, args) -> (R) preparedQuery.stream(eleType).unchecked();
             }
         } else {
-            return (preparedQuery, args) -> (R) preparedQuery.queryForSingleResult(returnType).orNull();
+            return (preparedQuery, args) -> (R) preparedQuery.queryForSingleResult(returnType).orElse(N.defaultValueOf(returnType));
         }
     }
 
     @SuppressWarnings("rawtypes")
-    static AbstractPreparedQuery prepareQuery(final Dao proxy, final String query, final boolean isNamedQuery, final int fetchSize,
+    static AbstractPreparedQuery prepareQuery(final Dao proxy, final String query, final boolean isNamedQuery, final int fetchSize, final int queryTimeout,
             final boolean returnGeneratedKeys, final Object[] args, final BiParametersSetter<? super AbstractPreparedQuery, Object[]> paramSetter)
             throws SQLException, Exception {
-        if (isNamedQuery) {
-            if (fetchSize > 0) {
-                if (paramSetter == null) {
-                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).setFetchSize(fetchSize);
-                } else {
-                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
-                }
-            } else {
-                if (paramSetter == null) {
-                    return proxy.prepareNamedQuery(query, returnGeneratedKeys);
-                } else {
-                    return proxy.prepareNamedQuery(query, returnGeneratedKeys).settParameters(args, paramSetter);
-                }
-            }
-        } else {
-            if (fetchSize > 0) {
-                if (paramSetter == null) {
-                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize);
-                } else {
-                    return proxy.prepareQuery(query, returnGeneratedKeys).setFetchSize(fetchSize).settParameters(args, paramSetter);
-                }
-            } else {
-                if (paramSetter == null) {
-                    return proxy.prepareQuery(query, returnGeneratedKeys);
-                } else {
-                    return proxy.prepareQuery(query, returnGeneratedKeys).settParameters(args, paramSetter);
-                }
-            }
+
+        final AbstractPreparedQuery preparedQuery = isNamedQuery ? proxy.prepareNamedQuery(query, returnGeneratedKeys)
+                : proxy.prepareQuery(query, returnGeneratedKeys);
+
+        if (fetchSize > 0) {
+            preparedQuery.setFetchSize(fetchSize);
         }
+
+        if (queryTimeout >= 0) {
+            preparedQuery.setQueryTimeout(queryTimeout);
+        }
+
+        if (paramSetter != null) {
+            preparedQuery.settParameters(args, paramSetter);
+        }
+
+        return preparedQuery;
     }
 
     static boolean isListQuery(final Method method) {
@@ -11901,7 +12080,7 @@ public final class JdbcUtil {
      * 
      *
      * @param <T>
-     * @param <ID>
+     * @param <ID> use {@code Void} if there is no id defined/annotated with {@code @Id} in target entity class {@code T}.
      * @param <SB> {@code SQLBuilder} used to generate sql scripts. Only can be {@code SQLBulider.PSC/PAC/PLC}
      * 
      * @see PreparedQuery
@@ -11910,41 +12089,47 @@ public final class JdbcUtil {
      * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public static interface CrudDao<T, ID, SB extends SQLBuilder> extends Dao {
-        T insert(T entityToSave);
+        ID insert(T entityToSave) throws SQLException;
 
-        Optional<T> get(ID id);
+        List<ID> batchInsert(Collection<T> entities) throws SQLException;
 
-        Optional<T> get(Collection<String> selectPropNames, ID id);
+        Optional<T> get(ID id) throws SQLException;
 
-        T gett(ID id);
+        Optional<T> get(Collection<String> selectPropNames, ID id) throws SQLException;
 
-        T gett(Collection<String> selectPropNames, ID id);
+        T gett(ID id) throws SQLException;
 
-        boolean exists(ID id);
+        T gett(Collection<String> selectPropNames, ID id) throws SQLException;
 
-        boolean exists(Condition cond);
+        boolean exists(ID id) throws SQLException;
 
-        int count(Condition cond);
+        boolean exists(Condition cond) throws SQLException;
 
-        Optional<T> findFirst(Condition cond);
+        int count(Condition cond) throws SQLException;
 
-        Optional<T> findFirst(Collection<String> selectPropNames, Condition cond);
+        Optional<T> findFirst(Condition cond) throws SQLException;
 
-        List<T> list(Condition cond);
+        Optional<T> findFirst(Collection<String> selectPropNames, Condition cond) throws SQLException;
 
-        List<T> list(Collection<String> selectPropNames, Condition cond);
+        List<T> list(Condition cond) throws SQLException;
 
-        DataSet query(Condition cond);
+        List<T> list(Collection<String> selectPropNames, Condition cond) throws SQLException;
 
-        DataSet query(Collection<String> selectPropNames, Condition cond);
+        DataSet query(Condition cond) throws SQLException;
 
-        int update(T entityToUpdate);
+        DataSet query(Collection<String> selectPropNames, Condition cond) throws SQLException;
 
-        int update(Map<String, Object> updateProps, ID id);
+        int update(T entityToUpdate) throws SQLException;
 
-        int delete(ID id);
+        int update(Map<String, Object> updateProps, ID id) throws SQLException;
 
-        int delete(Condition cond);
+        int update(Map<String, Object> updateProps, Condition cond) throws SQLException;
+
+        int deleteById(ID id) throws SQLException;
+
+        int delete(T entity);
+
+        int delete(Condition cond) throws SQLException;
     }
 
     static class SimpleDataSource implements DataSource {

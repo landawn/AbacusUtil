@@ -24,7 +24,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +65,14 @@ import com.landawn.abacus.util.u.Optional;
  * String sql = NE.insert("gui", "firstName", "lastName").into("account").sql();
  * <br />// SQL: INSERT INTO account (gui, first_name, last_name) VALUES (:gui, :firstName, :lastName)
  * </p>
+ * 
+ * The {@code tableName} will NOT be formalized.
+ * <li>{@code select(...).from(String tableName).where(...)}</li>
+ * <li>{@code insert(...).into(String tableName).values(...)}</li>
+ * <li>{@code update(String tableName).set(...).where(...)}</li>
+ * <li>{@code deleteFrom(String tableName).where(...)}</li>
+ * 
+ * <br /> 
  * 
  * @since 0.8
  * 
@@ -279,30 +286,43 @@ public abstract class SQLBuilder {
         }
     }
 
-    private static final Map<Class<?>, String> classEntityNameMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, String[]> classTableNameMap = new ConcurrentHashMap<>();
 
-    static String getTableName(final Class<?> entityClass) {
-        String entityTableName = classEntityNameMap.get(entityClass);
+    static String getTableName(final Class<?> entityClass, final NamingPolicy namingPolicy) {
+        String[] entityTableNames = classTableNameMap.get(entityClass);
 
-        if (entityTableName == null) {
-            entityTableName = ClassUtil.getSimpleClassName(entityClass);
-
+        if (entityTableNames == null) {
             if (entityClass.isAnnotationPresent(Table.class)) {
-                entityTableName = entityClass.getAnnotation(Table.class).value();
+                entityTableNames = Array.repeat(entityClass.getAnnotation(Table.class).value(), 3);
             } else {
                 try {
                     if (entityClass.isAnnotationPresent(javax.persistence.Table.class)) {
-                        entityTableName = entityClass.getAnnotation(javax.persistence.Table.class).name();
+                        entityTableNames = Array.repeat(entityClass.getAnnotation(javax.persistence.Table.class).name(), 3);
                     }
                 } catch (Throwable e) {
                     logger.warn("To support javax.persistence.Table/Column, please add dependence javax.persistence:persistence-api");
                 }
             }
 
-            classEntityNameMap.put(entityClass, entityTableName);
+            if (entityTableNames == null) {
+                final String simpleClassName = ClassUtil.getSimpleClassName(entityClass);
+                entityTableNames = new String[] { ClassUtil.toLowerCaseWithUnderscore(simpleClassName), ClassUtil.toUpperCaseWithUnderscore(simpleClassName),
+                        ClassUtil.toCamelCase(simpleClassName) };
+            }
+
+            classTableNameMap.put(entityClass, entityTableNames);
         }
 
-        return entityTableName;
+        switch (namingPolicy) {
+            case LOWER_CASE_WITH_UNDERSCORE:
+                return entityTableNames[0];
+
+            case UPPER_CASE_WITH_UNDERSCORE:
+                return entityTableNames[1];
+
+            default:
+                return entityTableNames[2];
+        }
     }
 
     static Collection<String> getSelectPropNamesByClass(final Class<?> entityClass, final boolean includeSubEntityProperties,
@@ -459,7 +479,7 @@ public abstract class SQLBuilder {
         }
     }
 
-    private static List<String> getSelectTableNames(final Class<?> entityClass) {
+    private static List<String> getSelectTableNames(final Class<?> entityClass, final NamingPolicy namingPolicy) {
         final Set<String> subEntityPropNames = getSubEntityPropNames(entityClass);
 
         if (N.isNullOrEmpty(subEntityPropNames)) {
@@ -467,7 +487,7 @@ public abstract class SQLBuilder {
         }
 
         final List<String> res = new ArrayList<>(subEntityPropNames.size() + 1);
-        res.add(getTableName(entityClass));
+        res.add(getTableName(entityClass, namingPolicy));
 
         Method method = null;
         Class<?> subEntityClass = null;
@@ -622,7 +642,7 @@ public abstract class SQLBuilder {
         sb.append(_INSERT);
         sb.append(_SPACE_INTO_SPACE);
 
-        sb.append(formalizeName(tableName));
+        sb.append(tableName);
 
         sb.append(WD._SPACE);
         sb.append(WD._PARENTHESES_L);
@@ -782,9 +802,11 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder into(final Class<?> entityClass) {
-        this.entityClass = entityClass;
+        if (this.entityClass != null) {
+            this.entityClass = entityClass;
+        }
 
-        return into(getTableName(entityClass));
+        return into(getTableName(entityClass, namingPolicy));
     }
 
     public SQLBuilder from(String expr) {
@@ -795,83 +817,32 @@ public abstract class SQLBuilder {
             tableName = StringUtil.substring(tableName, 0, WD._SPACE).get();
         }
 
-        return from(tableName, tableName.indexOf(WD._SPACE) > 0 ? expr : formalizeName(expr));
+        return from(tableName.trim(), expr);
     }
 
     @SafeVarargs
     public final SQLBuilder from(final String... tableNames) {
         if (tableNames.length == 1) {
-            return from(tableNames[0]);
+            return from(tableNames[0].trim());
         }
 
         final String tableName = tableNames[0].trim();
-
-        //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
-        //        }
-
-        return from(tableName, fromCause(Arrays.asList(tableNames)));
+        return from(tableName, StringUtil.join(tableNames, WD.COMMA_SPACE));
     }
 
     public SQLBuilder from(final Collection<String> tableNames) {
         if (tableNames.size() == 1) {
-            return from(tableNames.iterator().next());
+            return from(tableNames.iterator().next().trim());
         }
 
         final String tableName = tableNames.iterator().next().trim();
-
-        //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
-        //        }
-
-        return from(tableName, fromCause(tableNames));
-    }
-
-    private String fromCause(Collection<String> tableNames) {
-        final StringBuilder sb = Objectory.createStringBuilder();
-
-        try {
-            for (String tableName : tableNames) {
-                if (sb.length() > 0) {
-                    sb.append(WD.COMMA_SPACE);
-                }
-
-                sb.append(formalizeName(tableName));
-            }
-
-            return sb.toString();
-        } finally {
-            Objectory.recycle(sb);
-        }
+        return from(tableName, StringUtil.join(tableNames, WD.COMMA_SPACE));
     }
 
     public SQLBuilder from(final Map<String, String> tableAliases) {
         final String tableName = tableAliases.keySet().iterator().next().trim();
 
-        //        if (tableName.indexOf(D._SPACE) > 0) {
-        //            tableName = StrUtil.substring(tableName, 0, D._SPACE).get();
-        //        }
-
-        final StringBuilder sb = Objectory.createStringBuilder();
-        String fromCause = null;
-
-        try {
-            for (Map.Entry<String, String> entry : tableAliases.entrySet()) {
-                if (sb.length() > 0) {
-                    sb.append(WD.COMMA_SPACE);
-                }
-
-                sb.append(formalizeName(entry.getKey()));
-                sb.append(" ");
-                sb.append(entry.getValue());
-            }
-
-            fromCause = sb.toString();
-        } finally {
-            Objectory.recycle(sb);
-        }
-
-        return from(tableName, fromCause);
+        return from(tableName, StringUtil.joinEntries(tableAliases, WD.COMMA_SPACE, " "));
     }
 
     private SQLBuilder from(final String tableName, final String fromCause) {
@@ -994,106 +965,134 @@ public abstract class SQLBuilder {
 
         sb.append(_SPACE_FROM_SPACE);
 
-        // sb.append(formalizeName(fromCause));
         sb.append(fromCause);
 
         return this;
     }
 
     public SQLBuilder from(final Class<?> entityClass) {
-        this.entityClass = entityClass;
+        if (this.entityClass != null) {
+            this.entityClass = entityClass;
+        }
 
-        return from(getTableName(entityClass));
+        return from(getTableName(entityClass, namingPolicy));
     }
 
     public SQLBuilder join(final String expr) {
         sb.append(_SPACE_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder join(final Class<?> entityClass) {
-        return join(getTableName(entityClass));
+        sb.append(_SPACE_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder innerJoin(final String expr) {
         sb.append(_SPACE_INNER_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder innerJoin(final Class<?> entityClass) {
-        return innerJoin(getTableName(entityClass));
+        sb.append(_SPACE_INNER_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder leftJoin(final String expr) {
         sb.append(_SPACE_LEFT_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder leftJoin(final Class<?> entityClass) {
-        return leftJoin(getTableName(entityClass));
+        sb.append(_SPACE_LEFT_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder rightJoin(final String expr) {
         sb.append(_SPACE_RIGHT_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder rightJoin(final Class<?> entityClass) {
-        return rightJoin(getTableName(entityClass));
+        sb.append(_SPACE_RIGHT_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder fullJoin(final String expr) {
         sb.append(_SPACE_FULL_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder fullJoin(final Class<?> entityClass) {
-        return fullJoin(getTableName(entityClass));
+        sb.append(_SPACE_FULL_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder crossJoin(final String expr) {
         sb.append(_SPACE_CROSS_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder crossJoin(final Class<?> entityClass) {
-        return crossJoin(getTableName(entityClass));
+        sb.append(_SPACE_CROSS_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder naturalJoin(final String expr) {
         sb.append(_SPACE_NATURAL_JOIN_SPACE);
 
-        sb.append(formalizeName(expr));
+        sb.append(expr);
 
         return this;
     }
 
     public SQLBuilder naturalJoin(final Class<?> entityClass) {
-        return naturalJoin(getTableName(entityClass));
+        sb.append(_SPACE_NATURAL_JOIN_SPACE);
+
+        sb.append(getTableName(entityClass, namingPolicy));
+
+        return this;
     }
 
     public SQLBuilder on(final String expr) {
         sb.append(_SPACE_ON_SPACE);
 
-        // sb.append(formalizeName(tableName, expr));
         appendStringExpr(expr);
 
         return this;
@@ -1916,7 +1915,7 @@ public abstract class SQLBuilder {
             final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
             for (String propName : propNames) {
-                if (dirtyPropNames == null|| dirtyPropNames.contains(propName)) {
+                if (dirtyPropNames == null || dirtyPropNames.contains(propName)) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
             }
@@ -1997,7 +1996,7 @@ public abstract class SQLBuilder {
             sb.append(_UPDATE);
 
             sb.append(WD._SPACE);
-            sb.append(formalizeName(tableName));
+            sb.append(tableName);
 
             sb.append(_SPACE_SET_SPACE);
 
@@ -2005,7 +2004,7 @@ public abstract class SQLBuilder {
                 set(columnNameList);
             }
         } else if (op == OperationType.DELETE) {
-            final String newTableName = formalizeName(tableName);
+            final String newTableName = tableName;
 
             char[] deleteFromTableChars = tableDeleteFrom.get(newTableName);
 
@@ -2315,22 +2314,6 @@ public abstract class SQLBuilder {
             sb.append(cond.toString());
         } else {
             throw new IllegalArgumentException("Unsupported condtion: " + cond.toString());
-        }
-    }
-
-    private String formalizeName(final String entityPropName) {
-        switch (namingPolicy) {
-            case LOWER_CASE_WITH_UNDERSCORE:
-                return ClassUtil.toLowerCaseWithUnderscore(entityPropName);
-
-            case UPPER_CASE_WITH_UNDERSCORE:
-                return ClassUtil.toUpperCaseWithUnderscore(entityPropName);
-
-            case LOWER_CAMEL_CASE:
-                return ClassUtil.formalizePropName(entityPropName);
-
-            default:
-                return entityPropName;
         }
     }
 
@@ -2689,9 +2672,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -2719,7 +2702,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2739,7 +2722,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -2971,9 +2954,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -3001,7 +2984,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3021,7 +3004,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -3253,9 +3236,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -3283,7 +3266,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3303,7 +3286,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
             return instance;
         }
@@ -3532,9 +3515,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -3562,7 +3545,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3582,7 +3565,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -3811,9 +3794,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -3841,7 +3824,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3861,7 +3844,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -4090,9 +4073,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -4120,7 +4103,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4140,7 +4123,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
             return instance;
         }
@@ -4369,9 +4352,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -4399,7 +4382,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4419,7 +4402,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -4648,9 +4631,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -4678,7 +4661,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4698,7 +4681,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -4927,9 +4910,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -4957,7 +4940,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4977,7 +4960,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
             return instance;
         }
@@ -5207,9 +5190,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -5237,7 +5220,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -5257,7 +5240,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -5487,9 +5470,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -5517,7 +5500,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -5537,7 +5520,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.UPPER_CASE_WITH_UNDERSCORE);
 
             return instance;
         }
@@ -5767,9 +5750,9 @@ public abstract class SQLBuilder {
 
         public static SQLBuilder selectFrom(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
             if (includeSubEntityProperties) {
-                final List<String> selectTableNames = getSelectTableNames(entityClass);
+                final List<String> selectTableNames = getSelectTableNames(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
-                if (N.isNullOrEmpty(selectTableNames)) {
+                if (N.isNullOrEmpty(selectTableNames) || selectTableNames.size() == 1) {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(entityClass);
                 } else {
                     return select(getSelectPropNamesByClass(entityClass, includeSubEntityProperties, excludedPropNames)).from(selectTableNames);
@@ -5797,7 +5780,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.UPDATE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
             instance.columnNameList = getUpdatePropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -5817,7 +5800,7 @@ public abstract class SQLBuilder {
 
             instance.op = OperationType.DELETE;
             instance.entityClass = entityClass;
-            instance.tableName = getTableName(entityClass);
+            instance.tableName = getTableName(entityClass, NamingPolicy.LOWER_CAMEL_CASE);
 
             return instance;
         }

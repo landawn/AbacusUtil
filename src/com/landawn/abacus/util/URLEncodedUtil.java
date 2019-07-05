@@ -252,7 +252,7 @@ public final class URLEncodedUtil {
                     value = null;
                 }
 
-                propType = entityInfo.getPropInfo(name).type;
+                propType = entityInfo.getPropInfo(name).jsonXmlType;
 
                 if (value == null) {
                     propValue = propType.defaultValue();
@@ -288,12 +288,12 @@ public final class URLEncodedUtil {
             values = parameters.get(key);
 
             if (N.isNullOrEmpty(values)) {
-                propValue = propInfo.type.defaultValue();
+                propValue = propInfo.jsonXmlType.defaultValue();
             } else {
-                if (propInfo.type.clazz().equals(String[].class)) {
+                if (propInfo.jsonXmlType.clazz().equals(String[].class)) {
                     propValue = values;
                 } else {
-                    propValue = propInfo.type.valueOf(StringUtil.join(values, ", "));
+                    propValue = propInfo.jsonXmlType.valueOf(StringUtil.join(values, ", "));
                 }
             }
 

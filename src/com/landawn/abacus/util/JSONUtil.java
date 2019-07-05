@@ -157,9 +157,9 @@ public final class JSONUtil {
                     value = null;
                 } else if (value != null) {
                     if (value instanceof JSONObject) {
-                        value = unwrap(propInfo.type, (JSONObject) value);
+                        value = unwrap(propInfo.jsonXmlType, (JSONObject) value);
                     } else if (value instanceof JSONArray) {
-                        value = unwrap(propInfo.type, (JSONArray) value);
+                        value = unwrap(propInfo.jsonXmlType, (JSONArray) value);
                     }
                 }
 

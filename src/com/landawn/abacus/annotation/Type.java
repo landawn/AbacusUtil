@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.annotation;
 
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -22,8 +23,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 @Documented
-@Target(METHOD)
+@Target({ FIELD, METHOD })
 @Retention(RUNTIME)
+
 /**
  * 
  * @since 0.8
@@ -31,5 +33,42 @@ import java.lang.annotation.Target;
  * @author Haiyang Li
  */
 public @interface Type {
+    /**
+     * 
+     * @return
+     * @deprecated use {@code name} to specify attribute explicitly.
+     */
+    @Deprecated
     String value() default "";
+
+    String name() default "";
+
+    EnumType enumerated() default EnumType.STRING;
+
+    Scope scope() default Scope.ALL;
+
+    public static enum EnumType {
+        /** Persist enumerated type property or field as an integer. */
+        ORDINAL,
+
+        /** Persist enumerated type property or field as a string. */
+        STRING
+    }
+
+    public static enum Scope {
+        /**
+         * Used for json/xml/... serialization/deserialization.
+         */
+        PARSER,
+
+        /**
+         * Used for database column value getter/setter.
+         */
+        DB,
+
+        /**
+         * Used for all scenarios.
+         */
+        ALL
+    }
 }

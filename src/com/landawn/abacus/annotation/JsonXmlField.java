@@ -20,10 +20,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.text.DecimalFormat;
 
+import com.landawn.abacus.annotation.Type.EnumType;
+
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonXmlField {
     String name() default "";
+
+    String type() default "";
+
+    EnumType enumerated() default EnumType.STRING;
 
     String dateFormat() default "";
 

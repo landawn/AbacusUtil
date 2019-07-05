@@ -1,3 +1,14 @@
+### 1.7.10
+
+* Refactoring `JdbcUtil.Mapper.delete/batchDelete(...)` and add `JdbcUtil.Mapper.deleteById/batchDeleteByIds(...)`
+
+* Change implementation in `SQLBuilder/CQLBuilder`. Input table name won't formatted anymore.
+
+* Improve Java Docs
+
+* Improvements and bug fix.
+
+
 ### 1.7.9
 
 * Add `JdbcUtil.NamedQuery`.
