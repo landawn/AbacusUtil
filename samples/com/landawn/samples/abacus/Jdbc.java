@@ -19,7 +19,6 @@ import com.landawn.abacus.annotation.ReadOnly;
 import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.JdbcUtil;
-import com.landawn.abacus.util.JdbcUtil.Dao;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.NSC;
@@ -40,8 +39,8 @@ import lombok.NoArgsConstructor;
 public class Jdbc {
     static final DataSource dataSource = JdbcUtil.createDataSource("jdbc:h2:~/test", "sa", "");
     static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
-    static final UserDao userDao = Dao.newInstance(UserDao.class, dataSource);
     static final Mapper<User, Long> userMapper = sqlExecutor.mapper(User.class);
+    static final UserDao userDao = sqlExecutor.createDao(UserDao.class);
 
     // initialize DB schema.
     static {

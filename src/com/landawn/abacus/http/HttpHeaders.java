@@ -534,6 +534,12 @@ public final class HttpHeaders {
         return this;
     }
 
+    public HttpHeaders setCookie(String cookie) {
+        set(Names.COOKIE, cookie);
+
+        return this;
+    }
+
     public HttpHeaders set(String name, Object value) {
         map.put(name, value);
 

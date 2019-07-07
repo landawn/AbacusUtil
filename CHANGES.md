@@ -1,3 +1,12 @@
+### 1.7.11
+
+* Add `SQLExecutor.prepareNamedQuery`.
+
+* Add `CrudDao.queryForSingleXXX/stream`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.10
 
 * Refactoring `JdbcUtil.Mapper.delete/batchDelete(...)` and add `JdbcUtil.Mapper.deleteById/batchDeleteByIds(...)`
