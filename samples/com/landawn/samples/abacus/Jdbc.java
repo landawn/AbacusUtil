@@ -1,7 +1,6 @@
 package com.landawn.samples.abacus;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.sql.Connection;
@@ -14,11 +13,13 @@ import javax.sql.DataSource;
 
 import org.junit.Test;
 
+import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.annotation.Id;
 import com.landawn.abacus.annotation.ReadOnly;
 import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.JdbcUtil;
+import com.landawn.abacus.util.JdbcUtil.Dao;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.NSC;
@@ -40,7 +41,7 @@ public class Jdbc {
     static final DataSource dataSource = JdbcUtil.createDataSource("jdbc:h2:~/test", "sa", "");
     static final SQLExecutor sqlExecutor = new SQLExecutor(dataSource);
     static final Mapper<User, Long> userMapper = sqlExecutor.mapper(User.class);
-    static final UserDao userDao = sqlExecutor.createDao(UserDao.class);
+    static final UserDao userDao = Dao.newInstance(UserDao.class, dataSource);
 
     // initialize DB schema.
     static {
@@ -274,7 +275,23 @@ public class Jdbc {
         User userFromDB = userDao.gett(100L);
         System.out.println(userFromDB);
 
-        SQLTransaction tran = sqlExecutor.beginTransaction();
+        SQLTransaction tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.READ_COMMITTED);
+
+        try {
+            userDao.updateFirstAndLastName("Tom", "Hanks", 100);
+
+            userDao.queryForBoolean("firstName", CF.eq("id", 100)); // throw exception.
+            tran.commit();
+        } catch (SQLException e) {
+            // ignore
+        } finally {
+            tran.rollbackIfNotCommitted();
+        }
+
+        assertEquals("Forrest", userDao.gett(100L).getFirstName());
+
+        tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.READ_COMMITTED);
+
         try {
             userDao.updateFirstAndLastName("Tom", "Hanks", 100);
 
@@ -284,17 +301,6 @@ public class Jdbc {
         }
 
         assertEquals("Tom", userDao.gett(100L).getFirstName());
-
-        tran = sqlExecutor.beginTransaction();
-        try {
-            userDao.deleteById(100L);
-
-            // tran.commit();
-        } finally {
-            tran.rollbackIfNotCommitted();
-        }
-
-        assertNotNull(userDao.gett(100L).getFirstName());
 
         userDao.deleteById(100L);
         assertNull(userDao.gett(100L));

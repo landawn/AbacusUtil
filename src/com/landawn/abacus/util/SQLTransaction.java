@@ -47,7 +47,6 @@ public final class SQLTransaction implements Transaction {
     private final boolean closeConnection;
     private final boolean originalAutoCommit;
     private final int originalIsolationLevel;
-    private final boolean autoSharedByPrepareQuery;
 
     private Transaction.Status status = Status.ACTIVE;
     private final AtomicInteger refCount = new AtomicInteger();
@@ -58,12 +57,12 @@ public final class SQLTransaction implements Transaction {
 
     private boolean isMarkedByCommitPreviously = false;
 
-    SQLTransaction(final javax.sql.DataSource ds, final Connection conn, final IsolationLevel isolationLevel, final boolean closeConnection,
-            final boolean autoSharedByPrepareQuery) throws SQLException {
+    SQLTransaction(final javax.sql.DataSource ds, final Connection conn, final IsolationLevel isolationLevel, final CreatedBy creator,
+            final boolean closeConnection) throws SQLException {
         N.checkArgNotNull(conn);
         N.checkArgNotNull(isolationLevel);
 
-        this.id = getTransactionId(ds);
+        this.id = getTransactionId(ds, creator);
         this.timedId = id + "_" + System.currentTimeMillis();
         this.ds = ds;
         this.conn = conn;
@@ -72,7 +71,6 @@ public final class SQLTransaction implements Transaction {
 
         this.originalAutoCommit = conn.getAutoCommit();
         this.originalIsolationLevel = conn.getTransactionIsolation();
-        this.autoSharedByPrepareQuery = autoSharedByPrepareQuery;
 
         conn.setAutoCommit(false);
 
@@ -353,20 +351,16 @@ public final class SQLTransaction implements Transaction {
         return isForUpdateOnly;
     }
 
-    boolean autoSharedByPrepareQuery() {
-        return autoSharedByPrepareQuery;
+    static String getTransactionId(Object dataSourceOrConnection, final CreatedBy creator) {
+        return StringUtil.concat(System.identityHashCode(dataSourceOrConnection), "_", Thread.currentThread().getName(), "_", creator.ordinal());
     }
 
-    static String getTransactionId(Object dataSourceOrConnection) {
-        return Thread.currentThread().getName() + "_" + System.identityHashCode(dataSourceOrConnection);
+    static SQLTransaction getTransaction(final javax.sql.DataSource ds, final CreatedBy creator) {
+        return threadTransacionMap.get(getTransactionId(ds, creator));
     }
 
-    static SQLTransaction getTransaction(final javax.sql.DataSource ds) {
-        return threadTransacionMap.get(getTransactionId(ds));
-    }
-
-    static SQLTransaction putTransaction(final javax.sql.DataSource ds, final SQLTransaction tran) {
-        return threadTransacionMap.put(getTransactionId(ds), tran);
+    static SQLTransaction putTransaction(final SQLTransaction tran) {
+        return threadTransacionMap.put(tran.id, tran);
     }
 
     @Override
@@ -382,5 +376,17 @@ public final class SQLTransaction implements Transaction {
     @Override
     public String toString() {
         return "SQLTransaction={id=" + timedId + "}";
+    }
+
+    static enum CreatedBy {
+        /**
+         * Global for all.
+         */
+        JDBC_UTIL,
+
+        /**
+         * SQLExecutor.
+         */
+        SQL_EXECUTOR;
     }
 }

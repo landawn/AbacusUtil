@@ -126,6 +126,7 @@ import com.landawn.abacus.util.SQLBuilder.PSC;
 import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.SQLExecutor.StatementSetter;
+import com.landawn.abacus.util.SQLTransaction.CreatedBy;
 import com.landawn.abacus.util.StringUtil.Strings;
 import com.landawn.abacus.util.Try.BiFunction;
 import com.landawn.abacus.util.Tuple.Tuple2;
@@ -1103,33 +1104,44 @@ public final class JdbcUtil {
         return N.<T> typeOf(targetClass).get(rs, columnLabel);
     }
 
-    /**  
+    /**
+     * Refer to: {@code beginTransaction(javax.sql.DataSource, IsolationLevel, boolean)}.
+     * @param dataSource
+     * @param isolationLevel
+     * @return
+     * @throws UncheckedSQLException
+     * @see {@link #beginTransaction(javax.sql.DataSource, IsolationLevel, boolean)}
+     */
+    public static SQLTransaction beginTransaction(final javax.sql.DataSource dataSource, final IsolationLevel isolationLevel) throws UncheckedSQLException {
+        return beginTransaction(dataSource, isolationLevel, false);
+    }
+
+    /**
+     * Starts a global transaction which will be shared by all in-line database query with the same {@code DataSource} in the same thread, 
+     * including methods: {@code JdbcUtil.beginTransaction/prepareQuery/prepareNamedQuery/prepareCallableQuery, SQLExecutor(Mapper).beginTransaction/get/insert/batchInsert/update/batchUpdate/query/list/findFirst/...}
+     * 
+     * <br />
      * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
+     * If this method is called at where a Spring transaction is started with the specified {@code DataSource}, 
      * the {@code Connection} started the Spring Transaction will be used here. 
      * That's to say the Spring transaction will have the final control on commit/roll back over the {@code Connection}. 
      * 
      * <br />
      * <br />
      * 
-     * The transaction will be shared by {@code JdbcUtil.beginTransaction(javax.sql.DataSource, IsolationLevel)} in the same thread for the same {@code DataSource}, but not auto-shared by {@code JdbcUtil.prepareQuery/prepareCallableQuery(javax.sql.DataSource, ...)}.
-     * To include {@code jdbcUtil.prepareQuery/prepareCallableQuery} in the transaction, need to call {@code JdbcUtil.prepareQuery/prepareCallableQuery(transaction.connection(), ...)}.
-     * 
-     * <br />
-     * Here is the general code pattern to work with {@code SimpleTransaction}.
+     * Here is the general code pattern to work with {@code SQLTransaction}.
      * 
      * <pre>
      * <code>
      * public void doSomethingA() {
      *     ...
-     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
-     *     final Connection conn = tranA.connection();
+     *     final SQLTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
+     *     
      *     try {
-     *         // do your work with the conn...
      *         ...
      *         doSomethingB(); // Share the same transaction 'tranA' because they're in the same thread and start transaction with same DataSource 'dataSource1'.
      *         ...
-     *         doSomethingC(); // won't share the same transaction 'tranA' although they're in the same thread but start transaction with different DataSources.
+     *         doSomethingC(); // won't share the same transaction 'tranA' although they're in the same thread but start transaction with different DataSource 'dataSource2'.
      *         ...
      *         tranA.commit();
      *     } finally {
@@ -1139,8 +1151,7 @@ public final class JdbcUtil {
      * 
      * public void doSomethingB() {
      *     ...
-     *     final SimpleTransaction tranB = JdbcUtil.beginTransacion(dataSource1, isolation);
-     *     final Connection conn = tranB.connection();
+     *     final SQLTransaction tranB = JdbcUtil.beginTransacion(dataSource1, isolation);
      *     try {
      *         // do your work with the conn...
      *         ...
@@ -1152,8 +1163,7 @@ public final class JdbcUtil {
      * 
      * public void doSomethingC() {
      *     ...
-     *     final SimpleTransaction tranC = JdbcUtil.beginTransacion(dataSource2, isolation);
-     *     final Connection conn = tranC.connection();
+     *     final SQLTransaction tranC = JdbcUtil.beginTransacion(dataSource2, isolation);
      *     try {
      *         // do your work with the conn...
      *         ...
@@ -1171,8 +1181,7 @@ public final class JdbcUtil {
      * <code>
      * public void doSomethingA() {
      *     ...
-     *     final SimpleTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
-     *     final Connection conn = tranA.connection();
+     *     final SQLTransaction tranA = JdbcUtil.beginTransacion(dataSource1, isolation);
      *     boolean flagToCommit = false;
      *     try {
      *         // do your work with the conn...
@@ -1191,49 +1200,28 @@ public final class JdbcUtil {
      * 
      * @param dataSource
      * @param isolationLevel
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    public static SimpleTransaction beginTransaction(final javax.sql.DataSource dataSource, final IsolationLevel isolationLevel) throws UncheckedSQLException {
-        return beginTransaction(dataSource, isolationLevel, false);
-    }
-
-    /**
-     * 
-     * @param conn
-     * @param isolationLevel
+     * @param isForUpdateOnly
      * @return
      * @throws UncheckedSQLException
-     * @see {@link #beginTransaction(javax.sql.DataSource, IsolationLevel)}
+     * @see {@link #getConnection(javax.sql.DataSource)}
+     * @see {@link #releaseConnection(Connection, javax.sql.DataSource)}
+     * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
-    public static SimpleTransaction beginTransaction(final Connection conn, final IsolationLevel isolationLevel) throws UncheckedSQLException {
-        return beginTransaction(conn, isolationLevel, false);
-    }
+    public static SQLTransaction beginTransaction(final javax.sql.DataSource dataSource, final IsolationLevel isolationLevel, final boolean isForUpdateOnly)
+            throws UncheckedSQLException {
+        N.checkArgNotNull(dataSource, "dataSource");
+        N.checkArgNotNull(isolationLevel, "isolationLevel");
 
-    /**
-     * 
-     * @param dataSource
-     * @param isolationLevel
-     * @param autoSharedByPrepareQuery If it's true, the {@code Connection} used to start/create the transaction will be used by coming {@code JdbcUtil.prepareQuery/prepareCallableQuery(javax.sql.DataSource dataSource, ...)} called with the same {@code DataSource} in the same thread, without explicit required.
-     * @return
-     * @throws UncheckedSQLException
-     */
-    static SimpleTransaction beginTransaction(final javax.sql.DataSource dataSource, final IsolationLevel isolationLevel,
-            final boolean autoSharedByPrepareQuery) throws UncheckedSQLException {
-        N.checkArgNotNull(dataSource);
-        N.checkArgNotNull(isolationLevel);
-
-        SimpleTransaction tran = SimpleTransaction.getTransaction(dataSource);
+        SQLTransaction tran = SQLTransaction.getTransaction(dataSource, CreatedBy.JDBC_UTIL);
 
         if (tran == null) {
             Connection conn = null;
             boolean noException = false;
+
             try {
                 conn = getConnection(dataSource);
-                tran = new SimpleTransaction(dataSource, conn, isolationLevel, true, autoSharedByPrepareQuery);
-                tran.incrementAndGetRef(isolationLevel);
+                tran = new SQLTransaction(dataSource, conn, isolationLevel, CreatedBy.JDBC_UTIL, true);
+                tran.incrementAndGetRef(isolationLevel, isForUpdateOnly);
 
                 noException = true;
             } catch (SQLException e) {
@@ -1244,54 +1232,23 @@ public final class JdbcUtil {
                 }
             }
 
-            logger.info("Create a new SimpleTransaction(id={})", tran.id());
-            SimpleTransaction.putTransaction(dataSource, tran);
+            logger.info("Create a new SQLTransaction(id={})", tran.id());
+            SQLTransaction.putTransaction(tran);
         } else {
-            logger.info("Reusing the existing SimpleTransaction(id={})", tran.id());
-            tran.incrementAndGetRef(isolationLevel);
+            logger.info("Reusing the existing SQLTransaction(id={})", tran.id());
+            tran.incrementAndGetRef(isolationLevel, isForUpdateOnly);
         }
 
         return tran;
     }
 
-    /**
-     * 
-     * @param conn
-     * @param isolationLevel
-     * @param autoSharedByPrepareQuery If it's true, the {@code Connection} used to start/create the transaction will be used by coming {@code JdbcUtil.prepareQuery/prepareCallableQuery(javax.sql.DataSource dataSource, ...)} called with the same {@code DataSource} in the same thread, without explicit required.
-     * @return
-     * @return
-     * @throws UncheckedSQLException
-     */
-    static SimpleTransaction beginTransaction(final Connection conn, final IsolationLevel isolationLevel, final boolean autoSharedByPrepareQuery)
-            throws UncheckedSQLException {
-        N.checkArgNotNull(conn);
-        N.checkArgNotNull(isolationLevel);
-
-        SimpleTransaction tran = SimpleTransaction.getTransaction(conn);
-
-        if (tran == null) {
-            try {
-                tran = new SimpleTransaction(null, conn, isolationLevel, false, autoSharedByPrepareQuery);
-                tran.incrementAndGetRef(isolationLevel);
-            } catch (SQLException e) {
-                throw new UncheckedSQLException(e);
-            }
-
-            logger.info("Create a new transaction(id={})", tran.id());
-            SimpleTransaction.putTransaction(conn, tran);
-        } else {
-            logger.info("Reusing the existing SimpleTransaction(id={})", tran.id());
-            tran.incrementAndGetRef(isolationLevel);
-        }
-
-        return tran;
+    static SQLOperation getSQLOperation(String sql) {
+        return StringUtil.startsWithIgnoreCase(sql.trim(), "select ") ? SQLOperation.SELECT : SQLOperation.UPDATE;
     }
 
     /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
      * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
@@ -1302,25 +1259,31 @@ public final class JdbcUtil {
      * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
-        PreparedQuery result = null;
-        Connection conn = null;
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(sql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
 
-        try {
-            conn = getConnection(ds);
-            result = prepareQuery(conn, sql).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareQuery(tran.connection(), sql);
+        } else {
+            PreparedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareQuery(conn, sql).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
     }
 
     /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
      * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
@@ -1332,19 +1295,64 @@ public final class JdbcUtil {
      * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql, final boolean autoGeneratedKeys) throws SQLException {
-        PreparedQuery result = null;
-        Connection conn = null;
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(sql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
 
-        try {
-            conn = getConnection(ds);
-            result = prepareQuery(conn, sql, autoGeneratedKeys).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareQuery(tran.connection(), sql, autoGeneratedKeys);
+        } else {
+            PreparedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareQuery(conn, sql, autoGeneratedKeys).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
+    }
+
+    /** 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(sql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
+
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareQuery(tran.connection(), sql, stmtCreator);
+        } else {
+            PreparedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareQuery(conn, sql, stmtCreator).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
     }
 
     /**
@@ -1382,91 +1390,6 @@ public final class JdbcUtil {
         return new PreparedQuery(conn.prepareStatement(sql, autoGeneratedKeys ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS));
     }
 
-    /** 
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
-     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
-     * 
-     * @param ds
-     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    @SuppressWarnings("resource")
-    public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
-            throws SQLException {
-        PreparedQuery result = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection(ds);
-            result = new PreparedQuery(stmtCreator.apply(conn)).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
-            }
-        }
-
-        return result;
-    }
-
-    /** 
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
-     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
-     * 
-     * @param ds
-     * @param sql
-     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    @SuppressWarnings("resource")
-    public static PreparedQuery prepareQuery(final javax.sql.DataSource ds, final String sql,
-            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
-        PreparedQuery result = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection(ds);
-            result = new PreparedQuery(stmtCreator.apply(conn, sql)).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Never write below code because it will definitely cause {@code Connection} leak:
-     * <pre>
-     * <code>
-     * JdbcUtil.prepareQuery(dataSource.getConnection(), stmtCreator);
-     * </code>
-     * </pre>
-     * 
-     * @param conn the specified {@code conn} won't be close after this query is executed.
-     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see {@link JdbcUtil#prepareStatement(Connection, String, Object...)}
-     */
-    public static PreparedQuery prepareQuery(final Connection conn, final Try.Function<Connection, PreparedStatement, SQLException> stmtCreator)
-            throws SQLException {
-        return new PreparedQuery(stmtCreator.apply(conn));
-    }
-
     /**
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
@@ -1489,9 +1412,8 @@ public final class JdbcUtil {
     }
 
     /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
      * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
@@ -1502,25 +1424,31 @@ public final class JdbcUtil {
      * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql) throws SQLException {
-        NamedQuery result = null;
-        Connection conn = null;
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(namedSql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
 
-        try {
-            conn = getConnection(ds);
-            result = prepareNamedQuery(conn, namedSql).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareNamedQuery(tran.connection(), namedSql);
+        } else {
+            NamedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareNamedQuery(conn, namedSql).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
     }
 
     /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
      * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
@@ -1532,19 +1460,64 @@ public final class JdbcUtil {
      * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql, final boolean autoGeneratedKeys) throws SQLException {
-        NamedQuery result = null;
-        Connection conn = null;
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(namedSql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
 
-        try {
-            conn = getConnection(ds);
-            result = prepareNamedQuery(conn, namedSql, autoGeneratedKeys).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareNamedQuery(tran.connection(), namedSql, autoGeneratedKeys);
+        } else {
+            NamedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareNamedQuery(conn, namedSql, autoGeneratedKeys).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
+    }
+
+    /** 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
+     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code NamedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql,
+            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(namedSql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
+
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareNamedQuery(tran.connection(), namedSql, stmtCreator);
+        } else {
+            NamedQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareNamedQuery(conn, namedSql, stmtCreator).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
     }
 
     /**
@@ -1588,40 +1561,6 @@ public final class JdbcUtil {
                 namedSQL);
     }
 
-    /** 
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
-     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
-     * 
-     * @param ds
-     * @param namedSql for example {@code SELECT first_name, last_name FROM account where id = :id}
-     * @param stmtCreator the created {@code PreparedStatement} will be closed after any execution methods in {@code NamedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    @SuppressWarnings("resource")
-    public static NamedQuery prepareNamedQuery(final javax.sql.DataSource ds, final String namedSql,
-            final Try.BiFunction<Connection, String, PreparedStatement, SQLException> stmtCreator) throws SQLException {
-        final NamedSQL namedSQL = createNamedSQL(namedSql);
-        NamedQuery result = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection(ds);
-            result = new NamedQuery(stmtCreator.apply(conn, namedSQL.getParameterizedSQL()), namedSQL).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
-            }
-        }
-
-        return result;
-    }
-
     /**
      * Never write below code because it will definitely cause {@code Connection} leak:
      * <pre>
@@ -1658,9 +1597,8 @@ public final class JdbcUtil {
     }
 
     /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
      * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
      * 
      * @param ds
@@ -1671,19 +1609,64 @@ public final class JdbcUtil {
      * @see #releaseConnection(Connection, javax.sql.DataSource)
      */
     public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql) throws SQLException {
-        PreparedCallableQuery result = null;
-        Connection conn = null;
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(sql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
 
-        try {
-            conn = getConnection(ds);
-            result = prepareCallableQuery(conn, sql).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareCallableQuery(tran.connection(), sql);
+        } else {
+            PreparedCallableQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareCallableQuery(conn, sql).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
             }
-        }
 
-        return result;
+            return result;
+        }
+    }
+
+    /**
+     * If this method is called where a transaction is started by {@code JdbcUtil.beginTransaction} or in {@code Spring} with the same {@code DataSource} in the same thread,
+     * the {@code Connection} started the Transaction will be used here. 
+     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
+     * 
+     * @param ds
+     * @param sql
+     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
+     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
+     * @return
+     * @throws SQLException
+     * @see #getConnection(javax.sql.DataSource)
+     * @see #releaseConnection(Connection, javax.sql.DataSource)
+     */
+    public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql,
+            final Try.BiFunction<Connection, String, CallableStatement, SQLException> stmtCreator) throws SQLException {
+        final SQLOperation sqlOperation = JdbcUtil.getSQLOperation(sql);
+        final SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.JDBC_UTIL);
+
+        if (tran != null && (tran.isForUpdateOnly() == false || sqlOperation != SQLOperation.SELECT)) {
+            return prepareCallableQuery(tran.connection(), sql, stmtCreator);
+        } else {
+            PreparedCallableQuery result = null;
+            Connection conn = null;
+
+            try {
+                conn = getConnection(ds);
+                result = prepareCallableQuery(conn, sql, stmtCreator).onClose(createCloseHandler(conn, ds));
+            } finally {
+                if (result == null) {
+                    releaseConnection(conn, ds);
+                }
+            }
+
+            return result;
+        }
     }
 
     /**
@@ -1703,91 +1686,6 @@ public final class JdbcUtil {
      */
     public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final String sql) throws SQLException {
         return new PreparedCallableQuery(conn.prepareCall(sql));
-    }
-
-    /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
-     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
-     * 
-     * @param ds
-     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    @SuppressWarnings("resource")
-    public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds,
-            final Try.Function<Connection, CallableStatement, SQLException> stmtCreator) throws SQLException {
-        PreparedCallableQuery result = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection(ds);
-            result = new PreparedCallableQuery(stmtCreator.apply(conn)).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Spring Transaction is supported and Integrated. 
-     * If this method is called where a Spring transaction is started with the specified {@code DataSource}, 
-     * the {@code Connection} started the Spring Transaction will be used here. 
-     * Otherwise a {@code Connection} directly from the specified {@code DataSource}(Connection pool) will be borrowed and used.
-     * 
-     * @param ds
-     * @param sql
-     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see #getConnection(javax.sql.DataSource)
-     * @see #releaseConnection(Connection, javax.sql.DataSource)
-     */
-    @SuppressWarnings("resource")
-    public static PreparedCallableQuery prepareCallableQuery(final javax.sql.DataSource ds, final String sql,
-            final Try.BiFunction<Connection, String, CallableStatement, SQLException> stmtCreator) throws SQLException {
-        PreparedCallableQuery result = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection(ds);
-            result = new PreparedCallableQuery(stmtCreator.apply(conn, sql)).onClose(createCloseHandler(conn, ds));
-        } finally {
-            if (result == null) {
-                releaseConnection(conn, ds);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Never write below code because it will definitely cause {@code Connection} leak:
-     * <pre>
-     * <code>
-     * JdbcUtil.prepareCallableQuery(dataSource.getConnection(), stmtCreator);
-     * </code>
-     * </pre>
-     * 
-     * @param conn the specified {@code conn} won't be close after this query is executed.
-     * @param stmtCreator the created {@code CallableStatement} will be closed after any execution methods in {@code PreparedQuery/PreparedCallableQuery} is called.
-     * An execution method is a method which will trigger the backed {@code PreparedStatement/CallableStatement} to be executed, for example: get/query/queryForInt/Long/../findFirst/list/execute/....
-     * @return
-     * @throws SQLException
-     * @see {@link JdbcUtil#prepareCall(Connection, String, Object...)}
-     */
-    public static PreparedCallableQuery prepareCallableQuery(final Connection conn, final Try.Function<Connection, CallableStatement, SQLException> stmtCreator)
-            throws SQLException {
-        return new PreparedCallableQuery(stmtCreator.apply(conn));
     }
 
     /**
@@ -10545,12 +10443,12 @@ public final class JdbcUtil {
      * Here is the generate way to work with transaction started by {@code SQLExecutor}.
      * 
      * <pre>
-     * <code>
-     * static SQLExecutor sqlExecutor = ...;
-     * static final UserDao userDao = sqlExecutor.createDao(UserDao.class); // NOT: Dao.newInstance(UserDao, sqlExecutor.dataSource()), Dao instances created by Dao.newInstance(...) won't share the transactions started by SQLExecutor.
+     * <code> 
+     * static final UserDao userDao = Dao.newInstance(UserDao.class, dataSource);
      * ...
      * 
-     * final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
+     * final SQLTransaction tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.READ_COMMITTED);
+     * 
      * try {
      *      userDao.getById(id);
      *      userDao.update(...);
@@ -10564,10 +10462,11 @@ public final class JdbcUtil {
      * </code>
      * </pre> 
      * 
-     * @see PreparedQuery
-     * @see CrudDao
+     * @see JdbcUtil#prepareQuery(javax.sql.DataSource, String)
+     * @see JdbcUtil#prepareNamedQuery(javax.sql.DataSource, String)
+     * @see JdbcUtil#beginTransaction(javax.sql.DataSource, IsolationLevel, boolean)
+     * @see Dao
      * @see SQLExecutor.Mapper
-     * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public static interface Dao {
 
@@ -10871,7 +10770,7 @@ public final class JdbcUtil {
             T dao = (T) daoPool.get(daoInterface);
 
             if (dao == null) {
-                dao = JdbcUtil.newInstance(daoInterface, ds, null);
+                dao = JdbcUtil.newInstance(daoInterface, ds);
                 daoPool.put(daoInterface, dao);
             }
 
@@ -10907,10 +10806,11 @@ public final class JdbcUtil {
      * @param <ID> use {@code Void} if there is no id defined/annotated with {@code @Id} in target entity class {@code T}.
      * @param <SB> {@code SQLBuilder} used to generate sql scripts. Only can be {@code SQLBulider.PSC/PAC/PLC}
      * 
-     * @see PreparedQuery
+     * @see JdbcUtil#prepareQuery(javax.sql.DataSource, String)
+     * @see JdbcUtil#prepareNamedQuery(javax.sql.DataSource, String)
+     * @see JdbcUtil#beginTransaction(javax.sql.DataSource, IsolationLevel, boolean)
      * @see Dao
      * @see SQLExecutor.Mapper
-     * @see SQLExecutor#beginTransaction(IsolationLevel, boolean, JdbcSettings)
      */
     public static interface CrudDao<T, ID, SB extends SQLBuilder> extends Dao {
         ID insert(T entityToSave) throws SQLException;
@@ -10992,16 +10892,8 @@ public final class JdbcUtil {
         int delete(Condition cond) throws SQLException;
     }
 
-    static <T extends Dao> T newInstance(final Class<T> daoInterface, final javax.sql.DataSource ds) {
-        return newInstance(daoInterface, ds, null);
-    }
-
-    static <T extends Dao> T newInstance(final Class<T> daoInterface, final SQLExecutor sqlExecutor) {
-        return newInstance(daoInterface, sqlExecutor.dataSource(), sqlExecutor);
-    }
-
     @SuppressWarnings({ "rawtypes", "deprecation" })
-    private static <T extends Dao> T newInstance(final Class<T> daoInterface, final javax.sql.DataSource ds, final SQLExecutor sqlExecutor) {
+    static <T extends Dao> T newInstance(final Class<T> daoInterface, final javax.sql.DataSource ds) {
         N.checkArgNotNull(daoInterface, "daoInterface");
         N.checkArgNotNull(ds, "dataSource");
 
@@ -11031,7 +10923,6 @@ public final class JdbcUtil {
                     if (!(typeArguments[2].equals(PSC.class) || typeArguments[2].equals(PAC.class) || typeArguments[2].equals(PLC.class))) {
                         throw new IllegalArgumentException("SQLBuilder Type parameter must be: SQLBuilder.PSC/PAC/PLC. Can't be: " + typeArguments[2]);
                     }
-
                 }
             }
         }
@@ -11210,7 +11101,12 @@ public final class JdbcUtil {
                 } else if (m.getName().equals("get")) {
                     final String query = sql_getById;
 
-                    if (paramLen == 1) {
+                    if (isFakeId) {
+                        call = (proxy, args) -> {
+                            throw new UnsupportedOperationException(
+                                    "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                        };
+                    } else if (paramLen == 1) {
                         call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).get(entityClass);
                     } else {
                         if (sbc.equals(PSC.class)) {
@@ -11233,7 +11129,12 @@ public final class JdbcUtil {
                 } else if (m.getName().equals("gett")) {
                     final String query = sql_getById;
 
-                    if (paramLen == 1) {
+                    if (isFakeId) {
+                        call = (proxy, args) -> {
+                            throw new UnsupportedOperationException(
+                                    "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                        };
+                    } else if (paramLen == 1) {
                         call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).gett(entityClass);
                     } else {
                         if (sbc.equals(PSC.class)) {
@@ -11272,8 +11173,15 @@ public final class JdbcUtil {
                             };
                         }
                     } else {
-                        final String query = sql_existsById;
-                        call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).exists();
+                        if (isFakeId) {
+                            call = (proxy, args) -> {
+                                throw new UnsupportedOperationException(
+                                        "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                            };
+                        } else {
+                            final String query = sql_existsById;
+                            call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).exists();
+                        }
                     }
                 } else if (m.getName().equals("count")) {
                     if (sbc.equals(PSC.class)) {
@@ -11718,18 +11626,26 @@ public final class JdbcUtil {
                     }
                 } else if (m.getName().equals("update")) {
                     if (paramLen == 1) {
-                        final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
-                        call = (proxy, args) -> {
-                            final int result = proxy.prepareQuery(namedSQL.getParameterizedSQL())
-                                    .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
-                                    .update();
+                        if (isFakeId) {
+                            call = (proxy, args) -> {
+                                throw new UnsupportedOperationException(
+                                        "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                            };
+                        } else {
+                            final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
 
-                            if (args[0] instanceof DirtyMarker) {
-                                ((DirtyMarker) args[0]).markDirty(namedSQL.getNamedParameters(), false);
-                            }
+                            call = (proxy, args) -> {
+                                final int result = proxy.prepareQuery(namedSQL.getParameterizedSQL())
+                                        .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
+                                        .update();
 
-                            return result;
-                        };
+                                if (args[0] instanceof DirtyMarker) {
+                                    ((DirtyMarker) args[0]).markDirty(namedSQL.getNamedParameters(), false);
+                                }
+
+                                return result;
+                            };
+                        }
                     } else if (Condition.class.isAssignableFrom(m.getParameterTypes()[1])) {
                         if (sbc.equals(PSC.class)) {
                             call = (proxy, args) -> {
@@ -11760,35 +11676,50 @@ public final class JdbcUtil {
                             };
                         }
                     } else {
-                        if (sbc.equals(PSC.class)) {
+                        if (isFakeId) {
                             call = (proxy, args) -> {
-                                final Map<String, Object> props = (Map<String, Object>) args[0];
-                                N.checkArgNotNull(props, "updateProps");
-                                final String query = PSC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
-
-                                return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
-                            };
-                        } else if (sbc.equals(PAC.class)) {
-                            call = (proxy, args) -> {
-                                final Map<String, Object> props = (Map<String, Object>) args[0];
-                                N.checkArgNotNull(props, "updateProps");
-                                final String query = PAC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
-
-                                return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
+                                throw new UnsupportedOperationException(
+                                        "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
                             };
                         } else {
-                            call = (proxy, args) -> {
-                                final Map<String, Object> props = (Map<String, Object>) args[0];
-                                N.checkArgNotNull(props, "updateProps");
-                                final String query = PLC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
+                            if (sbc.equals(PSC.class)) {
+                                call = (proxy, args) -> {
+                                    final Map<String, Object> props = (Map<String, Object>) args[0];
+                                    N.checkArgNotNull(props, "updateProps");
+                                    final String query = PSC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
 
-                                return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
-                            };
+                                    return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
+                                };
+                            } else if (sbc.equals(PAC.class)) {
+                                call = (proxy, args) -> {
+                                    final Map<String, Object> props = (Map<String, Object>) args[0];
+                                    N.checkArgNotNull(props, "updateProps");
+                                    final String query = PAC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
+
+                                    return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
+                                };
+                            } else {
+                                call = (proxy, args) -> {
+                                    final Map<String, Object> props = (Map<String, Object>) args[0];
+                                    N.checkArgNotNull(props, "updateProps");
+                                    final String query = PLC.update(entityClass).set(props.keySet()).where(CF.eq(idPropName)).sql();
+
+                                    return proxy.prepareQuery(query).setParameters(1, props.values()).setObject(props.size() + 1, args[1]).update();
+                                };
+                            }
                         }
                     }
                 } else if (m.getName().equals("deleteById")) {
                     final String query = sql_deleteById;
-                    call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).update();
+
+                    if (isFakeId) {
+                        call = (proxy, args) -> {
+                            throw new UnsupportedOperationException(
+                                    "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                        };
+                    } else {
+                        call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, args[0]).update();
+                    }
                 } else if (m.getName().equals("delete")) {
                     if (Condition.class.isAssignableFrom(m.getParameterTypes()[0])) {
                         if (sbc.equals(PSC.class)) {
@@ -11808,8 +11739,15 @@ public final class JdbcUtil {
                             };
                         }
                     } else {
-                        final String query = sql_deleteById;
-                        call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, ClassUtil.getPropValue(args[0], idPropName)).update();
+                        if (isFakeId) {
+                            call = (proxy, args) -> {
+                                throw new UnsupportedOperationException(
+                                        "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                            };
+                        } else {
+                            final String query = sql_deleteById;
+                            call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, ClassUtil.getPropValue(args[0], idPropName)).update();
+                        }
                     }
                 } else {
                     call = (proxy, args) -> {
@@ -11822,52 +11760,24 @@ public final class JdbcUtil {
                         call = (proxy, args) -> ds;
                     } else if (m.getName().equals("prepareQuery") && returnType.equals(PreparedQuery.class) && paramLen == 1
                             && paramTypes[0].equals(String.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareQuery((String) args[0]);
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0]);
                     } else if (m.getName().equals("prepareQuery") && returnType.equals(PreparedQuery.class) && paramLen == 2
                             && paramTypes[0].equals(String.class) && paramTypes[1].equals(boolean.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0], (Boolean) args[1]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareQuery((String) args[0], StatementSetter.DEFAULT,
-                                    JdbcSettings.create().setAutoGeneratedKeys((Boolean) args[1]));
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0], (Boolean) args[1]);
                     } else if (m.getName().equals("prepareQuery") && returnType.equals(PreparedQuery.class) && paramLen == 2
                             && paramTypes[0].equals(String.class) && paramTypes[1].equals(Try.BiFunction.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0],
-                                    (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareQuery((String) args[0],
-                                    (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareQuery(proxy.dataSource(), (String) args[0],
+                                (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
                     } else if (m.getName().equals("prepareNamedQuery") && returnType.equals(NamedQuery.class) && paramLen == 1
                             && paramTypes[0].equals(String.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareNamedQuery((String) args[0]);
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0]);
                     } else if (m.getName().equals("prepareNamedQuery") && returnType.equals(NamedQuery.class) && paramLen == 2
                             && paramTypes[0].equals(String.class) && paramTypes[1].equals(boolean.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0], (Boolean) args[1]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareNamedQuery((String) args[0], StatementSetter.DEFAULT,
-                                    JdbcSettings.create().setAutoGeneratedKeys((Boolean) args[1]));
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0], (Boolean) args[1]);
                     } else if (m.getName().equals("prepareNamedQuery") && returnType.equals(NamedQuery.class) && paramLen == 2
                             && paramTypes[0].equals(String.class) && paramTypes[1].equals(Try.BiFunction.class)) {
-                        if (sqlExecutor == null) {
-                            call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0],
-                                    (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
-                        } else {
-                            call = (proxy, args) -> sqlExecutor.prepareNamedQuery((String) args[0],
-                                    (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
-                        }
+                        call = (proxy, args) -> JdbcUtil.prepareNamedQuery(proxy.dataSource(), (String) args[0],
+                                (Try.BiFunction<Connection, String, PreparedStatement, SQLException>) args[1]);
                     } else {
                         call = (proxy, args) -> {
                             throw new UnsupportedOperationException("Unsupported operation: " + m);
