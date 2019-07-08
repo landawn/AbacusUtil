@@ -1,6 +1,6 @@
 ### 1.7.11
 
-* Add `SQLExecutor.prepareNamedQuery`.
+* Remove `SQLExecutor.prepareQuery`.
 
 * Add `CrudDao.queryForSingleXXX/stream`.
 
