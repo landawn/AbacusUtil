@@ -1,3 +1,8 @@
+### 1.7.12
+
+* Improvements and bug fix.
+
+
 ### 1.7.11
 
 * Remove `SQLExecutor.prepareQuery`.

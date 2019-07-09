@@ -51,6 +51,7 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.DateUtil;
+import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
@@ -1026,6 +1027,7 @@ public final class SQLiteExecutor {
      * @param entity with getter/setter methods
      * @return
      */
+    @SuppressWarnings("deprecation")
     public int update(Object entity) {
         if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
@@ -1033,7 +1035,7 @@ public final class SQLiteExecutor {
 
         Number id = ClassUtil.getPropValue(entity, ID);
 
-        if (id.longValue() == 0) {
+        if (JdbcUtil.isDefaultIdPropValue(id)) {
             throw new IllegalArgumentException("Please specify value for the id property");
         }
 
@@ -1107,6 +1109,7 @@ public final class SQLiteExecutor {
      * @param entity
      * @return
      */
+    @SuppressWarnings("deprecation")
     public int delete(Object entity) {
         if (!ClassUtil.isEntity(entity.getClass())) {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
@@ -1114,7 +1117,7 @@ public final class SQLiteExecutor {
 
         Number id = ClassUtil.getPropValue(entity, ID);
 
-        if (id.longValue() == 0) {
+        if (JdbcUtil.isDefaultIdPropValue(id)) {
             throw new IllegalArgumentException("Please specify value for the id property");
         }
 

@@ -94,6 +94,7 @@ import com.landawn.abacus.SliceSelector;
 import com.landawn.abacus.Transaction;
 import com.landawn.abacus.Transaction.Status;
 import com.landawn.abacus.annotation.Column;
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.CF;
 import com.landawn.abacus.core.RowDataSet;
@@ -3561,6 +3562,18 @@ public final class JdbcUtil {
         }
 
         return result;
+    }
+
+    /**
+     * 
+     * @param propValue
+     * @return
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static boolean isDefaultIdPropValue(final Object propValue) {
+        return (propValue == null) || (propValue instanceof Number && (((Number) propValue).longValue() == 0));
     }
 
     /**
@@ -10755,8 +10768,6 @@ public final class JdbcUtil {
                 throws SQLException;
 
         /**
-         * By default, Dao instance created by {@code Dao#newInstance(...)} will share transactions started by Spring, if it's called by the method where Spring transaction is started.
-         * But it won't share the transactions started by {@code JdbcUtil#beginTransaction(...)} or {@code SQLExecutor#beginTransaction(...)}.
          * 
          * @param daoInterface
          * @param ds
@@ -10779,28 +10790,6 @@ public final class JdbcUtil {
     }
 
     /**
-     * Here is the generate way to work with transaction started by {@code SQLExecutor}.
-     * 
-     * <pre>
-     * <code>
-     * static SQLExecutor sqlExecutor = ...;
-     * static final UserDao userDao = sqlExecutor.createDao(UserDao.class); // Or Dao.newInstance(UserDao, sqlExecutor.dataSource());
-     * ...
-     * 
-     * final SQLTransaction tran = sqlExecutor.beginTransaction(IsolationLevel.READ_COMMITTED);
-     * try {
-     *      userDao.getById(id);
-     *      userDao.update(...);
-     *      // more...
-     * 
-     *      tran.commit();
-     * } finally {
-     *      // The connection will be automatically closed after the transaction is committed or rolled back.            
-     *      tran.rollbackIfNotCommitted();
-     * }
-     * </code>
-     * </pre>
-     * 
      *
      * @param <T>
      * @param <ID> use {@code Void} if there is no id defined/annotated with {@code @Id} in target entity class {@code T}.
@@ -10817,15 +10806,52 @@ public final class JdbcUtil {
 
         List<ID> batchInsert(Collection<T> entities) throws SQLException;
 
-        Optional<T> get(ID id) throws SQLException;
+        /**
+         * 
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        Optional<T> get(ID id) throws UnsupportedOperationException, SQLException;
 
-        Optional<T> get(Collection<String> selectPropNames, ID id) throws SQLException;
+        /**
+         * 
+         * @param selectPropNames
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        Optional<T> get(Collection<String> selectPropNames, ID id) throws UnsupportedOperationException, SQLException;
 
-        T gett(ID id) throws SQLException;
+        /**
+         * 
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        T gett(ID id) throws UnsupportedOperationException, SQLException;
 
-        T gett(Collection<String> selectPropNames, ID id) throws SQLException;
+        /**
+         * 
+         * @param selectPropNames
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        T gett(Collection<String> selectPropNames, ID id) throws UnsupportedOperationException, SQLException;
 
-        boolean exists(ID id) throws SQLException;
+        /**
+         * 
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        boolean exists(ID id) throws UnsupportedOperationException, SQLException;
 
         boolean exists(Condition cond) throws SQLException;
 
@@ -10879,15 +10905,44 @@ public final class JdbcUtil {
 
         ExceptionalStream<T, SQLException> stream(Collection<String> selectPropNames, Condition cond) throws SQLException;
 
+        /**
+         * 
+         * @param entityToUpdate
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
         int update(T entityToUpdate) throws SQLException;
 
+        /**
+         * 
+         * @param updateProps
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
         int update(Map<String, Object> updateProps, ID id) throws SQLException;
 
         int update(Map<String, Object> updateProps, Condition cond) throws SQLException;
 
-        int deleteById(ID id) throws SQLException;
+        /**
+         * 
+         * @param id
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        int deleteById(ID id) throws UnsupportedOperationException, SQLException;
 
-        int delete(T entity);
+        /**
+         * 
+         * @param entity
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        int delete(T entity) throws UnsupportedOperationException, SQLException;
 
         int delete(Condition cond) throws SQLException;
     }
@@ -10949,6 +11004,7 @@ public final class JdbcUtil {
 
             if (m.getDeclaringClass().equals(CrudDao.class)) {
                 final List<String> idPropNames = ClassUtil.getIdFieldNames(entityClass, true);
+                final Set<String> idPropNameSet = N.newHashSet(idPropNames);
                 final boolean isFakeId = ClassUtil.isFakeId(idPropNames);
                 final String idPropName = idPropNames.get(0);
 
@@ -11003,9 +11059,8 @@ public final class JdbcUtil {
                     } else {
                         call = (proxy, args) -> {
                             final Object idPropValue = ClassUtil.getPropValue(args[0], idPropName);
-                            final boolean isDefaultIdValue = idPropValue == null || (idPropValue instanceof Number && ((Number) idPropValue).longValue() == 0);
 
-                            if (isDefaultIdValue) {
+                            if (JdbcUtil.isDefaultIdPropValue(idPropValue)) {
                                 final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
 
                                 final Object id = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true)
@@ -11059,9 +11114,8 @@ public final class JdbcUtil {
                             final Collection<Object> batchParameters = (Collection<Object>) args[0];
                             final Object idPropValue = N.isNullOrEmpty(batchParameters) ? null
                                     : ClassUtil.getPropValue(N.first(batchParameters).get(), idPropName);
-                            final boolean isDefaultIdValue = idPropValue == null || (idPropValue instanceof Number && ((Number) idPropValue).longValue() == 0);
 
-                            if (isDefaultIdValue) {
+                            if (JdbcUtil.isDefaultIdPropValue(idPropValue)) {
                                 final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
 
                                 final List<Object> ids = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true).batchInsert(batchParameters,
@@ -11632,19 +11686,47 @@ public final class JdbcUtil {
                                         "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
                             };
                         } else {
-                            final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
-
-                            call = (proxy, args) -> {
-                                final int result = proxy.prepareQuery(namedSQL.getParameterizedSQL())
-                                        .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
-                                        .update();
-
-                                if (args[0] instanceof DirtyMarker) {
-                                    ((DirtyMarker) args[0]).markDirty(namedSQL.getNamedParameters(), false);
+                            if (DirtyMarker.class.isAssignableFrom(paramTypes[0])) {
+                                if (sbc.equals(PSC.class)) {
+                                    call = (proxy, args) -> {
+                                        final SP sp = PSC.update(entityClass)
+                                                .set(args[0], idPropNameSet)
+                                                .where(CF.eq(idPropName, ClassUtil.getPropValue(args[0], idPropName)))
+                                                .pair();
+                                        return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                    };
+                                } else if (sbc.equals(PAC.class)) {
+                                    call = (proxy, args) -> {
+                                        final SP sp = PAC.update(entityClass)
+                                                .set(args[0], idPropNameSet)
+                                                .where(CF.eq(idPropName, ClassUtil.getPropValue(args[0], idPropName)))
+                                                .pair();
+                                        return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                    };
+                                } else {
+                                    call = (proxy, args) -> {
+                                        final SP sp = PLC.update(entityClass)
+                                                .set(args[0], idPropNameSet)
+                                                .where(CF.eq(idPropName, ClassUtil.getPropValue(args[0], idPropName)))
+                                                .pair();
+                                        return proxy.prepareQuery(sp.sql).setParameters(1, sp.parameters).update();
+                                    };
                                 }
+                            } else {
+                                final NamedSQL namedSQL = NamedSQL.parse(sql_updateById);
 
-                                return result;
-                            };
+                                call = (proxy, args) -> {
+                                    final int result = proxy.prepareQuery(namedSQL.getParameterizedSQL())
+                                            .setParameters(stmt -> StatementSetter.DEFAULT.setParameters(namedSQL, stmt, args))
+                                            .update();
+
+                                    if (args[0] instanceof DirtyMarker) {
+                                        ((DirtyMarker) args[0]).markDirty(namedSQL.getNamedParameters(), false);
+                                    }
+
+                                    return result;
+                                };
+                            }
                         }
                     } else if (Condition.class.isAssignableFrom(m.getParameterTypes()[1])) {
                         if (sbc.equals(PSC.class)) {

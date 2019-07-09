@@ -339,6 +339,31 @@ public abstract class SQLBuilder {
         }
     }
 
+    static Collection<String> getInsertPropNamesByClass(final Object entity, final Set<String> excludedPropNames) {
+        final Class<?> entityClass = entity.getClass();
+        final Collection<String>[] val = loadPropNamesByClass(entityClass);
+
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            final Collection<String> idPropNames = ClassUtil.getIdFieldNames(entityClass);
+
+            if (N.isNullOrEmpty(idPropNames)) {
+                return val[2];
+            } else {
+                for (String idPropName : idPropNames) {
+                    if (JdbcUtil.isDefaultIdPropValue(ClassUtil.getPropValue(entity, idPropName))) {
+                        return val[2];
+                    }
+                }
+
+                return val[3];
+            }
+        } else {
+            final List<String> tmp = new ArrayList<>(val[2]);
+            tmp.removeAll(excludedPropNames);
+            return tmp;
+        }
+    }
+
     static Collection<String> getInsertPropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
         final Collection<String>[] val = loadPropNamesByClass(entityClass);
         final Collection<String> propNames = val[2];
@@ -354,7 +379,24 @@ public abstract class SQLBuilder {
 
     static Collection<String> getUpdatePropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
         final Collection<String>[] val = loadPropNamesByClass(entityClass);
-        final Collection<String> propNames = val[3];
+        final Collection<String> propNames = val[4];
+
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return propNames;
+        } else {
+            final List<String> tmp = new ArrayList<>(propNames);
+            tmp.removeAll(excludedPropNames);
+            return tmp;
+        }
+    }
+
+    static Collection<String> getDeletePropNamesByClass(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        if (N.isNullOrEmpty(excludedPropNames)) {
+            return N.emptyList();
+        }
+
+        final Collection<String>[] val = loadPropNamesByClass(entityClass);
+        final Collection<String> propNames = val[0];
 
         if (N.isNullOrEmpty(excludedPropNames)) {
             return propNames;
@@ -377,11 +419,12 @@ public abstract class SQLBuilder {
                     entityPropNames.removeAll(subEntityPropNames);
                 }
 
-                val = new Set[4];
+                val = new Set[5];
                 val[0] = new LinkedHashSet<>(entityPropNames);
                 val[1] = new LinkedHashSet<>(entityPropNames);
                 val[2] = new LinkedHashSet<>(entityPropNames);
                 val[3] = new LinkedHashSet<>(entityPropNames);
+                val[4] = new LinkedHashSet<>(entityPropNames);
 
                 Method method = null;
                 Class<?> subEntityClass = null;
@@ -440,12 +483,19 @@ public abstract class SQLBuilder {
                 val[0].removeAll(transientPropNames);
                 val[1].removeAll(transientPropNames);
                 val[2].removeAll(readOnlyPropNames);
-                val[3].removeAll(nonUpdatablePropNames);
+                val[3].removeAll(readOnlyPropNames);
+                val[4].removeAll(nonUpdatablePropNames);
+
+                for (String idPropName : ClassUtil.getIdFieldNames(entityClass)) {
+                    val[3].remove(idPropName);
+                    val[3].remove(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(entityClass, idPropName)));
+                }
 
                 val[0] = ImmutableSet.of(val[0]);
                 val[1] = ImmutableSet.of(val[1]);
                 val[2] = ImmutableSet.of(val[2]);
                 val[3] = ImmutableSet.of(val[3]);
+                val[4] = ImmutableSet.of(val[4]);
 
                 defaultPropNamesPool.put(entityClass, val);
             }
@@ -2407,7 +2457,7 @@ public abstract class SQLBuilder {
                 Maps.removeKeys(instance.props, excludedPropNames);
             }
         } else {
-            final Collection<String> propNames = getInsertPropNamesByClass(entity.getClass(), excludedPropNames);
+            final Collection<String> propNames = getInsertPropNamesByClass(entity, excludedPropNames);
             final Map<String, Object> map = N.newHashMap(N.initHashCapacity(propNames.size()));
 
             for (String propName : propNames) {

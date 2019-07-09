@@ -275,7 +275,7 @@ public class Jdbc {
         User userFromDB = userDao.gett(100L);
         System.out.println(userFromDB);
 
-        SQLTransaction tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.READ_COMMITTED);
+        SQLTransaction tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.DEFAULT);
 
         try {
             userDao.updateFirstAndLastName("Tom", "Hanks", 100);
@@ -290,7 +290,7 @@ public class Jdbc {
 
         assertEquals("Forrest", userDao.gett(100L).getFirstName());
 
-        tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.READ_COMMITTED);
+        tran = JdbcUtil.beginTransaction(dataSource, IsolationLevel.DEFAULT);
 
         try {
             userDao.updateFirstAndLastName("Tom", "Hanks", 100);

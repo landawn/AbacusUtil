@@ -74,7 +74,7 @@ public final class SQLTransaction implements Transaction {
 
         conn.setAutoCommit(false);
 
-        if (isolationLevel == IsolationLevel.DEFAULT) {
+        if (isolationLevel != IsolationLevel.DEFAULT) {
             conn.setTransactionIsolation(isolationLevel.intValue());
         }
     }
@@ -305,7 +305,11 @@ public final class SQLTransaction implements Transaction {
 
         if (conn != null) {
             try {
-                conn.setTransactionIsolation(isolationLevel.intValue());
+                if (isolationLevel == IsolationLevel.DEFAULT) {
+                    conn.setTransactionIsolation(originalIsolationLevel);
+                } else {
+                    conn.setTransactionIsolation(isolationLevel.intValue());
+                }
             } catch (SQLException e) {
                 throw new UncheckedSQLException(e);
             }
@@ -337,7 +341,11 @@ public final class SQLTransaction implements Transaction {
 
             if (conn != null) {
                 try {
-                    conn.setTransactionIsolation(isolationLevel.intValue());
+                    if (isolationLevel == IsolationLevel.DEFAULT) {
+                        conn.setTransactionIsolation(originalIsolationLevel);
+                    } else {
+                        conn.setTransactionIsolation(isolationLevel.intValue());
+                    }
                 } catch (SQLException e) {
                     throw new UncheckedSQLException(e);
                 }
