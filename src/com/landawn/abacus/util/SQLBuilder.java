@@ -351,11 +351,11 @@ public abstract class SQLBuilder {
             } else {
                 for (String idPropName : idPropNames) {
                     if (JdbcUtil.isDefaultIdPropValue(ClassUtil.getPropValue(entity, idPropName))) {
-                        return val[2];
+                        return val[3];
                     }
                 }
 
-                return val[3];
+                return val[2];
             }
         } else {
             final List<String> tmp = new ArrayList<>(val[2]);

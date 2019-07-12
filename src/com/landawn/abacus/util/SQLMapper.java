@@ -173,7 +173,6 @@ public final class SQLMapper {
         OutputStream os = null;
 
         try {
-
             Document doc = XMLUtil.createDOMParser(true, true).newDocument();
             Element sqlMapperNode = doc.createElement(SQLMapper.SQL_MAPPER);
 

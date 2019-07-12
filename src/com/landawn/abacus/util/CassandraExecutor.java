@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -73,6 +72,7 @@ import com.landawn.abacus.util.CQLBuilder.CP;
 import com.landawn.abacus.util.CQLBuilder.NAC;
 import com.landawn.abacus.util.CQLBuilder.NLC;
 import com.landawn.abacus.util.CQLBuilder.NSC;
+import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.u.Nullable;
 import com.landawn.abacus.util.u.Optional;
 import com.landawn.abacus.util.u.OptionalBoolean;
@@ -245,7 +245,7 @@ public final class CassandraExecutor implements Closeable {
         return mappingManager.mapper(targetClass);
     }
 
-    private static final Map<Class<?>, List<String>> entityKeyNamesMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Tuple2<List<String>, Set<String>>> entityKeyNamesMap = new ConcurrentHashMap<>();
 
     public static void registerKeys(Class<?> entityClass, Collection<String> keyNames) {
         N.checkArgument(N.notNullOrEmpty(keyNames), "'keyNames' can't be null or empty");
@@ -256,18 +256,31 @@ public final class CassandraExecutor implements Closeable {
             keyNameSet.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(entityClass, keyName)));
         }
 
-        entityKeyNamesMap.put(entityClass, ImmutableList.copyOf(keyNameSet));
+        entityKeyNamesMap.put(entityClass, Tuple.<List<String>, Set<String>> of(ImmutableList.copyOf(keyNameSet), ImmutableSet.of(keyNameSet)));
     }
 
     private static List<String> getKeyNames(final Class<?> entityClass) {
-        List<String> keyNames = entityKeyNamesMap.get(entityClass);
+        Tuple2<List<String>, Set<String>> tp = entityKeyNamesMap.get(entityClass);
 
-        if (keyNames == null) {
-            keyNames = ClassUtil.getIdFieldNames(entityClass);
-            entityKeyNamesMap.put(entityClass, keyNames);
+        if (tp == null) {
+            List<String> idPropNames = ClassUtil.getIdFieldNames(entityClass);
+            tp = Tuple.<List<String>, Set<String>> of(ImmutableList.copyOf(idPropNames), ImmutableSet.copyOf(idPropNames));
+            entityKeyNamesMap.put(entityClass, tp);
         }
 
-        return keyNames;
+        return tp._1;
+    }
+
+    private static Set<String> getKeyNameSet(final Class<?> entityClass) {
+        Tuple2<List<String>, Set<String>> tp = entityKeyNamesMap.get(entityClass);
+
+        if (tp == null) {
+            List<String> idPropNames = ClassUtil.getIdFieldNames(entityClass);
+            tp = Tuple.<List<String>, Set<String>> of(ImmutableList.copyOf(idPropNames), ImmutableSet.copyOf(idPropNames));
+            entityKeyNamesMap.put(entityClass, tp);
+        }
+
+        return tp._2;
     }
 
     public static DataSet extractData(final ResultSet resultSet) {
@@ -619,7 +632,27 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ResultSet insert(final Object entity) {
-        return insert(entity.getClass(), Maps.entity2Map(entity));
+        final CP cp = prepareInsert(entity);
+
+        return execute(cp);
+    }
+
+    private CP prepareInsert(final Object entity) {
+        final Class<?> targetClass = entity.getClass();
+
+        switch (namingPolicy) {
+            case LOWER_CASE_WITH_UNDERSCORE:
+                return NSC.insert(entity).into(targetClass).pair();
+
+            case UPPER_CASE_WITH_UNDERSCORE:
+                return NAC.insert(entity).into(targetClass).pair();
+
+            case LOWER_CAMEL_CASE:
+                return NLC.insert(entity).into(targetClass).pair();
+
+            default:
+                throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+        }
     }
 
     public ResultSet insert(final Class<?> targetClass, final Map<String, Object> props) {
@@ -645,9 +678,41 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ResultSet batchInsert(final Collection<?> entities, final BatchStatement.Type type) {
+        final BatchStatement batchStatement = prepareBatchInsertStatement(entities, type);
+
+        return execute(batchStatement);
+    }
+
+    private BatchStatement prepareBatchInsertStatement(final Collection<?> entities, final BatchStatement.Type type) {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
 
-        return batchInsert(entities.iterator().next().getClass(), Maps.entity2Map(entities), type);
+        final BatchStatement batchStatement = prepareBatchStatement(type);
+        CP cp = null;
+
+        for (Object entity : entities) {
+            cp = prepareInsert(entity);
+            batchStatement.add(prepareStatement(cp.cql, cp.parameters.toArray()));
+        }
+
+        return batchStatement;
+    }
+
+    private BatchStatement prepareBatchStatement(final BatchStatement.Type type) {
+        final BatchStatement batchStatement = new BatchStatement(type == null ? BatchStatement.Type.LOGGED : type);
+
+        if (settings != null) {
+            batchStatement.setConsistencyLevel(settings.getConsistency());
+            batchStatement.setSerialConsistencyLevel(settings.getSerialConsistency());
+            batchStatement.setRetryPolicy(settings.getRetryPolicy());
+
+            if (settings.traceQuery) {
+                batchStatement.enableTracing();
+            } else {
+                batchStatement.disableTracing();
+            }
+        }
+
+        return batchStatement;
     }
 
     public ResultSet batchInsert(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList, final BatchStatement.Type type) {
@@ -660,20 +725,7 @@ public final class CassandraExecutor implements Closeable {
             final BatchStatement.Type type) {
         N.checkArgument(N.notNullOrEmpty(propsList), "'propsList' can't be null or empty.");
 
-        final BatchStatement batchStatement = new BatchStatement(type == null ? BatchStatement.Type.LOGGED : type);
-
-        if (settings != null) {
-            batchStatement.setConsistencyLevel(settings.getConsistency());
-            batchStatement.setSerialConsistencyLevel(settings.getSerialConsistency());
-            batchStatement.setRetryPolicy(settings.getRetryPolicy());
-
-            if (settings.traceQuery) {
-                batchStatement.enableTracing();
-            } else {
-                batchStatement.disableTracing();
-            }
-        }
-
+        final BatchStatement batchStatement = prepareBatchStatement(type);
         CP cp = null;
 
         for (Map<String, Object> props : propsList) {
@@ -685,179 +737,46 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ResultSet update(final Object entity) {
-        final Class<?> targetClass = entity.getClass();
-        final Map<String, Object> props = prepareUpdateProps(targetClass, entity);
-
-        return update(targetClass, props, entity2Cond(entity));
+        return update(entity, getKeyNameSet(entity.getClass()));
     }
 
-    @SuppressWarnings("deprecation")
-    private Map<String, Object> prepareUpdateProps(final Class<?> targetClass, final Object entity) {
-        final List<String> keyNames = getKeyNames(targetClass);
-        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
-
-        if (isDirtyMarker) {
-            final Map<String, Object> props = new HashMap<>();
-
-            for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                props.put(propName, ClassUtil.getPropValue(entity, propName));
-            }
-
-            Maps.removeKeys(props, keyNames);
-
-            return props;
-        } else {
-            return Maps.entity2Map(entity, keyNames);
-        }
-    }
-
-    public ResultSet update(final Object entity, final Collection<String> primaryKeyNames) {
-        N.checkArgNotNullOrEmpty(primaryKeyNames, "primaryKeyNames");
-
-        final Class<?> targetClass = entity.getClass();
-        final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));
-        final And and = prepareUpdateCondition(targetClass, entity, primaryKeyNames, keyNameSet);
-        final Map<String, Object> props = prepareUpdateProps(targetClass, entity, keyNameSet);
-
-        return update(targetClass, props, and);
-    }
-
-    @SuppressWarnings("deprecation")
-    private Map<String, Object> prepareUpdateProps(final Class<?> targetClass, final Object entity, final Set<String> keyNameSet) {
-        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
-
-        if (isDirtyMarker) {
-            final Map<String, Object> props = new HashMap<>();
-
-            for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                props.put(propName, ClassUtil.getPropValue(entity, propName));
-            }
-
-            Maps.removeKeys(props, keyNameSet);
-
-            return props;
-        } else {
-            return Maps.entity2Map(entity, keyNameSet);
-        }
-    }
-
-    private And prepareUpdateCondition(final Class<?> targetClass, final Object entity, final Collection<String> primaryKeyNames,
-            final Set<String> keyNameSet) {
-        final And and = new And();
-
-        for (String keyName : primaryKeyNames) {
-            String propName = ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, keyName));
-            and.add(CF.eq(propName, ClassUtil.getPropValue(entity, propName)));
-            keyNameSet.add(propName);
-        }
-
-        return and;
-    }
-
-    public ResultSet update(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
-        final CP cp = prepareUpdate(targetClass, props, whereCause);
+    public ResultSet update(final Object entity, final Set<String> primaryKeyNames) {
+        final CP cp = prepareUpdate(entity, primaryKeyNames);
 
         return execute(cp);
     }
 
-    public ResultSet batchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
-        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
+    private CP prepareUpdate(final Object entity, final Set<String> primaryKeyNames) {
+        N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty.");
 
-        final Class<?> targetClass = N.first(entities).get().getClass();
-        final List<String> keyNames = getKeyNames(targetClass);
-
-        return batchUpdate(entities, keyNames, type);
-    }
-
-    public ResultSet batchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames, final BatchStatement.Type type) {
-        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
-        N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty");
-
-        final Class<?> targetClass = N.first(entities).get().getClass();
-        final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));
+        final Class<?> targetClass = entity.getClass();
+        final And and = new And();
 
         for (String keyName : primaryKeyNames) {
-            keyNameSet.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, keyName)));
+            and.add(CF.eq(keyName, ClassUtil.getPropValue(entity, keyName)));
         }
 
-        final List<Map<String, Object>> propsList = propBatchUpdatePropsList(targetClass, entities, keyNameSet);
+        switch (namingPolicy) {
+            case LOWER_CASE_WITH_UNDERSCORE:
+                return NSC.update(targetClass).set(entity, primaryKeyNames).where(and).pair();
 
-        return batchUpdate(targetClass, propsList, keyNameSet, type, true);
-    }
+            case UPPER_CASE_WITH_UNDERSCORE:
+                return NAC.update(targetClass).set(entity, primaryKeyNames).where(and).pair();
 
-    @SuppressWarnings("deprecation")
-    private List<Map<String, Object>> propBatchUpdatePropsList(final Class<?> targetClass, final Collection<?> entities, final Set<String> keyNameSet) {
-        final boolean isDirtyMarker = ClassUtil.isDirtyMarker(targetClass);
+            case LOWER_CAMEL_CASE:
+                return NLC.update(targetClass).set(entity, primaryKeyNames).where(and).pair();
 
-        if (isDirtyMarker) {
-            final List<Map<String, Object>> propsList = new ArrayList<>(entities.size());
-
-            for (Object entity : entities) {
-                final Map<String, Object> props = new HashMap<>();
-
-                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                    props.put(propName, ClassUtil.getPropValue(entity, propName));
-                }
-
-                for (String keyName : keyNameSet) {
-                    if (props.containsKey(keyName) == false) {
-                        props.put(keyName, ClassUtil.getPropValue(entity, keyName));
-                    }
-                }
-
-                propsList.add(props);
-            }
-
-            return propsList;
-        } else {
-            return Maps.entity2Map(entities);
+            default:
+                throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
         }
     }
 
-    public ResultSet batchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
-            final Collection<String> primaryKeyNames, final BatchStatement.Type type) {
+    public ResultSet update(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
+        N.checkArgument(N.notNullOrEmpty(props), "'props' can't be null or empty.");
 
-        return batchUpdate(targetClass, propsList, primaryKeyNames, type, false);
-    }
+        final CP cp = prepareUpdate(targetClass, props, whereCause);
 
-    private ResultSet batchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
-            final Collection<String> primaryKeyNames, final BatchStatement.Type type, boolean isFromEntity) {
-        final BatchStatement batchStatement = prepareBatchUpdateStatement(targetClass, propsList, primaryKeyNames, type, isFromEntity);
-
-        return execute(batchStatement);
-    }
-
-    private BatchStatement prepareBatchUpdateStatement(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
-            final Collection<String> primaryKeyNames, final BatchStatement.Type type, boolean isFromEntity) {
-        N.checkArgument(N.notNullOrEmpty(propsList), "'propsList' can't be null or empty.");
-
-        final BatchStatement batchStatement = new BatchStatement(type == null ? BatchStatement.Type.LOGGED : type);
-
-        if (settings != null) {
-            batchStatement.setConsistencyLevel(settings.getConsistency());
-            batchStatement.setSerialConsistencyLevel(settings.getSerialConsistency());
-            batchStatement.setRetryPolicy(settings.getRetryPolicy());
-
-            if (settings.traceQuery) {
-                batchStatement.enableTracing();
-            } else {
-                batchStatement.disableTracing();
-            }
-        }
-
-        for (Map<String, Object> props : propsList) {
-            final Map<String, Object> tmp = isFromEntity ? props : new HashMap<>(props);
-            final And and = new And();
-
-            for (String keyName : primaryKeyNames) {
-                and.add(CF.eq(keyName, tmp.remove(keyName)));
-            }
-
-            final CP cp = prepareUpdate(targetClass, tmp, and);
-            batchStatement.add(prepareStatement(cp.cql, cp.parameters.toArray()));
-        }
-
-        return batchStatement;
+        return execute(cp);
     }
 
     private CP prepareUpdate(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
@@ -874,6 +793,63 @@ public final class CassandraExecutor implements Closeable {
             default:
                 throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
         }
+    }
+
+    public ResultSet batchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
+        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
+
+        return batchUpdate(entities, getKeyNameSet(N.firstOrNullIfEmpty(entities).getClass()), type);
+    }
+
+    public ResultSet batchUpdate(final Collection<?> entities, final Set<String> primaryKeyNames, final BatchStatement.Type type) {
+        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
+
+        final BatchStatement batchStatement = prepareBatchUpdateStatement(entities, primaryKeyNames, type);
+
+        return execute(batchStatement);
+    }
+
+    private BatchStatement prepareBatchUpdateStatement(final Collection<?> entities, final Set<String> primaryKeyNames, final BatchStatement.Type type) {
+        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
+        N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty");
+
+        final BatchStatement batchStatement = prepareBatchStatement(type);
+
+        for (Object entity : entities) {
+            final CP cp = prepareUpdate(entity, primaryKeyNames);
+            batchStatement.add(prepareStatement(cp.cql, cp.parameters.toArray()));
+        }
+
+        return batchStatement;
+    }
+
+    public ResultSet batchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList, final Set<String> primaryKeyNames,
+            final BatchStatement.Type type) {
+        final BatchStatement batchStatement = prepareBatchUpdateStatement(targetClass, propsList, primaryKeyNames, type);
+
+        return execute(batchStatement);
+    }
+
+    private BatchStatement prepareBatchUpdateStatement(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
+            final Set<String> primaryKeyNames, final BatchStatement.Type type) {
+        N.checkArgument(N.notNullOrEmpty(propsList), "'propsList' can't be null or empty.");
+        N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty.");
+
+        final BatchStatement batchStatement = prepareBatchStatement(type);
+
+        for (Map<String, Object> props : propsList) {
+            final Map<String, Object> tmp = new HashMap<>(props);
+            final And and = new And();
+
+            for (String keyName : primaryKeyNames) {
+                and.add(CF.eq(keyName, tmp.remove(keyName)));
+            }
+
+            final CP cp = prepareUpdate(targetClass, tmp, and);
+            batchStatement.add(prepareStatement(cp.cql, cp.parameters.toArray()));
+        }
+
+        return batchStatement;
     }
 
     public ResultSet delete(final Object entity) {
@@ -1433,7 +1409,9 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ContinuableFuture<ResultSet> asyncInsert(final Object entity) {
-        return asyncInsert(entity.getClass(), Maps.entity2Map(entity));
+        final CP cp = prepareInsert(entity);
+
+        return asyncExecute(cp);
     }
 
     public ContinuableFuture<ResultSet> asyncInsert(final Class<?> targetClass, final Map<String, Object> props) {
@@ -1443,36 +1421,26 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public ContinuableFuture<ResultSet> asyncBatchInsert(final Collection<?> entities, final BatchStatement.Type type) {
-        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
+        final BatchStatement batchStatement = prepareBatchInsertStatement(entities, type);
 
-        return asyncBatchInsert(entities.iterator().next().getClass(), Maps.entity2Map(entities), type);
+        return asyncExecute(batchStatement);
     }
 
     public ContinuableFuture<ResultSet> asyncBatchInsert(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
             final BatchStatement.Type type) {
-        N.checkArgument(N.notNullOrEmpty(propsList), "'propsList' can't be null or empty.");
-
         final BatchStatement batchStatement = prepareBatchInsertStatement(targetClass, propsList, type);
 
         return asyncExecute(batchStatement);
     }
 
     public ContinuableFuture<ResultSet> asyncUpdate(final Object entity) {
-        final Class<?> targetClass = entity.getClass();
-        final Map<String, Object> props = prepareUpdateProps(targetClass, entity);
-
-        return asyncUpdate(targetClass, props, entity2Cond(entity));
+        return asyncUpdate(entity, getKeyNameSet(entity.getClass()));
     }
 
-    public ContinuableFuture<ResultSet> asyncUpdate(final Object entity, final Collection<String> primaryKeyNames) {
-        N.checkArgNotNullOrEmpty(primaryKeyNames, "primaryKeyNames");
+    public ContinuableFuture<ResultSet> asyncUpdate(final Object entity, final Set<String> primaryKeyNames) {
+        final CP cp = prepareUpdate(entity, primaryKeyNames);
 
-        final Class<?> targetClass = entity.getClass();
-        final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));
-        final And and = prepareUpdateCondition(targetClass, entity, primaryKeyNames, keyNameSet);
-        final Map<String, Object> props = prepareUpdateProps(targetClass, entity, keyNameSet);
-
-        return asyncUpdate(targetClass, props, and);
+        return asyncExecute(cp);
     }
 
     public ContinuableFuture<ResultSet> asyncUpdate(final Class<?> targetClass, final Map<String, Object> props, final Condition whereCause) {
@@ -1484,38 +1452,19 @@ public final class CassandraExecutor implements Closeable {
     public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final BatchStatement.Type type) {
         N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
 
-        final Class<?> targetClass = N.first(entities).get().getClass();
-        final List<String> keyNames = getKeyNames(targetClass);
-
-        return asyncBatchUpdate(entities, keyNames, type);
+        return asyncBatchUpdate(entities, getKeyNameSet(N.firstOrNullIfEmpty(entities).getClass()), type);
     }
 
-    public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final Collection<String> primaryKeyNames,
-            final BatchStatement.Type type) {
-        N.checkArgument(N.notNullOrEmpty(entities), "'entities' can't be null or empty.");
-        N.checkArgument(N.notNullOrEmpty(primaryKeyNames), "'primaryKeyNames' can't be null or empty");
+    public ContinuableFuture<ResultSet> asyncBatchUpdate(final Collection<?> entities, final Set<String> primaryKeyNames, final BatchStatement.Type type) {
+        final BatchStatement batchStatement = prepareBatchUpdateStatement(entities, primaryKeyNames, type);
 
-        final Class<?> targetClass = N.first(entities).get().getClass();
-        final Set<String> keyNameSet = new HashSet<>(N.initHashCapacity(primaryKeyNames.size()));
+        return asyncExecute(batchStatement);
 
-        for (String keyName : primaryKeyNames) {
-            keyNameSet.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, keyName)));
-        }
-
-        final List<Map<String, Object>> propsList = propBatchUpdatePropsList(targetClass, entities, keyNameSet);
-
-        return asyncBatchUpdate(targetClass, propsList, keyNameSet, type, true);
     }
 
     public ContinuableFuture<ResultSet> asyncBatchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
-            final Collection<String> primaryKeyNames, final BatchStatement.Type type) {
-
-        return asyncBatchUpdate(targetClass, propsList, primaryKeyNames, type, false);
-    }
-
-    private ContinuableFuture<ResultSet> asyncBatchUpdate(final Class<?> targetClass, final Collection<? extends Map<String, Object>> propsList,
-            final Collection<String> primaryKeyNames, final BatchStatement.Type type, boolean isFromEntity) {
-        final BatchStatement batchStatement = prepareBatchUpdateStatement(targetClass, propsList, primaryKeyNames, type, isFromEntity);
+            final Set<String> primaryKeyNames, final BatchStatement.Type type) {
+        final BatchStatement batchStatement = prepareBatchUpdateStatement(targetClass, propsList, primaryKeyNames, type);
 
         return asyncExecute(batchStatement);
     }

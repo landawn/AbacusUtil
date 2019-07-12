@@ -4804,6 +4804,45 @@ public final class N {
         return Iterators.lastNonNull(map.entrySet().iterator());
     }
 
+    public static <T> T firstOrNullIfEmpty(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return null;
+        }
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            return ((List<T>) c).get(0);
+        } else {
+            return c.iterator().next();
+        }
+    }
+
+    public static <T> T lastOrNullIfEmpty(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return null;
+        }
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                return list.get(c.size() - 1);
+            } else {
+                return list.listIterator(list.size()).previous();
+            }
+        } else if (c instanceof Deque) {
+            return ((Deque<T>) c).descendingIterator().next();
+        } else {
+            final Iterator<T> iter = c.iterator();
+            T e = null;
+
+            while (iter.hasNext()) {
+                e = iter.next();
+            }
+
+            return e;
+        }
+    }
+
     /**
      * Returns the length/size of the specified {@code Array/Collection/Map/CharSequence}, or {@code 0} if it's empty or {@code null}.
      *
