@@ -1,5 +1,7 @@
 ### 1.7.12
 
+* Refactoring: change `Mapper.update(id, props)` to `Mapper.update(props, id)`.
+
 * Improvements and bug fix.
 
 

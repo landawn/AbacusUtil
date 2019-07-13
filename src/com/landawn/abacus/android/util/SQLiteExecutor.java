@@ -621,9 +621,9 @@ public final class SQLiteExecutor {
         } else if (ClassUtil.isEntity(obj.getClass())) {
             if (obj instanceof DirtyMarker) {
                 final Class<?> srCls = obj.getClass();
-                final Set<String> updatePropNames = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
+                final Set<String> propNamesToUpdate = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
 
-                if (updatePropNames.size() == 0) {
+                if (propNamesToUpdate.size() == 0) {
                     // logger.warn("No property is signed/updated in the specified source entity: " + N.toString(entity));
                 } else {
                     Method propGetMethod = null;
@@ -631,7 +631,7 @@ public final class SQLiteExecutor {
 
                     switch (namingPolicy) {
                         case LOWER_CAMEL_CASE: {
-                            for (String propName : updatePropNames) {
+                            for (String propName : propNamesToUpdate) {
                                 propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
                                 propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
@@ -653,7 +653,7 @@ public final class SQLiteExecutor {
                         }
 
                         case LOWER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : updatePropNames) {
+                            for (String propName : propNamesToUpdate) {
                                 propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
                                 propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
@@ -675,7 +675,7 @@ public final class SQLiteExecutor {
                         }
 
                         case UPPER_CASE_WITH_UNDERSCORE: {
-                            for (String propName : updatePropNames) {
+                            for (String propName : propNamesToUpdate) {
                                 propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
                                 propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
