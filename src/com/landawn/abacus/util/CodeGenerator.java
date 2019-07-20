@@ -1005,8 +1005,13 @@ public final class CodeGenerator {
             } else if (!setMethod.getParameterTypes()[0].isAssignableFrom(getMethod.getReturnType())) {
                 sb.append(iden).append("// Incompatible parameter type for: source.").append(getMethod.getName()).append("()").append(IOUtil.LINE_SEPARATOR);
             } else {
-                sb.append(iden).append("result.").append(setMethod.getName()).append("(source.").append(getMethod.getName()).append("());").append(
-                        IOUtil.LINE_SEPARATOR);
+                sb.append(iden)
+                        .append("result.")
+                        .append(setMethod.getName())
+                        .append("(source.")
+                        .append(getMethod.getName())
+                        .append("());")
+                        .append(IOUtil.LINE_SEPARATOR);
             }
         }
 

@@ -1618,7 +1618,8 @@ public final class ClassUtil {
         Method setMethod = internalGetDeclaredMethod(clazz, SET + propName, getMethod.getReturnType());
 
         return ((setMethod != null) && (void.class.equals(setMethod.getReturnType()) || setMethod.getDeclaringClass().equals(setMethod.getReturnType())))
-                ? setMethod : null;
+                ? setMethod
+                : null;
     }
 
     private static <T> Map<String, String> getPublicStaticStringFields(final Class<T> cls) {

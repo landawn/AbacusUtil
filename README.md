@@ -211,7 +211,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [SafeInitializer](https://static.javadoc.io/com.landawn/abacus-util/1.7.12/com/landawn/abacus/util/SafeInitializer.html),
 [Stopwatch](https://static.javadoc.io/com.landawn/abacus-util/1.7.12/com/landawn/abacus/util/Stopwatch.html),
 [RateLimiter](https://static.javadoc.io/com.landawn/abacus-util/1.7.12/com/landawn/abacus/util/RateLimiter.html),
-[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.7.12/com/landawn/abacus/util/Traverser.html)(copied from Apache commons, Google Guava...under Apache License v2) ...
+[Traverser](https://static.javadoc.io/com.landawn/abacus-util/1.7.12/com/landawn/abacus/guava/Traverser.html)(copied from Apache commons, Google Guava...under Apache License v2) ...
 
 
 ## Download/Installation & [Changes](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md):
@@ -257,7 +257,8 @@ Please refer to [Wiki](https://github.com/landawn/AbacusUtil/wiki), [Introductio
 
 
 ## Recommended Java programming libraries/frameworks:
-[lombok](https://github.com/rzwitserloot/lombok), [Guava](https://github.com/google/guava), [Abacus-StreamEx](https://github.com/landawn/streamex), [Kyro](https://github.com/EsotericSoftware/kryo), [snappy-java](https://github.com/xerial/snappy-java), [lz4-java](https://github.com/lz4/lz4-java), [Caffeine](https://github.com/ben-manes/caffeine), [Ehcache](http://www.ehcache.org/), [Chronicle-Map](https://github.com/OpenHFT/Chronicle-Map), [Apache POI](https://github.com/apache/poi)/[easyexcel](https://github.com/alibaba/easyexcel), [mapstruct](https://github.com/mapstruct/mapstruct), [Sharding-JDBC](https://github.com/apache/incubator-shardingsphere), [hppc](https://github.com/carrotsearch/hppc), [fastutil](https://github.com/vigna/fastutil) ...[awesome-java](https://github.com/akullpp/awesome-java)
+[lombok](https://github.com/rzwitserloot/lombok), [Guava](https://github.com/google/guava), [Abacus-StreamEx](https://github.com/landawn/streamex), [Kyro](https://github.com/EsotericSoftware/kryo), [snappy-java](https://github.com/xerial/snappy-java), [lz4-java](https://github.com/lz4/lz4-java), [Caffeine](https://github.com/ben-manes/caffeine), [Ehcache](http://www.ehcache.org/), [Chronicle-Map](https://github.com/OpenHFT/Chronicle-Map), [echarts](https://github.com/apache/incubator-echarts), 
+[Chartjs](https://github.com/chartjs/Chart.js), [Highcharts](https://www.highcharts.com/blog/products/highcharts/), [Apache POI](https://github.com/apache/poi)/[easyexcel](https://github.com/alibaba/easyexcel), [mapstruct](https://github.com/mapstruct/mapstruct), [Sharding-JDBC](https://github.com/apache/incubator-shardingsphere), [hppc](https://github.com/carrotsearch/hppc), [fastutil](https://github.com/vigna/fastutil) ...[awesome-java](https://github.com/akullpp/awesome-java)
 
 ## Recommended Java programming tools:
 [Spotbugs](https://github.com/spotbugs/spotbugs), [JaCoCo](https://www.eclemma.org/jacoco/)...

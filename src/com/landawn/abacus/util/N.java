@@ -4046,7 +4046,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param cls
      * @return
      * @deprecated replaced by {@code ClassUtil.isEntity(Class)}
@@ -4058,7 +4058,7 @@ public final class N {
     }
 
     /**
-     * 
+     *
      * @param cls
      * @return
      * @deprecated replaced by {@code ClassUtil.isDirtyMarker(Class)}
@@ -18867,7 +18867,7 @@ public final class N {
     /**
      * Returns consecutive substring of the specified string, each of the same length (the final list may be smaller),
      * or an empty array if the specified string is null or empty.
-     * 
+     *
      * @param str
      * @param fromIndex
      * @param toIndex

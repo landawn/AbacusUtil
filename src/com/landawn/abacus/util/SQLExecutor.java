@@ -1199,7 +1199,8 @@ public class SQLExecutor implements Closeable {
 
     private void setIsolationLevel(JdbcSettings jdbcSettings, Connection localConn) throws SQLException {
         final int isolationLevel = jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT
-                ? _defaultIsolationLevel.intValue() : jdbcSettings.getIsolationLevel().intValue();
+                ? _defaultIsolationLevel.intValue()
+                : jdbcSettings.getIsolationLevel().intValue();
 
         if (isolationLevel == localConn.getTransactionIsolation()) {
             // ignore.
@@ -3923,7 +3924,8 @@ public class SQLExecutor implements Closeable {
 
         final IsolationLevel isolation = isolationLevel == IsolationLevel.DEFAULT ? _defaultIsolationLevel : isolationLevel;
         final DataSource ds = jdbcSettings != null && jdbcSettings.getQueryWithDataSource() != null
-                ? getDataSource(N.EMPTY_STRING, N.EMPTY_OBJECT_ARRAY, jdbcSettings) : _ds;
+                ? getDataSource(N.EMPTY_STRING, N.EMPTY_OBJECT_ARRAY, jdbcSettings)
+                : _ds;
 
         SQLTransaction tran = SQLTransaction.getTransaction(ds, CreatedBy.SQL_EXECUTOR);
 
@@ -4064,8 +4066,9 @@ public class SQLExecutor implements Closeable {
     protected DataSource getDataSource(final String sql, final Object[] parameters, final JdbcSettings jdbcSettings) {
         if (_dsm == null || _dss == null) {
             if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new IllegalArgumentException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
-                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
+                throw new IllegalArgumentException(
+                        "No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null ? jdbcSettings.getQueryWithDataSource()
+                                : N.toString(jdbcSettings.getQueryWithDataSources())));
             }
 
             return _ds;
@@ -4081,8 +4084,9 @@ public class SQLExecutor implements Closeable {
     protected DataSource getDataSource(final String sql, final List<?> parametersList, final JdbcSettings jdbcSettings) {
         if (_dsm == null || _dss == null) {
             if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new IllegalArgumentException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
-                        ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
+                throw new IllegalArgumentException(
+                        "No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null ? jdbcSettings.getQueryWithDataSource()
+                                : N.toString(jdbcSettings.getQueryWithDataSources())));
             }
 
             return _ds;
@@ -6448,7 +6452,9 @@ public class SQLExecutor implements Closeable {
             }
 
             final List<T> ids = entities instanceof List ? ((List<T>) entities) : N.newArrayList(entities);
-            return sqlExecutor.batchUpdate(conn, sql_delete_by_id, ids);
+            final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
+
+            return sqlExecutor.batchUpdate(conn, sql_delete_by_id, jdbcSettings, ids);
         }
 
         private SP prepareDelete(final Condition whereCause) {
@@ -6555,7 +6561,9 @@ public class SQLExecutor implements Closeable {
 
             checkId(listOfIds.get(0));
 
-            return sqlExecutor.batchUpdate(conn, sql_delete_by_id, listOfIds);
+            final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
+
+            return sqlExecutor.batchUpdate(conn, sql_delete_by_id, jdbcSettings, listOfIds);
         }
 
         private void checkId(final Object id) {

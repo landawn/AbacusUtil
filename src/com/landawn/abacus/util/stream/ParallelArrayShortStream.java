@@ -1438,7 +1438,8 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         Stream<Short> tmp = boxed;
 
         if (tmp == null) {
-            tmp = new ParallelIteratorStream<Short>(iteratorEx(), sorted, sorted ? SHORT_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor, closeHandlers);
+            tmp = new ParallelIteratorStream<Short>(iteratorEx(), sorted, sorted ? SHORT_COMPARATOR : null, maxThreadNum, splitor, asyncExecutor,
+                    closeHandlers);
             boxed = tmp;
         }
 

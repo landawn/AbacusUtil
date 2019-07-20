@@ -3715,7 +3715,8 @@ public final class JdbcUtil {
 
         @SuppressWarnings("rawtypes")
         final JdbcUtil.BiParametersSetter<? super PreparedStatement, ? super Object[]> setter = (JdbcUtil.BiParametersSetter) (stmtSetter == null
-                ? DEFAULT_STMT_SETTER : stmtSetter);
+                ? DEFAULT_STMT_SETTER
+                : stmtSetter);
         final AtomicLong result = new AtomicLong();
 
         final Try.Consumer<Object[], RuntimeException> rowParser = new Try.Consumer<Object[], RuntimeException>() {
@@ -11242,6 +11243,15 @@ public final class JdbcUtil {
         int delete(T entity) throws UnsupportedOperationException, SQLException;
 
         int delete(Condition cond) throws SQLException;
+
+        /**
+         * 
+         * @param entities
+         * @return
+         * @throws UnsupportedOperationException if no {@code id} defined in target entity class.
+         * @throws SQLException
+         */
+        int batchDelete(Collection<? extends T> entities) throws UnsupportedOperationException, SQLException;
     }
 
     @SuppressWarnings({ "rawtypes", "deprecation" })
@@ -11392,14 +11402,18 @@ public final class JdbcUtil {
 
                     if (isFakeId) {
                         call = (proxy, args) -> {
-                            final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
-                            final Collection<Object> batchParameters = (Collection<Object>) args[0];
+                            final Collection<?> entities = (Collection<Object>) args[0];
 
-                            proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(batchParameters,
+                            if (N.isNullOrEmpty(entities)) {
+                                return 0;
+                            }
+
+                            final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
+                            proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(entities,
                                     (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
 
-                            if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
-                                for (Object e : batchParameters) {
+                            if (N.first(entities).orNull() instanceof DirtyMarker) {
+                                for (Object e : entities) {
                                     ((DirtyMarker) e).markDirty(false);
                                 }
                             }
@@ -11408,26 +11422,30 @@ public final class JdbcUtil {
                         };
                     } else {
                         call = (proxy, args) -> {
-                            final Collection<Object> batchParameters = (Collection<Object>) args[0];
-                            final Object idPropValue = N.isNullOrEmpty(batchParameters) ? null
-                                    : ClassUtil.getPropValue(N.first(batchParameters).get(), idPropName);
+                            final Collection<?> entities = (Collection<Object>) args[0];
+
+                            if (N.isNullOrEmpty(entities)) {
+                                return 0;
+                            }
+
+                            final Object idPropValue = N.isNullOrEmpty(entities) ? null : ClassUtil.getPropValue(N.first(entities).get(), idPropName);
 
                             if (JdbcUtil.isDefaultIdPropValue(idPropValue)) {
                                 final NamedSQL namedSQL = NamedSQL.parse(insertWithoutId);
 
-                                final List<Object> ids = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true).batchInsert(batchParameters,
+                                final List<Object> ids = proxy.prepareQuery(namedSQL.getParameterizedSQL(), true).batchInsert(entities,
                                         (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
 
-                                if (N.notNullOrEmpty(batchParameters) && ids.size() == N.size(batchParameters)) {
+                                if (N.notNullOrEmpty(entities) && ids.size() == N.size(entities)) {
                                     int idx = 0;
 
-                                    for (Object e : batchParameters) {
+                                    for (Object e : entities) {
                                         ClassUtil.setPropValue(e, idPropName, ids.get(idx++));
                                     }
                                 }
 
-                                if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
-                                    for (Object e : batchParameters) {
+                                if (N.first(entities).orNull() instanceof DirtyMarker) {
+                                    for (Object e : entities) {
                                         ((DirtyMarker) e).markDirty(false);
                                     }
                                 }
@@ -11436,16 +11454,16 @@ public final class JdbcUtil {
                             } else {
                                 final NamedSQL namedSQL = NamedSQL.parse(insertWithId);
 
-                                proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(batchParameters,
+                                proxy.prepareQuery(namedSQL.getParameterizedSQL(), false).batchUpdate(entities,
                                         (pq, param) -> StatementSetter.DEFAULT.setParameters(namedSQL, pq.stmt, N.asArray(param)));
 
-                                if (N.first(batchParameters).orNull() instanceof DirtyMarker) {
-                                    for (Object e : batchParameters) {
+                                if (N.first(entities).orNull() instanceof DirtyMarker) {
+                                    for (Object e : entities) {
                                         ((DirtyMarker) e).markDirty(false);
                                     }
                                 }
 
-                                return StreamEx.of(batchParameters).map(e -> ClassUtil.getPropValue(e, idPropName)).toList();
+                                return StreamEx.of(entities).map(e -> ClassUtil.getPropValue(e, idPropName)).toList();
                             }
                         };
                     }
@@ -12174,7 +12192,11 @@ public final class JdbcUtil {
                         if (sbc.equals(PSC.class)) {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
+
                                 final Object entity = N.firstNonNull(entities).get();
 
                                 final String sql = NSC.update(entityClass).set(entity, idPropNameSet).where(CF.eq(idPropName)).sql();
@@ -12196,7 +12218,11 @@ public final class JdbcUtil {
                         } else if (sbc.equals(PAC.class)) {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
+
                                 final Object entity = N.firstNonNull(entities).get();
 
                                 final String sql = NAC.update(entityClass).set(entity, idPropNameSet).where(CF.eq(idPropName)).sql();
@@ -12218,7 +12244,11 @@ public final class JdbcUtil {
                         } else {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
+
                                 final Object entity = N.firstNonNull(entities).get();
 
                                 final String sql = NLC.update(entityClass).set(entity, idPropNameSet).where(CF.eq(idPropName)).sql();
@@ -12250,8 +12280,12 @@ public final class JdbcUtil {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
                                 final Collection<String> propNamesToUpdate = (Collection<String>) args[1];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
                                 N.checkArgNotNullOrEmpty(propNamesToUpdate, "propNamesToUpdate");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
 
                                 final String sql = NSC.update(entityClass).set(propNamesToUpdate).where(CF.eq(idPropName)).sql();
                                 final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -12271,8 +12305,12 @@ public final class JdbcUtil {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
                                 final Collection<String> propNamesToUpdate = (Collection<String>) args[1];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
                                 N.checkArgNotNullOrEmpty(propNamesToUpdate, "propNamesToUpdate");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
 
                                 final String sql = NAC.update(entityClass).set(propNamesToUpdate).where(CF.eq(idPropName)).sql();
                                 final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -12292,8 +12330,12 @@ public final class JdbcUtil {
                             call = (proxy, args) -> {
                                 final Collection<Object> entities = (Collection<Object>) args[0];
                                 final Collection<String> propNamesToUpdate = (Collection<String>) args[1];
-                                N.checkArgNotNullOrEmpty(entities, "entities");
+
                                 N.checkArgNotNullOrEmpty(propNamesToUpdate, "propNamesToUpdate");
+
+                                if (N.isNullOrEmpty(entities)) {
+                                    return 0;
+                                }
 
                                 final String sql = NLC.update(entityClass).set(propNamesToUpdate).where(CF.eq(idPropName)).sql();
                                 final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -12349,6 +12391,25 @@ public final class JdbcUtil {
                             final String query = sql_deleteById;
                             call = (proxy, args) -> proxy.prepareQuery(query).setObject(1, ClassUtil.getPropValue(args[0], idPropName)).update();
                         }
+                    }
+                } else if (m.getName().equals("batchDelete")) {
+                    if (isFakeId) {
+                        call = (proxy, args) -> {
+                            throw new UnsupportedOperationException(
+                                    "Unsupported operation: " + m + ". No id defined in class: " + ClassUtil.getCanonicalClassName(entityClass));
+                        };
+                    } else {
+                        final String query = sql_deleteById;
+
+                        call = (proxy, args) -> {
+                            final Collection<?> entities = (Collection<?>) args[0];
+
+                            if (N.isNullOrEmpty(entities)) {
+                                return 0;
+                            }
+
+                            return proxy.prepareQuery(query).batchUpdate(entities, (q, e) -> q.setObject(1, ClassUtil.getPropValue(e, idPropName)));
+                        };
                     }
                 } else {
                     call = (proxy, args) -> {

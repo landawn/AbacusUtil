@@ -89,7 +89,7 @@ final class LittleEndianByteArray {
     /**
      * Load 4 bytes from the provided array at the indicated offset.
      *
-     * @param input the input bytes
+     * @param source the input bytes
      * @param offset the offset into the array at which to start
      * @return the value found in the array in the form of a long
      */
@@ -110,8 +110,8 @@ final class LittleEndianByteArray {
     /**
      * Common interface for retrieving a 64-bit long from a little-endian byte array.
      *
-     * This abstraction allows us to use single-instruction load and put when available, or fall back
-     * on the slower approach of using Longs.fromBytes(byte...).
+     * <p>This abstraction allows us to use single-instruction load and put when available, or fall
+     * back on the slower approach of using Longs.fromBytes(byte...).
      */
     private interface LittleEndianBytes {
         long getLongLittleEndian(byte[] array, int offset);
@@ -202,9 +202,7 @@ final class LittleEndianByteArray {
         }
     }
 
-    /**
-     * Fallback implementation for when Unsafe is not available in our current environment.
-     */
+    /** Fallback implementation for when Unsafe is not available in our current environment. */
     private enum JavaLittleEndianBytes implements LittleEndianBytes {
         INSTANCE {
             @Override
@@ -228,19 +226,20 @@ final class LittleEndianByteArray {
         try {
             /*
               UnsafeByteArray uses Unsafe.getLong() in an unsupported way, which is known to cause crashes
-              on 32-bit Android (ARMv7 with ART). Ideally, we shouldn't use Unsafe.getLong() at all, but
-              the performance benefit on x86_64 is too great to ignore, so as a compromise, we enable the
-              optimization only on platforms that we specifically know to work.
+              on Android when running in 32-bit mode. For maximum safety, we shouldn't use
+              Unsafe.getLong() at all, but the performance benefit on x86_64 is too great to ignore, so as
+              a compromise, we enable the optimization only on platforms that we specifically know to
+              work.
             
               In the future, the use of Unsafe.getLong() should be replaced by ByteBuffer.getLong(), which
               will have an efficient native implementation in JDK 9.
             
             */
             final String arch = System.getProperty("os.arch");
-            if ("amd64".equals(arch) || "aarch64".equals(arch)) {
+            if ("amd64".equals(arch)) {
                 theGetter = ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN) ? UnsafeByteArray.UNSAFE_LITTLE_ENDIAN : UnsafeByteArray.UNSAFE_BIG_ENDIAN;
             }
-        } catch (Exception t) {
+        } catch (Throwable t) {
             // ensure we really catch *everything*
         }
         byteArray = theGetter;

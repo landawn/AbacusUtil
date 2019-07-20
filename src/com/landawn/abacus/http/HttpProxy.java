@@ -294,7 +294,8 @@ public final class HttpProxy {
                     sharedActiveConnectionCounter);
 
             private final AsyncExecutor _asyncExecutor = _config.executedByThreadPool
-                    ? (_config.asyncExecutor == null ? new AsyncExecutor() : _config.asyncExecutor) : null;
+                    ? (_config.asyncExecutor == null ? new AsyncExecutor() : _config.asyncExecutor)
+                    : null;
 
             @Override
             public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
@@ -589,7 +590,8 @@ public final class HttpProxy {
                             Object newParameter = parameter;
 
                             if (type.isEntity()) {
-                                newParameter = Maps.entity2Map(parameter, !ClassUtil.isDirtyMarker(parameter.getClass()), null, _config.requestParamNamingPolicy);
+                                newParameter = Maps.entity2Map(parameter, !ClassUtil.isDirtyMarker(parameter.getClass()), null,
+                                        _config.requestParamNamingPolicy);
                             } else if (type.isMap()) {
                                 final Map<String, Object> m = ((Map<String, Object>) parameter);
                                 final Map<String, Object> newMap = new LinkedHashMap<>();

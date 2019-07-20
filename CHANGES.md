@@ -1,3 +1,10 @@
+### 1.7.13
+
+* Add `OffHeapCache`.
+
+* Improvements and bug fix.
+
+
 ### 1.7.12
 
 * Refactoring: change `Mapper.update(id, props)` to `Mapper.update(props, id)`.

@@ -1332,8 +1332,8 @@ public final class DynamoDBExecutor implements Closeable {
          * @return
          */
         public static Map<String, Condition> bt(String attrName, Object minAttrValue, Object maxAttrValue) {
-            return N.asMap(attrName, new Condition().withComparisonOperator(ComparisonOperator.BETWEEN).withAttributeValueList(attrValueOf(minAttrValue),
-                    attrValueOf(maxAttrValue)));
+            return N.asMap(attrName, new Condition().withComparisonOperator(ComparisonOperator.BETWEEN)
+                    .withAttributeValueList(attrValueOf(minAttrValue), attrValueOf(maxAttrValue)));
         }
 
         public static Map<String, Condition> isNull(String attrName) {

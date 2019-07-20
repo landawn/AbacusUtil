@@ -356,7 +356,8 @@ public final class HBaseExecutor implements Closeable {
                         }
 
                         columnMapMap.put(qualifier, columnMap);
-                    } else if (columnPropInfo.jsonXmlType.isCollection() && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.isCollection()
+                            && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                         addMethod = ClassUtil.getDeclaredMethod(propEntityClass, getAddMethodName(columnPropInfo.setMethod), HBaseColumn.class);
                         columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                         columnValueTypeMap.put(qualifier, columnValueType);
@@ -575,7 +576,8 @@ public final class HBaseExecutor implements Closeable {
                             anyPut.addColumn(familyName, columnName, e.version(), e.value());
 
                         }
-                    } else if (columnPropInfo.jsonXmlType.isCollection() && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.jsonXmlType.isCollection()
+                            && columnPropInfo.jsonXmlType.getParameterTypes()[0].clazz().equals(HBaseColumn.class)) {
                         columnColl = (Collection<HBaseColumn<?>>) propValue;
 
                         for (HBaseColumn<?> e : columnColl) {

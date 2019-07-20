@@ -391,7 +391,8 @@ public final class SQLiteExecutor {
 
         if (targetClass.isAssignableFrom(Map.class)) {
             final Map<String, Object> map = (Map<String, Object>) ((Modifier.isAbstract(targetClass.getModifiers())
-                    ? new HashMap<>(N.initHashCapacity(contentValues.size())) : N.newInstance(targetClass)));
+                    ? new HashMap<>(N.initHashCapacity(contentValues.size()))
+                    : N.newInstance(targetClass)));
 
             Object propValue = null;
 

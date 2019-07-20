@@ -3676,8 +3676,7 @@ public abstract class Stream<T>
      * @return
      * @throws UncheckedSQLException 
      */
-    public static <T> Stream<T> rows(final ResultSet resultSet, final JdbcUtil.BiRowMapper<T> rowMapper)
-            throws UncheckedSQLException {
+    public static <T> Stream<T> rows(final ResultSet resultSet, final JdbcUtil.BiRowMapper<T> rowMapper) throws UncheckedSQLException {
         return ExceptionalStream.rows(resultSet, rowMapper).unchecked();
     }
 
@@ -9260,8 +9259,8 @@ public abstract class Stream<T>
             final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             final Iterator<? extends T> a = iter.next();
             final Iterator<? extends T> b = iter.next();
-            return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iteratorEx(), b instanceof QueuedIterator ? b : Stream.of(b).queued().iteratorEx(),
-                    nextSelector);
+            return merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iteratorEx(),
+                    b instanceof QueuedIterator ? b : Stream.of(b).queued().iteratorEx(), nextSelector);
         } else if (c.size() == 3) {
             final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             final Iterator<? extends T> iterA = iter.next();

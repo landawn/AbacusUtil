@@ -1265,7 +1265,6 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
         return new ByteList(N.copyOfRange(elementData, from, to, step));
     }
 
-
     /**
      * Returns List of {@code ByteList} with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      *  

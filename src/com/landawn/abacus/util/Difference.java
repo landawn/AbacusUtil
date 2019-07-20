@@ -500,6 +500,7 @@ public class Difference<L, R> {
          * @param map2
          * @return
          */
+        @SuppressWarnings("unlikely-arg-type")
         public static <K1, V1, K2, V2, L extends Map<K1, V1>, R extends Map<K2, V2>, D extends Map<?, Pair<V1, V2>>> MapDifference<L, R, D> of(
                 final Map<? extends K1, ? extends V1> map1, final Map<? extends K2, ? extends V2> map2) {
             final L common = (L) new LinkedHashMap<>();
