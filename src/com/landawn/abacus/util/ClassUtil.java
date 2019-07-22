@@ -442,7 +442,7 @@ public final class ClassUtil {
     }
 
     /**
-     * The property maybe only has get method if its type is collection or map by xml binding specificatio
+     * The property maybe only has get method if its type is collection or map by xml binding specification
      * Otherwise, it will be ignored if not registered by calling this method.
      *
      * @param cls
@@ -1386,7 +1386,7 @@ public final class ClassUtil {
     /**
      * Call registerXMLBindingClassForPropGetSetMethod first to retrieve the property
      * getter/setter method for the class/bean generated/wrote by JAXB
-     * specificatio
+     * specification
      *
      * @param cls
      * @return
@@ -1584,8 +1584,9 @@ public final class ClassUtil {
 
     private static boolean isGetMethod(final Method method) {
         String mn = method.getName();
-        return (mn.startsWith(GET) || mn.startsWith(IS) || mn.startsWith(HAS)) && (N.isNullOrEmpty(method.getParameterTypes()))
-                && !void.class.equals(method.getReturnType()) && !nonGetMethodName.contains(mn);
+
+        return (mn.startsWith(GET) || mn.startsWith(IS) || mn.startsWith(HAS) || getDeclaredField(method.getDeclaringClass(), mn) != null)
+                && (N.isNullOrEmpty(method.getParameterTypes())) && !void.class.equals(method.getReturnType()) && !nonGetMethodName.contains(mn);
     }
 
     static boolean isFieldGetMethod(final Method method, final Field field) {
@@ -1600,7 +1601,8 @@ public final class ClassUtil {
         String fieldName = field.getName();
         String methodName = method.getName();
 
-        return (methodName.startsWith(IS) && (methodName.equalsIgnoreCase(fieldName) || methodName.substring(2).equalsIgnoreCase(fieldName)))
+        return (methodName.equalsIgnoreCase(fieldName))
+                || (methodName.startsWith(IS) && (methodName.equalsIgnoreCase(fieldName) || methodName.substring(2).equalsIgnoreCase(fieldName)))
                 || (methodName.startsWith(HAS) && (methodName.equalsIgnoreCase(fieldName) || methodName.substring(3).equalsIgnoreCase(fieldName)))
                 || (methodName.startsWith(GET) && methodName.substring(3).equalsIgnoreCase(fieldName));
     }
@@ -1615,7 +1617,8 @@ public final class ClassUtil {
     }
 
     private static Method getSetMethod(final Class<?> clazz, final String propName, final Method getMethod) {
-        Method setMethod = internalGetDeclaredMethod(clazz, SET + propName, getMethod.getReturnType());
+        Method setMethod = internalGetDeclaredMethod(clazz, propName.equalsIgnoreCase(getMethod.getName()) ? propName : SET + propName,
+                getMethod.getReturnType());
 
         return ((setMethod != null) && (void.class.equals(setMethod.getReturnType()) || setMethod.getDeclaringClass().equals(setMethod.getReturnType())))
                 ? setMethod
@@ -1649,7 +1652,7 @@ public final class ClassUtil {
      *
      * Call registerXMLBindingClassForPropGetSetMethod first to retrieve the property
      * getter/setter method for the class/bean generated/wrote by JAXB
-     * specificatio
+     * specification
      *
      * @param cls
      * @param propName
@@ -2073,11 +2076,31 @@ public final class ClassUtil {
 
         if (propName == null) {
             String methodName = getSetMethod.getName();
-            propName = formalizePropName(methodName.startsWith(IS) ? methodName.substring(2) : methodName.substring(3));
+
+            if (getDeclaredField(getSetMethod.getDeclaringClass(), methodName) != null) {
+                propName = methodName;
+            } else if (methodName.startsWith(IS)) {
+                propName = formalizePropName(methodName.substring(2));
+            } else if (methodName.startsWith(GET) || methodName.startsWith(SET) || methodName.startsWith(HAS)) {
+                propName = formalizePropName(methodName.substring(3));
+            } else {
+                propName = methodName;
+            }
+
             methodPropNamePool.put(getSetMethod, propName);
         }
 
         return propName;
+    }
+
+    private static Field getDeclaredField(final Class<?> cls, final String fieldName) {
+        try {
+            return cls.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException | SecurityException e) {
+            // ignore
+        }
+
+        return null;
     }
 
     /**

@@ -41,6 +41,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -331,7 +332,7 @@ public final class MongoCollectionMapper<T> {
         return collExecutor.replaceOne(filter, replacement);
     }
 
-    public UpdateResult replaceOne(final Bson filter, final T replacement, final UpdateOptions options) {
+    public UpdateResult replaceOne(final Bson filter, final T replacement, final ReplaceOptions options) {
         return collExecutor.replaceOne(filter, replacement, options);
     }
 

@@ -1,6 +1,12 @@
-### 1.7.13
+### 1.8.0
+
+* Move `...util.Traverser` to `...guava.Traverser`.
+
+* Support `Apache DBCP2`.
 
 * Add `OffHeapCache`.
+
+* Upgrade `HBaseExecutor/MongoCollectionExecutor/CouchbaseExecutor`.
 
 * Improvements and bug fix.
 

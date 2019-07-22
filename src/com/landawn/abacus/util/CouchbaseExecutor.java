@@ -36,9 +36,9 @@ import com.couchbase.client.java.document.Document;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
-import com.couchbase.client.java.query.Query;
-import com.couchbase.client.java.query.QueryResult;
-import com.couchbase.client.java.query.QueryRow;
+import com.couchbase.client.java.query.N1qlQuery;
+import com.couchbase.client.java.query.N1qlQueryResult;
+import com.couchbase.client.java.query.N1qlQueryRow;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
@@ -113,8 +113,8 @@ public final class CouchbaseExecutor implements Closeable {
 
     private static final Map<String, String> bucketIdNamePool = new ConcurrentHashMap<>();
 
-    private final KeyedObjectPool<String, PoolableWrapper<Query>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
-    // private final KeyedObjectPool<String, Wrapper<QueryPlan>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
+    private final KeyedObjectPool<String, PoolableWrapper<N1qlQuery>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
+    // private final KeyedObjectPool<String, Wrapper<N1qlQueryPlan>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
 
     private final Cluster cluster;
     private final Bucket bucket;
@@ -171,7 +171,7 @@ public final class CouchbaseExecutor implements Closeable {
         classIdSetMethodPool.put(cls, setMethod);
     }
 
-    public static DataSet extractData(final QueryResult resultSet) {
+    public static DataSet extractData(final N1qlQueryResult resultSet) {
         return extractData(Map.class, resultSet);
     }
 
@@ -181,11 +181,11 @@ public final class CouchbaseExecutor implements Closeable {
      * @param resultSet
      * @return
      */
-    public static DataSet extractData(final Class<?> targetClass, final QueryResult resultSet) {
+    public static DataSet extractData(final Class<?> targetClass, final N1qlQueryResult resultSet) {
         checkResultError(resultSet);
         checkTargetClass(targetClass);
 
-        final List<QueryRow> allRows = resultSet.allRows();
+        final List<N1qlQueryRow> allRows = resultSet.allRows();
 
         if (N.isNullOrEmpty(allRows)) {
             return N.newEmptyDataSet();
@@ -193,7 +193,7 @@ public final class CouchbaseExecutor implements Closeable {
 
         final Set<String> columnNames = new LinkedHashSet<>();
 
-        for (QueryRow row : allRows) {
+        for (N1qlQueryRow row : allRows) {
             columnNames.addAll(row.value().getNames());
         }
 
@@ -211,7 +211,7 @@ public final class CouchbaseExecutor implements Closeable {
             JsonObject value = null;
             Object propValue = null;
 
-            for (QueryRow row : allRows) {
+            for (N1qlQueryRow row : allRows) {
                 value = row.value();
 
                 for (int i = 0; i < columnCount; i++) {
@@ -231,7 +231,7 @@ public final class CouchbaseExecutor implements Closeable {
         } else {
             final List<Object> rowList = new ArrayList<>(rowCount);
 
-            for (QueryRow row : allRows) {
+            for (N1qlQueryRow row : allRows) {
                 rowList.add(toEntity(targetClass, row.value()));
             }
 
@@ -245,11 +245,11 @@ public final class CouchbaseExecutor implements Closeable {
      * @param resultSet
      * @return
      */
-    public static <T> List<T> toList(Class<T> targetClass, QueryResult resultSet) {
+    public static <T> List<T> toList(Class<T> targetClass, N1qlQueryResult resultSet) {
         checkResultError(resultSet);
 
         final Type<T> type = N.typeOf(targetClass);
-        final List<QueryRow> rowList = resultSet.allRows();
+        final List<N1qlQueryRow> rowList = resultSet.allRows();
 
         if (N.isNullOrEmpty(rowList)) {
             return new ArrayList<>();
@@ -258,11 +258,11 @@ public final class CouchbaseExecutor implements Closeable {
         final List<Object> resultList = new ArrayList<>(rowList.size());
 
         if (targetClass.isAssignableFrom(JsonObject.class)) {
-            for (QueryRow row : rowList) {
+            for (N1qlQueryRow row : rowList) {
                 resultList.add(row.value());
             }
         } else if (type.isEntity() || type.isMap()) {
-            for (QueryRow row : rowList) {
+            for (N1qlQueryRow row : rowList) {
                 resultList.add(toEntity(targetClass, row));
             }
         } else {
@@ -272,11 +272,11 @@ public final class CouchbaseExecutor implements Closeable {
                 final String propName = Iterables.findFirst(first.getNames(), Fn.notEqual(_ID)).orElse(_ID);
 
                 if (first.get(propName) != null && targetClass.isAssignableFrom(first.get(propName).getClass())) {
-                    for (QueryRow row : rowList) {
+                    for (N1qlQueryRow row : rowList) {
                         resultList.add(row.value().get(propName));
                     }
                 } else {
-                    for (QueryRow row : rowList) {
+                    for (N1qlQueryRow row : rowList) {
                         resultList.add(N.convert(row.value().get(propName), targetClass));
                     }
                 }
@@ -295,7 +295,7 @@ public final class CouchbaseExecutor implements Closeable {
      * @param row
      * @return
      */
-    public static <T> T toEntity(final Class<T> targetClass, final QueryRow row) {
+    public static <T> T toEntity(final Class<T> targetClass, final N1qlQueryRow row) {
         return toEntity(targetClass, row.value());
     }
 
@@ -746,8 +746,8 @@ public final class CouchbaseExecutor implements Closeable {
 
     @SafeVarargs
     public final <T> Optional<T> findFirst(final Class<T> targetClass, final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
-        final Iterator<QueryRow> it = resultSet.rows();
+        final N1qlQueryResult resultSet = execute(query, parameters);
+        final Iterator<N1qlQueryRow> it = resultSet.rows();
         final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
 
         if (jsonObject == null || jsonObject.size() == 0) {
@@ -766,7 +766,7 @@ public final class CouchbaseExecutor implements Closeable {
      */
     @SafeVarargs
     public final <T> List<T> list(final Class<T> targetClass, final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
+        final N1qlQueryResult resultSet = execute(query, parameters);
 
         return toList(targetClass, resultSet);
     }
@@ -780,7 +780,7 @@ public final class CouchbaseExecutor implements Closeable {
      */
     @SafeVarargs
     public final boolean exists(final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
+        final N1qlQueryResult resultSet = execute(query, parameters);
 
         return resultSet.iterator().hasNext();
     }
@@ -866,8 +866,8 @@ public final class CouchbaseExecutor implements Closeable {
 
     @SafeVarargs
     public final <V> Nullable<V> queryForSingleResult(final Class<V> targetClass, final String query, final Object... parameters) {
-        final QueryResult resultSet = execute(query, parameters);
-        final Iterator<QueryRow> it = resultSet.rows();
+        final N1qlQueryResult resultSet = execute(query, parameters);
+        final Iterator<N1qlQueryRow> it = resultSet.rows();
         final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
 
         if (jsonObject == null || jsonObject.size() == 0) {
@@ -887,27 +887,27 @@ public final class CouchbaseExecutor implements Closeable {
         return extractData(targetClass, execute(query, parameters));
     }
 
-    public DataSet query(final Query query) {
+    public DataSet query(final N1qlQuery query) {
         return extractData(execute(query));
     }
 
-    public DataSet query(final Class<?> targetClass, final Query query) {
+    public DataSet query(final Class<?> targetClass, final N1qlQuery query) {
         return extractData(targetClass, execute(query));
     }
 
-    public DataSet query(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public DataSet query(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return extractData(execute(query, timeout, timeUnit));
     }
 
-    public DataSet query(final Class<?> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
+    public DataSet query(final Class<?> targetClass, final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return extractData(targetClass, execute(query, timeout, timeUnit));
     }
 
     @SafeVarargs
     public final Stream<JsonObject> stream(final String query, final Object... parameters) {
-        return Stream.of(execute(query, parameters).rows()).map(new Function<QueryRow, JsonObject>() {
+        return Stream.of(execute(query, parameters).rows()).map(new Function<N1qlQueryRow, JsonObject>() {
             @Override
-            public JsonObject apply(QueryRow t) {
+            public JsonObject apply(N1qlQueryRow t) {
                 return t.value();
             }
         });
@@ -915,45 +915,45 @@ public final class CouchbaseExecutor implements Closeable {
 
     @SafeVarargs
     public final <T> Stream<T> stream(final Class<T> targetClass, final String query, final Object... parameters) {
-        return Stream.of(execute(query, parameters).rows()).map(new Function<QueryRow, T>() {
+        return Stream.of(execute(query, parameters).rows()).map(new Function<N1qlQueryRow, T>() {
             @Override
-            public T apply(QueryRow t) {
+            public T apply(N1qlQueryRow t) {
                 return toEntity(targetClass, t.value());
             }
         });
     }
 
-    public Stream<JsonObject> stream(final Query query) {
-        return Stream.of(execute(query).rows()).map(new Function<QueryRow, JsonObject>() {
+    public Stream<JsonObject> stream(final N1qlQuery query) {
+        return Stream.of(execute(query).rows()).map(new Function<N1qlQueryRow, JsonObject>() {
             @Override
-            public JsonObject apply(QueryRow t) {
+            public JsonObject apply(N1qlQueryRow t) {
                 return t.value();
             }
         });
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final Query query) {
-        return Stream.of(execute(query).rows()).map(new Function<QueryRow, T>() {
+    public <T> Stream<T> stream(final Class<T> targetClass, final N1qlQuery query) {
+        return Stream.of(execute(query).rows()).map(new Function<N1qlQueryRow, T>() {
             @Override
-            public T apply(QueryRow t) {
+            public T apply(N1qlQueryRow t) {
                 return toEntity(targetClass, t.value());
             }
         });
     }
 
-    public Stream<JsonObject> stream(final Query query, final long timeout, final TimeUnit timeUnit) {
-        return Stream.of(execute(query, timeout, timeUnit).rows()).map(new Function<QueryRow, JsonObject>() {
+    public Stream<JsonObject> stream(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
+        return Stream.of(execute(query, timeout, timeUnit).rows()).map(new Function<N1qlQueryRow, JsonObject>() {
             @Override
-            public JsonObject apply(QueryRow t) {
+            public JsonObject apply(N1qlQueryRow t) {
                 return t.value();
             }
         });
     }
 
-    public <T> Stream<T> stream(final Class<T> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
-        return Stream.of(execute(query, timeout, timeUnit).rows()).map(new Function<QueryRow, T>() {
+    public <T> Stream<T> stream(final Class<T> targetClass, final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
+        return Stream.of(execute(query, timeout, timeUnit).rows()).map(new Function<N1qlQueryRow, T>() {
             @Override
-            public T apply(QueryRow t) {
+            public T apply(N1qlQueryRow t) {
                 return toEntity(targetClass, t.value());
             }
         });
@@ -1124,25 +1124,25 @@ public final class CouchbaseExecutor implements Closeable {
         return (T) toEntityForUpdate(document.getClass(), bucket.remove(toDocument(document), timeout, timeUnit));
     }
 
-    public QueryResult execute(final String query) {
-        return execute(prepareQuery(query));
+    public N1qlQueryResult execute(final String query) {
+        return execute(prepareN1qlQuery(query));
     }
 
     @SafeVarargs
-    public final QueryResult execute(final String query, final Object... parameters) {
-        return execute(prepareQuery(query, parameters));
+    public final N1qlQueryResult execute(final String query, final Object... parameters) {
+        return execute(prepareN1qlQuery(query, parameters));
     }
 
-    public QueryResult execute(final Query query) {
-        final QueryResult resultSet = bucket.query(query);
+    public N1qlQueryResult execute(final N1qlQuery query) {
+        final N1qlQueryResult resultSet = bucket.query(query);
 
         checkResultError(resultSet);
 
         return resultSet;
     }
 
-    public QueryResult execute(final Query query, final long timeout, final TimeUnit timeUnit) {
-        final QueryResult resultSet = bucket.query(query, timeout, timeUnit);
+    public N1qlQueryResult execute(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
+        final N1qlQueryResult resultSet = bucket.query(query, timeout, timeUnit);
 
         checkResultError(resultSet);
 
@@ -1416,7 +1416,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<DataSet> asyncQuery(final Query query) {
+    public ContinuableFuture<DataSet> asyncQuery(final N1qlQuery query) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1425,7 +1425,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query) {
+    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final N1qlQuery query) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1434,7 +1434,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<DataSet> asyncQuery(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<DataSet> asyncQuery(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1444,7 +1444,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     }
 
-    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<DataSet> asyncQuery(final Class<?> targetClass, final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
             public DataSet call() throws Exception {
@@ -1473,7 +1473,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<Stream<JsonObject>> asyncStream(final Query query) {
+    public ContinuableFuture<Stream<JsonObject>> asyncStream(final N1qlQuery query) {
         return asyncExecutor.execute(new Callable<Stream<JsonObject>>() {
             @Override
             public Stream<JsonObject> call() throws Exception {
@@ -1482,7 +1482,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final N1qlQuery query) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1491,7 +1491,7 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<Stream<JsonObject>> asyncStream(final Query query, final long timeout, final TimeUnit timeUnit) {
+    public ContinuableFuture<Stream<JsonObject>> asyncStream(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Stream<JsonObject>>() {
             @Override
             public Stream<JsonObject> call() throws Exception {
@@ -1501,7 +1501,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     }
 
-    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final Query query, final long timeout, final TimeUnit timeUnit) {
+    public <T> ContinuableFuture<Stream<T>> asyncStream(final Class<T> targetClass, final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -1618,38 +1618,38 @@ public final class CouchbaseExecutor implements Closeable {
         });
     }
 
-    public ContinuableFuture<QueryResult> asyncExecute(final String query) {
-        return asyncExecutor.execute(new Callable<QueryResult>() {
+    public ContinuableFuture<N1qlQueryResult> asyncExecute(final String query) {
+        return asyncExecutor.execute(new Callable<N1qlQueryResult>() {
             @Override
-            public QueryResult call() throws Exception {
+            public N1qlQueryResult call() throws Exception {
                 return execute(query);
             }
         });
     }
 
     @SafeVarargs
-    public final ContinuableFuture<QueryResult> asyncExecute(final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<QueryResult>() {
+    public final ContinuableFuture<N1qlQueryResult> asyncExecute(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<N1qlQueryResult>() {
             @Override
-            public QueryResult call() throws Exception {
+            public N1qlQueryResult call() throws Exception {
                 return execute(query, parameters);
             }
         });
     }
 
-    public ContinuableFuture<QueryResult> asyncExecute(final Query query) {
-        return asyncExecutor.execute(new Callable<QueryResult>() {
+    public ContinuableFuture<N1qlQueryResult> asyncExecute(final N1qlQuery query) {
+        return asyncExecutor.execute(new Callable<N1qlQueryResult>() {
             @Override
-            public QueryResult call() throws Exception {
+            public N1qlQueryResult call() throws Exception {
                 return execute(query);
             }
         });
     }
 
-    public ContinuableFuture<QueryResult> asyncExecute(final Query query, final long timeout, final TimeUnit timeUnit) {
-        return asyncExecutor.execute(new Callable<QueryResult>() {
+    public ContinuableFuture<N1qlQueryResult> asyncExecute(final N1qlQuery query, final long timeout, final TimeUnit timeUnit) {
+        return asyncExecutor.execute(new Callable<N1qlQueryResult>() {
             @Override
-            public QueryResult call() throws Exception {
+            public N1qlQueryResult call() throws Exception {
                 return execute(query, timeout, timeUnit);
             }
         });
@@ -1662,17 +1662,17 @@ public final class CouchbaseExecutor implements Closeable {
         }
     }
 
-    private static void checkResultError(QueryResult resultSet) {
+    private static void checkResultError(N1qlQueryResult resultSet) {
         if (N.notNullOrEmpty(resultSet.errors())) {
             throw new AbacusException("Errors in query result: " + resultSet.errors());
         }
     }
 
-    private Query prepareQuery(final String query) {
-        Query result = null;
+    private N1qlQuery prepareN1qlQuery(final String query) {
+        N1qlQuery result = null;
 
         if (query.length() <= POOLABLE_LENGTH) {
-            PoolableWrapper<Query> wrapper = stmtPool.get(query);
+            PoolableWrapper<N1qlQuery> wrapper = stmtPool.get(query);
 
             if (wrapper != null) {
                 result = wrapper.value();
@@ -1680,7 +1680,7 @@ public final class CouchbaseExecutor implements Closeable {
         }
 
         if (result == null) {
-            result = Query.simple(query);
+            result = N1qlQuery.simple(query);
 
             if (query.length() <= POOLABLE_LENGTH) {
                 stmtPool.put(query, PoolableWrapper.of(result));
@@ -1690,9 +1690,9 @@ public final class CouchbaseExecutor implements Closeable {
         return result;
     }
 
-    private Query prepareQuery(String query, Object... parameters) {
+    private N1qlQuery prepareN1qlQuery(String query, Object... parameters) {
         if (N.isNullOrEmpty(parameters)) {
-            return prepareQuery(query);
+            return prepareN1qlQuery(query);
         }
 
         final NamedSQL namedSQL = getNamedSQL(query);
@@ -1702,10 +1702,10 @@ public final class CouchbaseExecutor implements Closeable {
 
         // Prepared query plan doens't work in Couchbase 4.0 Beta version?
 
-        //        QueryPlan queryPlan = null;
+        //        N1qlQueryPlan queryPlan = null;
         //
         //        if (query.length() <= POOLABLE_LENGTH) {
-        //            Wrapper<QueryPlan> wrapper = preStmtPool.get(query);
+        //            Wrapper<N1qlQueryPlan> wrapper = preStmtPool.get(query);
         //            if (wrapper != null && wrapper.get() != null) {
         //                queryPlan = wrapper.get();
         //            }
@@ -1721,16 +1721,16 @@ public final class CouchbaseExecutor implements Closeable {
         //
 
         if (parameterCount == 0) {
-            return Query.simple(query);
+            return N1qlQuery.simple(query);
         } else if (N.isNullOrEmpty(parameters)) {
             throw new IllegalArgumentException("Null or empty parameters for parameterized query: " + query);
         }
 
         //        if (parameters.length == 1) {
         //            if (parameters[0] instanceof JsonArray) {
-        //                return Query.parametrized(sql, (JsonArray) parameters[0]);
+        //                return N1qlQuery.parametrized(sql, (JsonArray) parameters[0]);
         //            } else if (parameters[0] instanceof JsonObject) {
-        //                return Query.parametrized(sql, (JsonObject) parameters[0]);
+        //                return N1qlQuery.parametrized(sql, (JsonObject) parameters[0]);
         //            }
         //        }
 
@@ -1793,11 +1793,11 @@ public final class CouchbaseExecutor implements Closeable {
         }
 
         if (values.length == 1 && values[0] instanceof JsonArray) {
-            return Query.parametrized(sql, (JsonArray) values[0]);
+            return N1qlQuery.parameterized(sql, (JsonArray) values[0]);
         } else if (values.length > parameterCount) {
-            return Query.parametrized(sql, JsonArray.from(N.copyOfRange(values, 0, parameterCount)));
+            return N1qlQuery.parameterized(sql, JsonArray.from(N.copyOfRange(values, 0, parameterCount)));
         } else {
-            return Query.parametrized(sql, JsonArray.from(values));
+            return N1qlQuery.parameterized(sql, JsonArray.from(values));
         }
     }
 

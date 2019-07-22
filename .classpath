@@ -3,56 +3,20 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="src" path="schema"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/abacus-util-1.7.13.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/abacus-util-1.7.12-sources.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-api-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-core-2.3.jar"/>
-	<classpathentry kind="lib" path="lib/json-20141113.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-core-1.10.6.jar"/>
-	<classpathentry kind="lib" path="lib/spymemcached-2.12.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/abacus-util-1.8.0.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/abacus-util-1.7.12-sources.jar"/>
 	<classpathentry kind="lib" path="lib/android.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.7.13.jar"/>
 	<classpathentry kind="lib" path="lib/android-support-v4.jar"/>
 	<classpathentry kind="lib" path="lib/android-support-v7-appcompat.jar"/>
-	<classpathentry kind="lib" path="lib/cassandra-driver-core-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/reflectasm-1.11.4-all.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.37-bin.jar"/>
-	<classpathentry kind="lib" path="lib/stream-1.1.7.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-dynamodb-1.10.6.jar"/>
-	<classpathentry kind="lib" path="lib/hbase-annotations-1.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/hbase-client-1.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/hbase-common-1.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/hbase-protocol-1.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/protobuf-java-2.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/cassandra-driver-extras-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/cassandra-driver-mapping-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/guava-16.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
-	<classpathentry kind="lib" path="lib/mongo-java-driver-3.5.0.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/mongo-java-driver-3.5.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/couchbase-core-io-1.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/couchbase-java-client-2.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/neo4j-ogm-api-2.0.0-M03.jar"/>
-	<classpathentry kind="lib" path="lib/neo4j-ogm-bolt-driver-2.0.0-M03.jar"/>
-	<classpathentry kind="lib" path="lib/neo4j-ogm-compiler-2.0.0-M03.jar"/>
-	<classpathentry kind="lib" path="lib/neo4j-ogm-core-2.0.0-M03.jar"/>
-	<classpathentry kind="lib" path="lib/neo4j-ogm-http-driver-2.0.0-M03.jar"/>
-	<classpathentry kind="lib" path="lib/javaee-api-7.0.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/javaee-api-7.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.3.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/jackson-annotations-2.6.3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/okhttp-3.13.1.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/okhttp-3.2.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/okhttp-urlconnection-3.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/okio-2.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/caffeine-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/ehcache-3.0.0.m1.jar"/>
-	<classpathentry kind="lib" path="lib/jedis-2.7.3.jar"/>
-	<classpathentry kind="lib" path="lib/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/HikariCP-2.7.8.jar"/>
-	<classpathentry kind="lib" path="lib/commons-dbcp-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/spring-jdbc-5.1.2.RELEASE.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/spring-jdbc-5.1.2.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="lib/spring-tx-5.1.2.RELEASE.jar" sourcepath="C:/Users/haiyangl/AppData/Local/Temp/decompiler/source/spring-tx-5.1.2.RELEASE-sources.jar"/>
-	<classpathentry kind="lib" path="lib/spring-core-5.1.2.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/lombok.jar"/>
-	<classpathentry kind="lib" path="lib/h2-1.4.199.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

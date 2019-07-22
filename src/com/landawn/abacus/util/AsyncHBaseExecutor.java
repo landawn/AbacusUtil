@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +27,15 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.RowMutations;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.coprocessor.Batch;
-import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.ipc.CoprocessorRpcChannel;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.Service;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -70,6 +70,29 @@ public final class AsyncHBaseExecutor {
         });
     }
 
+    public ContinuableFuture<List<Boolean>> exists(final String tableName, final List<Get> gets) {
+        return asyncExecutor.execute(new Callable<List<Boolean>>() {
+            @Override
+            public List<Boolean> call() throws Exception {
+                return hbaseExecutor.exists(tableName, gets);
+            }
+        });
+    }
+
+    /**
+     * Test for the existence of columns in the table, as specified by the Gets.
+     * This will return an array of booleans. Each value will be true if the related Get matches
+     * one or more keys, false if not.
+     * This is a server-side call so it prevents any data from being transferred to
+     * the client.
+     *
+     * @param gets the Gets
+     * @return Array of boolean.  True if the specified Get matches one or more keys, false if not.
+     * @throws IOException e
+     * @deprecated since 2.0 version and will be removed in 3.0 version.
+     *             use {@link #exists(List)}
+     */
+    @Deprecated
     public ContinuableFuture<List<Boolean>> existsAll(final String tableName, final List<Get> gets) {
         return asyncExecutor.execute(new Callable<List<Boolean>>() {
             @Override
@@ -88,6 +111,24 @@ public final class AsyncHBaseExecutor {
         });
     }
 
+    public ContinuableFuture<List<Boolean>> exists(final String tableName, final Collection<AnyGet> anyGets) {
+        return asyncExecutor.execute(new Callable<List<Boolean>>() {
+            @Override
+            public List<Boolean> call() throws Exception {
+                return hbaseExecutor.exists(tableName, anyGets);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param tableName
+     * @param anyGets
+     * @return
+     * @throws UncheckedIOException
+     * @deprecated  use {@link #exists(String, Collection)}
+     */
+    @Deprecated
     public ContinuableFuture<List<Boolean>> existsAll(final String tableName, final Collection<AnyGet> anyGets) {
         return asyncExecutor.execute(new Callable<List<Boolean>>() {
             @Override
@@ -205,6 +246,24 @@ public final class AsyncHBaseExecutor {
         });
     }
 
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final byte[] family) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
+            @Override
+            public Stream<Result> call() throws Exception {
+                return hbaseExecutor.scan(tableName, family);
+            }
+        });
+    }
+
+    public ContinuableFuture<Stream<Result>> scan(final String tableName, final byte[] family, final byte[] qualifier) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
+            @Override
+            public Stream<Result> call() throws Exception {
+                return hbaseExecutor.scan(tableName, family, qualifier);
+            }
+        });
+    }
+
     public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
@@ -233,6 +292,24 @@ public final class AsyncHBaseExecutor {
     }
 
     public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return hbaseExecutor.scan(targetClass, tableName, family, qualifier);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final byte[] family) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return hbaseExecutor.scan(targetClass, tableName, family);
+            }
+        });
+    }
+
+    public <T> ContinuableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final byte[] family, final byte[] qualifier) {
         return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
             public Stream<T> call() throws Exception {
@@ -329,56 +406,6 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public ContinuableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier, final Object value,
-            final Put put) {
-        return asyncExecutor.execute(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return hbaseExecutor.checkAndPut(tableName, rowKey, family, qualifier, value, put);
-            }
-        });
-    }
-
-    public ContinuableFuture<Boolean> checkAndPut(final String tableName, final Object rowKey, final String family, final String qualifier,
-            final CompareFilter.CompareOp compareOp, final Object value, final Put put) {
-        return asyncExecutor.execute(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return hbaseExecutor.checkAndPut(tableName, rowKey, family, qualifier, compareOp, value, put);
-            }
-        });
-    }
-
-    public ContinuableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
-            final Object value, final Delete delete) {
-        return asyncExecutor.execute(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return hbaseExecutor.checkAndDelete(tableName, rowKey, family, qualifier, value, delete);
-            }
-        });
-    }
-
-    public ContinuableFuture<Boolean> checkAndDelete(final String tableName, final Object rowKey, final String family, final String qualifier,
-            final CompareFilter.CompareOp compareOp, final Object value, final Delete delete) {
-        return asyncExecutor.execute(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return hbaseExecutor.checkAndDelete(tableName, rowKey, family, qualifier, compareOp, value, delete);
-            }
-        });
-    }
-
-    public ContinuableFuture<Boolean> checkAndMutate(final String tableName, final Object rowKey, final String family, final String qualifier,
-            final CompareFilter.CompareOp compareOp, final Object value, final RowMutations mutation) {
-        return asyncExecutor.execute(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return hbaseExecutor.checkAndMutate(tableName, rowKey, family, qualifier, compareOp, value, mutation);
-            }
-        });
-    }
-
     public ContinuableFuture<Void> mutateRow(final String tableName, final RowMutations rm) {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -428,7 +455,27 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    ContinuableFuture<CoprocessorRpcChannel> coprocessorService(final String tableName, final Object rowKey) {
+    public ContinuableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final byte[] family, final byte[] qualifier,
+            final long amount) {
+        return asyncExecutor.execute(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return hbaseExecutor.incrementColumnValue(tableName, rowKey, family, qualifier, amount);
+            }
+        });
+    }
+
+    public ContinuableFuture<Long> incrementColumnValue(final String tableName, final Object rowKey, final byte[] family, final byte[] qualifier,
+            final long amount, final Durability durability) {
+        return asyncExecutor.execute(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                return hbaseExecutor.incrementColumnValue(tableName, rowKey, family, qualifier, amount, durability);
+            }
+        });
+    }
+
+    public ContinuableFuture<CoprocessorRpcChannel> coprocessorService(final String tableName, final Object rowKey) {
         return asyncExecutor.execute(new Callable<CoprocessorRpcChannel>() {
             @Override
             public CoprocessorRpcChannel call() throws Exception {
@@ -437,7 +484,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <T extends Service, R> ContinuableFuture<Map<byte[], R>> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
+    public <T extends Service, R> ContinuableFuture<Map<byte[], R>> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
             final Object endRowKey, final Batch.Call<T, R> callable) throws Exception {
         return asyncExecutor.execute(new Callable<Map<byte[], R>>() {
             @Override
@@ -447,7 +494,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <T extends Service, R> ContinuableFuture<Void> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
+    public <T extends Service, R> ContinuableFuture<Void> coprocessorService(final String tableName, final Class<T> service, final Object startRowKey,
             final Object endRowKey, final Batch.Call<T, R> callable, final Batch.Callback<R> callback) throws Exception {
         return asyncExecutor.execute(new Callable<Void>() {
             @Override
@@ -459,8 +506,9 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <R extends Message> ContinuableFuture<Map<byte[], R>> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
-            final Message request, final Object startRowKey, final Object endRowKey, final R responsePrototype) throws Exception {
+    public <R extends Message> ContinuableFuture<Map<byte[], R>> batchCoprocessorService(final String tableName,
+            final Descriptors.MethodDescriptor methodDescriptor, final Message request, final Object startRowKey, final Object endRowKey,
+            final R responsePrototype) throws Exception {
         return asyncExecutor.execute(new Callable<Map<byte[], R>>() {
             @Override
             public Map<byte[], R> call() throws Exception {
@@ -469,7 +517,7 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    <R extends Message> ContinuableFuture<Void> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
+    public <R extends Message> ContinuableFuture<Void> batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor,
             final Message request, final Object startRowKey, final Object endRowKey, final R responsePrototype, final Batch.Callback<R> callback)
             throws Exception {
         return asyncExecutor.execute(new Callable<Void>() {
@@ -478,33 +526,6 @@ public final class AsyncHBaseExecutor {
                 hbaseExecutor.batchCoprocessorService(tableName, methodDescriptor, request, startRowKey, endRowKey, responsePrototype, callback);
 
                 return null;
-            }
-        });
-    }
-
-    ContinuableFuture<ResultScanner> getScanner(final String tableName, final Scan scan) {
-        return asyncExecutor.execute(new Callable<ResultScanner>() {
-            @Override
-            public ResultScanner call() throws Exception {
-                return hbaseExecutor.getScanner(tableName, scan);
-            }
-        });
-    }
-
-    ContinuableFuture<ResultScanner> getScanner(final String tableName, final String family) {
-        return asyncExecutor.execute(new Callable<ResultScanner>() {
-            @Override
-            public ResultScanner call() throws Exception {
-                return hbaseExecutor.getScanner(tableName, family);
-            }
-        });
-    }
-
-    ContinuableFuture<ResultScanner> getScanner(final String tableName, final String family, final String qualifier) {
-        return asyncExecutor.execute(new Callable<ResultScanner>() {
-            @Override
-            public ResultScanner call() throws Exception {
-                return hbaseExecutor.getScanner(tableName, family, qualifier);
             }
         });
     }

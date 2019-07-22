@@ -16,77 +16,136 @@ package com.landawn.abacus.util;
 
 import static com.landawn.abacus.util.HBaseExecutor.toFamilyQualifierBytes;
 import static com.landawn.abacus.util.HBaseExecutor.toRowKeyBytes;
-import static com.landawn.abacus.util.HBaseExecutor.toValueBytes;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.NavigableSet;
 
-import org.apache.hadoop.hbase.client.Consistency;
-import org.apache.hadoop.hbase.client.IsolationLevel;
+import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.client.Cursor;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Scan.ReadType;
 import org.apache.hadoop.hbase.client.metrics.ScanMetrics;
-import org.apache.hadoop.hbase.exceptions.DeserializationException;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.io.TimeRange;
-import org.apache.hadoop.hbase.security.access.Permission;
-import org.apache.hadoop.hbase.security.visibility.Authorizations;
 
 /**
  * It's a wrapper of <code>Scan</code> in HBase to reduce the manual conversion between bytes and String/Object.
  * 
- * @since 0.8
- * 
- * @author Haiyang Li
+ * @since 0.8 
  * 
  * @see <a href="http://hbase.apache.org/devapidocs/index.html">http://hbase.apache.org/devapidocs/index.html</a>
  * @see org.apache.hadoop.hbase.client.Scan
  */
-public final class AnyScan {
+public final class AnyScan extends AnyQuery<AnyScan> {
     private final Scan scan;
 
     public AnyScan() {
-        scan = new Scan();
+        super(new Scan());
+        this.scan = (Scan) query;
     }
 
+    /**
+     * Create a Scan operation starting at the specified row.
+     * <p>
+     * If the specified row does not exist, the Scanner will start from the next closest row after the
+     * specified row.
+     * @param startRow row to start scanner at or after
+     * @deprecated use {@code new Scan().withStartRow(startRow)} instead.
+     */
+    @Deprecated
     public AnyScan(final Object startRow) {
-        scan = new Scan(toRowKeyBytes(startRow));
+        super(new Scan(toRowKeyBytes(startRow)));
+        this.scan = (Scan) query;
     }
 
+    /**
+     * Create a Scan operation for the range of rows specified.
+     * @param startRow row to start scanner at or after (inclusive)
+     * @param stopRow row to stop scanner before (exclusive)
+     * @deprecated use {@code new Scan().withStartRow(startRow).withStopRow(stopRow)} instead.
+     */
+    @Deprecated
     public AnyScan(final Object startRow, final Object stopRow) {
-        scan = new Scan(toRowKeyBytes(startRow), toRowKeyBytes(stopRow));
+        super(new Scan(toRowKeyBytes(startRow), toRowKeyBytes(stopRow)));
+        this.scan = (Scan) query;
     }
 
+    /**
+     * @deprecated use {@code new Scan().withStartRow(startRow).setFilter(filter)} instead.
+     */
+    @Deprecated
     public AnyScan(final Object startRow, final Filter filter) {
-        scan = new Scan(toRowKeyBytes(startRow), filter);
+        super(new Scan(toRowKeyBytes(startRow), filter));
+        this.scan = (Scan) query;
     }
 
+    public AnyScan(final Scan scan) {
+        super(scan);
+        this.scan = (Scan) query;
+    }
+
+    public AnyScan(final Get get) {
+        super(get);
+        this.scan = (Scan) query;
+    }
+
+    public static AnyScan create() {
+        return new AnyScan();
+    }
+
+    public static AnyScan createScanFromCursor(Cursor cursor) {
+        return new AnyScan(Scan.createScanFromCursor(cursor));
+    }
+
+    /**
+     * Create a Scan operation starting at the specified row.
+     * <p>
+     * If the specified row does not exist, the Scanner will start from the next closest row after the
+     * specified row.
+     * @param startRow row to start scanner at or after
+     * @deprecated use {@code new Scan().withStartRow(startRow)} instead.
+     */
+    @Deprecated
     public static AnyScan of(final Object startRow) {
         return new AnyScan(startRow);
     }
 
+    /**
+     * Create a Scan operation for the range of rows specified.
+     * @param startRow row to start scanner at or after (inclusive)
+     * @param stopRow row to stop scanner before (exclusive)
+     * @deprecated use {@code new Scan().withStartRow(startRow).withStopRow(stopRow)} instead.
+     */
+    @Deprecated
     public static AnyScan of(final Object startRow, final Object stopRow) {
         return new AnyScan(startRow, stopRow);
     }
 
+    /**
+     * @deprecated use {@code new Scan().withStartRow(startRow).setFilter(filter)} instead.
+     */
+    @Deprecated
     public static AnyScan of(final Object startRow, final Filter filter) {
         return new AnyScan(startRow, filter);
     }
 
-    public Scan value() {
+    public static AnyScan of(final Scan scan) {
+        return new AnyScan(scan);
+    }
+
+    public static AnyScan of(final Get get) {
+        return new AnyScan(get);
+    }
+
+    public Scan val() {
         return scan;
     }
 
-    public AnyScan addFamily(String family) {
-        scan.addFamily(toFamilyQualifierBytes(family));
-
-        return this;
-    }
-
-    public AnyScan addColumn(String family, String qualifier) {
-        scan.addColumn(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier));
-
-        return this;
+    public boolean isGetScan() {
+        return scan.isGetScan();
     }
 
     public boolean hasFamilies() {
@@ -97,33 +156,56 @@ public final class AnyScan {
         return scan.numFamilies();
     }
 
-    public Map<byte[], NavigableSet<byte[]>> getFamilyMap() {
-        return scan.getFamilyMap();
-    }
-
     public byte[][] getFamilies() {
         return scan.getFamilies();
     }
 
-    /**
-     * To Keep it simple, there should be no methods for the properties if it's not set by this class.
-     * The properties not set by this should be get by the methods in <code>Get</code>
-     * 
-     * @return
-     */
-    Map<String, Object> getFingerprint() {
-        return scan.getFingerprint();
+    public AnyScan addFamily(String family) {
+        scan.addFamily(toFamilyQualifierBytes(family));
+
+        return this;
     }
 
-    /**
-     * To Keep it simple, there should be no methods for the properties if it's not set by this class
-     * The properties not set by this should be get by the methods in <code>Get</code>
-     * 
-     * @param maxCols
-     * @return
-     */
-    Map<String, Object> toMap(int maxCols) {
-        return scan.toMap(maxCols);
+    public AnyScan addFamily(byte[] family) {
+        scan.addFamily(family);
+
+        return this;
+    }
+
+    public Map<byte[], NavigableSet<byte[]>> getFamilyMap() {
+        return scan.getFamilyMap();
+    }
+
+    public AnyScan setFamilyMap(Map<byte[], NavigableSet<byte[]>> familyMap) {
+        scan.setFamilyMap(familyMap);
+
+        return this;
+    }
+
+    @Override
+    public AnyScan setColumnFamilyTimeRange(String family, long minTimestamp, long maxTimestamp) {
+        scan.setColumnFamilyTimeRange(toFamilyQualifierBytes(family), minTimestamp, maxTimestamp);
+
+        return this;
+    }
+
+    @Override
+    public AnyScan setColumnFamilyTimeRange(byte[] family, long minTimestamp, long maxTimestamp) {
+        scan.setColumnFamilyTimeRange(family, minTimestamp, maxTimestamp);
+
+        return this;
+    }
+
+    public AnyScan addColumn(String family, String qualifier) {
+        scan.addColumn(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier));
+
+        return this;
+    }
+
+    public AnyScan addColumn(byte[] family, byte[] qualifier) {
+        scan.addColumn(family, qualifier);
+
+        return this;
     }
 
     public TimeRange getTimeRange() {
@@ -136,28 +218,114 @@ public final class AnyScan {
         return this;
     }
 
+    public AnyScan setTimestamp(long timestamp) throws IOException {
+        scan.setTimestamp(timestamp);
+
+        return this;
+    }
+
+    /**
+     * Get versions of columns with the specified timestamp. Note, default maximum
+     * versions to return is 1.  If your time range spans more than one version
+     * and you want all versions returned, up the number of versions beyond the
+     * defaut.
+     * @param timestamp version timestamp
+     * @see #setMaxVersions()
+     * @see #setMaxVersions(int)
+     * @return this
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #setTimestamp(long)} instead
+     */
+    @Deprecated
     public AnyScan setTimeStamp(long timestamp) throws IOException {
         scan.setTimeStamp(timestamp);
 
         return this;
     }
 
+    public boolean includeStartRow() {
+        return scan.includeStartRow();
+    }
+
     public byte[] getStartRow() {
         return scan.getStartRow();
     }
 
+    /**
+     * Set the start row of the scan.
+     * <p>
+     * If the specified row does not exist, the Scanner will start from the next closest row after the
+     * specified row.
+     * @param startRow row to start scanner at or after
+     * @return this
+     * @throws IllegalArgumentException if startRow does not meet criteria for a row key (when length
+     *           exceeds {@link HConstants#MAX_ROW_LENGTH})
+     * @deprecated use {@link #withStartRow(byte[])} instead. This method may change the inclusive of
+     *             the stop row to keep compatible with the old behavior.
+     */
+    @Deprecated
     public AnyScan setStartRow(final Object startRow) {
         scan.setStartRow(toRowKeyBytes(startRow));
 
         return this;
     }
 
+    public AnyScan withStartRow(final Object startRow) {
+        scan.withStartRow(toRowKeyBytes(startRow));
+
+        return this;
+    }
+
+    public AnyScan withStartRow(final Object startRow, final boolean inclusive) {
+        scan.withStartRow(toRowKeyBytes(startRow), inclusive);
+
+        return this;
+    }
+
+    public boolean includeStopRow() {
+        return scan.includeStopRow();
+    }
+
     public byte[] getStopRow() {
         return scan.getStopRow();
     }
 
+    /**
+     * Set the stop row of the scan.
+     * <p>
+     * The scan will include rows that are lexicographically less than the provided stopRow.
+     * <p>
+     * <b>Note:</b> When doing a filter for a rowKey <u>Prefix</u> use
+     * {@link #setRowPrefixFilter(byte[])}. The 'trailing 0' will not yield the desired result.
+     * </p>
+     * @param stopRow row to end at (exclusive)
+     * @return this
+     * @throws IllegalArgumentException if stopRow does not meet criteria for a row key (when length
+     *           exceeds {@link HConstants#MAX_ROW_LENGTH})
+     * @deprecated use {@link #withStopRow(byte[])} instead. This method may change the inclusive of
+     *             the stop row to keep compatible with the old behavior.
+     */
+    @Deprecated
     public AnyScan setStopRow(final Object stopRow) {
         scan.setStopRow(toRowKeyBytes(stopRow));
+
+        return this;
+    }
+
+    public AnyScan withStopRow(final Object stopRow) {
+        scan.withStopRow(toRowKeyBytes(stopRow));
+
+        return this;
+    }
+
+    public AnyScan withStopRow(final Object stopRow, final boolean inclusive) {
+        scan.withStopRow(toRowKeyBytes(stopRow), inclusive);
+
+        return this;
+    }
+
+    public AnyScan setRowPrefixFilter(final Object rowPrefix) {
+        scan.setRowPrefixFilter(toRowKeyBytes(rowPrefix));
 
         return this;
     }
@@ -166,14 +334,40 @@ public final class AnyScan {
         return scan.getMaxVersions();
     }
 
+    /**
+     * Get all available versions.
+     * @return this
+     * @deprecated It is easy to misunderstand with column family's max versions, so use
+     *             {@link #readAllVersions()} instead.
+     */
+    @Deprecated
     public AnyScan setMaxVersions(int maxVersions) throws IOException {
         scan.setMaxVersions(maxVersions);
 
         return this;
     }
 
+    /**
+     * Get all available versions.
+     * @return this
+     * @deprecated It is easy to misunderstand with column family's max versions, so use
+     *             {@link #readAllVersions()} instead.
+     */
+    @Deprecated
     public AnyScan setMaxVersions() {
         scan.setMaxVersions();
+
+        return this;
+    }
+
+    public AnyScan readVersions(int maxVersions) throws IOException {
+        scan.readVersions(maxVersions);
+
+        return this;
+    }
+
+    public AnyScan readAllVersions() {
+        scan.readAllVersions();
 
         return this;
     }
@@ -208,12 +402,6 @@ public final class AnyScan {
         return this;
     }
 
-    public AnyScan setRowPrefixFilter(String rowPrefix) {
-        scan.setRowPrefixFilter(toRowKeyBytes(rowPrefix));
-
-        return this;
-    }
-
     public int getCaching() {
         return scan.getCaching();
     }
@@ -234,12 +422,28 @@ public final class AnyScan {
         return this;
     }
 
-    public Filter getFilter() {
-        return scan.getFilter();
+    public long getMaxResultSize() {
+        return scan.getMaxResultSize();
     }
 
-    public AnyScan setFilter(Filter filter) {
-        scan.setFilter(filter);
+    public AnyScan setMaxResultSize(long maxResultSize) {
+        scan.setMaxResultSize(maxResultSize);
+
+        return this;
+    }
+
+    public int getLimit() {
+        return scan.getLimit();
+    }
+
+    public AnyScan setLimit(int limit) {
+        scan.setLimit(limit);
+
+        return this;
+    }
+
+    public AnyScan setOneRowLimit() {
+        scan.setOneRowLimit();
 
         return this;
     }
@@ -268,20 +472,6 @@ public final class AnyScan {
         return this;
     }
 
-    public Boolean getLoadColumnFamiliesOnDemandValue() {
-        return scan.getLoadColumnFamiliesOnDemandValue();
-    }
-
-    public AnyScan setLoadColumnFamiliesOnDemand(boolean value) {
-        scan.setLoadColumnFamiliesOnDemand(value);
-
-        return this;
-    }
-
-    public boolean doLoadColumnFamiliesOnDemand() {
-        return scan.doLoadColumnFamiliesOnDemand();
-    }
-
     public boolean isRaw() {
         return scan.isRaw();
     }
@@ -292,10 +482,34 @@ public final class AnyScan {
         return this;
     }
 
+    /**
+     * Get whether this scan is a small scan
+     * @return true if small scan
+     * @deprecated since 2.0.0. See the comment of {@link #setSmall(boolean)}
+     */
+    @Deprecated
     public boolean isSmall() {
         return scan.isSmall();
     }
 
+    /**
+     * Set whether this scan is a small scan
+     * <p>
+     * Small scan should use pread and big scan can use seek + read seek + read is fast but can cause
+     * two problem (1) resource contention (2) cause too much network io [89-fb] Using pread for
+     * non-compaction read request https://issues.apache.org/jira/browse/HBASE-7266 On the other hand,
+     * if setting it true, we would do openScanner,next,closeScanner in one RPC call. It means the
+     * better performance for small scan. [HBASE-9488]. Generally, if the scan range is within one
+     * data block(64KB), it could be considered as a small scan.
+     * @param small
+     * @deprecated since 2.0.0. Use {@link #setLimit(int)} and {@link #setReadType(ReadType)} instead.
+     *             And for the one rpc optimization, now we will also fetch data when openScanner, and
+     *             if the number of rows reaches the limit then we will close the scanner
+     *             automatically which means we will fall back to one rpc.
+     * @see #setLimit(int)
+     * @see #setReadType(ReadType)
+     */
+    @Deprecated
     public AnyScan setSmall(boolean small) {
         scan.setSmall(small);
 
@@ -312,86 +526,54 @@ public final class AnyScan {
         return this;
     }
 
+    /**
+     * @return Metrics on this Scan, if metrics were enabled.
+     * @see #setScanMetricsEnabled(boolean)
+     * @deprecated Use {@link ResultScanner#getScanMetrics()} instead. And notice that, please do not
+     *             use this method and {@link ResultScanner#getScanMetrics()} together, the metrics
+     *             will be messed up.
+     */
+    @Deprecated
     public ScanMetrics getScanMetrics() {
         return scan.getScanMetrics();
     }
 
-    public String getId() {
-        return scan.getId();
+    public Boolean isAsyncPrefetch() {
+        return scan.isAsyncPrefetch();
     }
 
-    public AnyScan setId(String id) {
-        scan.setId(id);
+    public AnyScan setAsyncPrefetch(boolean asyncPrefetch) {
+        scan.setAsyncPrefetch(asyncPrefetch);
 
         return this;
     }
 
-    public Authorizations getAuthorizations() throws DeserializationException {
-        return scan.getAuthorizations();
+    /**
+     * @return the read type for this scan
+     */
+    public ReadType getReadType() {
+        return scan.getReadType();
     }
 
-    public AnyScan setAuthorizations(Authorizations authorizations) {
-        scan.setAuthorizations(authorizations);
+    /**
+     * Set the read type for this scan.
+     * <p>
+     * Notice that we may choose to use pread even if you specific {@link ReadType#STREAM} here. For
+     * example, we will always use pread if this is a get scan.
+     * @return this
+     */
+    public AnyScan setReadType(ReadType readType) {
+        scan.setReadType(readType);
 
         return this;
     }
 
-    public byte[] getACL() {
-        return scan.getACL();
+    public boolean isNeedCursorResult() {
+        return scan.isNeedCursorResult();
     }
 
-    public AnyScan setACL(Map<String, Permission> perms) {
-        scan.setACL(perms);
-
-        return this;
-    }
-
-    public AnyScan setACL(String user, Permission perms) {
-        scan.setACL(user, perms);
-
-        return this;
-    }
-
-    public Consistency getConsistency() {
-        return scan.getConsistency();
-    }
-
-    public AnyScan setConsistency(Consistency consistency) {
-        scan.setConsistency(consistency);
-
-        return this;
-    }
-
-    public int getReplicaId() {
-        return scan.getReplicaId();
-    }
-
-    public AnyScan setReplicaId(int Id) {
-        scan.setReplicaId(Id);
-
-        return this;
-    }
-
-    public IsolationLevel getIsolationLevel() {
-        return scan.getIsolationLevel();
-    }
-
-    public AnyScan setIsolationLevel(IsolationLevel level) {
-        scan.setIsolationLevel(level);
-
-        return this;
-    }
-
-    public Map<String, byte[]> getAttributesMap() {
-        return scan.getAttributesMap();
-    }
-
-    public byte[] getAttribute(String name) {
-        return scan.getAttribute(name);
-    }
-
-    public AnyScan setAttribute(String name, Object value) {
-        scan.setAttribute(name, toValueBytes(value));
+    public AnyScan setNeedCursorResult(boolean needCursorResult) {
+        scan.setAllowPartialResults(needCursorResult);
 
         return this;
     }

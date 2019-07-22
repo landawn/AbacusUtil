@@ -57,6 +57,7 @@ import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -108,22 +109,22 @@ public final class MongoCollectionExecutor {
     }
 
     public boolean exists(final Bson filter) {
-        return coll.count(filter, new CountOptions().limit(1)) > 0;
+        return count(filter, new CountOptions().limit(1)) > 0;
     }
 
     public long count() {
-        return coll.count();
+        return coll.countDocuments();
     }
 
     public long count(final Bson filter) {
-        return coll.count(filter);
+        return coll.countDocuments(filter);
     }
 
     public long count(final Bson filter, final CountOptions options) {
         if (options == null) {
-            return coll.count(filter);
+            return coll.countDocuments(filter);
         } else {
-            return coll.count(filter, options);
+            return coll.countDocuments(filter, options);
         }
     }
 
@@ -627,7 +628,7 @@ public final class MongoCollectionExecutor {
      * @param options
      * @return
      */
-    public UpdateResult replaceOne(final Bson filter, final Object replacement, final UpdateOptions options) {
+    public UpdateResult replaceOne(final Bson filter, final Object replacement, final ReplaceOptions options) {
         if (options == null) {
             return coll.replaceOne(filter, createDocument(replacement));
         } else {

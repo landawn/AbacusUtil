@@ -42,6 +42,7 @@ import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.DeleteOptions;
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
@@ -729,7 +730,7 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    public ContinuableFuture<UpdateResult> replaceOne(final Bson filter, final Object replacement, final UpdateOptions options) {
+    public ContinuableFuture<UpdateResult> replaceOne(final Bson filter, final Object replacement, final ReplaceOptions options) {
         return asyncExecutor.execute(new Callable<UpdateResult>() {
             @Override
             public UpdateResult call() throws Exception {

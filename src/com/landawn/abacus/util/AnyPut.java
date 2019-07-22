@@ -15,60 +15,109 @@
 package com.landawn.abacus.util;
 
 import static com.landawn.abacus.util.HBaseExecutor.toFamilyQualifierBytes;
-import static com.landawn.abacus.util.HBaseExecutor.toRowKeyBytes;
+import static com.landawn.abacus.util.HBaseExecutor.toRowBytes;
 import static com.landawn.abacus.util.HBaseExecutor.toValueBytes;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.UUID;
+import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.Tag;
-import org.apache.hadoop.hbase.client.Durability;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.exceptions.DeserializationException;
-import org.apache.hadoop.hbase.security.access.Permission;
-import org.apache.hadoop.hbase.security.visibility.CellVisibility;
-
-import com.landawn.abacus.exception.UncheckedIOException;
 
 /**
  * It's a wrapper of <code>Put</code> in HBase to reduce the manual conversion between bytes and String/Object.
  * 
- * @since 0.8
- * 
- * @author Haiyang Li
+ * @since 0.8 
  * 
  * @see <a href="http://hbase.apache.org/devapidocs/index.html">http://hbase.apache.org/devapidocs/index.html</a>
  * @see org.apache.hadoop.hbase.client.Put
  */
-public final class AnyPut {
+public final class AnyPut extends AnyMutation<AnyPut> {
     private final Put put;
 
-    public AnyPut(Object rowKey) {
-        put = new Put(toRowKeyBytes(rowKey));
+    public AnyPut(final Object row) {
+        super(new Put(toRowBytes(row)));
+        this.put = (Put) mutation;
     }
 
-    public AnyPut(Object rowKey, long ts) {
-        put = new Put(toRowKeyBytes(rowKey), ts);
+    public AnyPut(final Object row, final long timestamp) {
+        super(new Put(toRowBytes(row), timestamp));
+        this.put = (Put) mutation;
     }
 
-    public static AnyPut of(Object rowKey) {
-        return new AnyPut(rowKey);
+    public AnyPut(final Object row, final int rowOffset, final int rowLength) {
+        super(new Put(toRowBytes(row), rowOffset, rowLength));
+        this.put = (Put) mutation;
     }
 
-    public static AnyPut of(Object rowKey, long timestamp) {
-        return new AnyPut(rowKey, timestamp);
+    public AnyPut(final Object row, int rowOffset, int rowLength, final long timestamp) {
+        super(new Put(toRowBytes(row), rowOffset, rowLength, timestamp));
+        this.put = (Put) mutation;
     }
 
-    public Put value() {
+    public AnyPut(final Object row, final boolean rowIsImmutable) {
+        super(new Put(toRowBytes(row), rowIsImmutable));
+        this.put = (Put) mutation;
+    }
+
+    public AnyPut(final Object row, final long timestamp, final boolean rowIsImmutable) {
+        super(new Put(toRowBytes(row), timestamp, rowIsImmutable));
+        this.put = (Put) mutation;
+    }
+
+    public AnyPut(final ByteBuffer row) {
+        super(new Put(row));
+        this.put = (Put) mutation;
+    }
+
+    public AnyPut(final ByteBuffer row, final long timestamp) {
+        super(new Put(row, timestamp));
+        this.put = (Put) mutation;
+    }
+
+    public AnyPut(final Put putToCopy) {
+        super(new Put(putToCopy));
+        this.put = (Put) mutation;
+    }
+
+    public static AnyPut of(final Object row) {
+        return new AnyPut(row);
+    }
+
+    public static AnyPut of(final Object row, final long timestamp) {
+        return new AnyPut(row, timestamp);
+    }
+
+    public static AnyPut of(final Object row, final int rowOffset, final int rowLength) {
+        return new AnyPut(row, rowOffset, rowLength);
+    }
+
+    public static AnyPut of(final Object row, final int rowOffset, final int rowLength, final long timestamp) {
+        return new AnyPut(row, rowOffset, rowLength, timestamp);
+    }
+
+    public static AnyPut of(final Object row, final boolean rowIsImmutable) {
+        return new AnyPut(row, rowIsImmutable);
+    }
+
+    public static AnyPut of(final Object row, final long timestamp, final boolean rowIsImmutable) {
+        return new AnyPut(row, timestamp, rowIsImmutable);
+    }
+
+    public static AnyPut of(final ByteBuffer row) {
+        return new AnyPut(row);
+    }
+
+    public static AnyPut of(final ByteBuffer row, final long timestamp) {
+        return new AnyPut(row, timestamp);
+    }
+
+    public static AnyPut of(final Put putToCopy) {
+        return new AnyPut(putToCopy);
+    }
+
+    public Put val() {
         return put;
-    }
-
-    public long getTimeStamp() {
-        return put.getTimeStamp();
     }
 
     public AnyPut addColumn(String family, String qualifier, Object value) {
@@ -83,150 +132,96 @@ public final class AnyPut {
         return this;
     }
 
+    public AnyPut addColumn(byte[] family, byte[] qualifier, byte[] value) {
+        put.addColumn(family, qualifier, value);
+
+        return this;
+    }
+
+    public AnyPut addColumn(byte[] family, byte[] qualifier, long ts, byte[] value) {
+        put.addColumn(family, qualifier, ts, value);
+
+        return this;
+    }
+
+    public AnyPut addColumn(byte[] family, ByteBuffer qualifier, long ts, ByteBuffer value) {
+        put.addColumn(family, qualifier, ts, value);
+
+        return this;
+    }
+
+    /**
+     * See {@link #addColumn(byte[], byte[], byte[])}. This version expects
+     * that the underlying arrays won't change. It's intended
+     * for usage internal HBase to and for advanced client applications.
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #add(Cell)} and {@link org.apache.hadoop.hbase.CellBuilder} instead
+     */
+    @Deprecated
     public AnyPut addImmutable(String family, String qualifier, Object value) {
         put.addImmutable(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), toValueBytes(value));
 
         return this;
     }
 
+    /**
+     * See {@link #addColumn(byte[], byte[], long, byte[])}. This version expects
+     * that the underlying arrays won't change. It's intended
+     * for usage internal HBase to and for advanced client applications.
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #add(Cell)} and {@link org.apache.hadoop.hbase.CellBuilder} instead
+     */
+    @Deprecated
     public AnyPut addImmutable(String family, String qualifier, long ts, Object value) {
         put.addImmutable(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), ts, toValueBytes(value));
 
         return this;
     }
 
-    public AnyPut addImmutable(String family, String qualifier, Object value, Tag[] tag) {
-        put.addImmutable(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), toValueBytes(value), tag);
+    /**
+     * See {@link #addColumn(byte[], byte[], byte[])}. This version expects
+     * that the underlying arrays won't change. It's intended
+     * for usage internal HBase to and for advanced client applications.
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #add(Cell)} and {@link org.apache.hadoop.hbase.CellBuilder} instead
+     */
+    @Deprecated
+    public AnyPut addImmutable(byte[] family, byte[] qualifier, byte[] value) {
+        put.addImmutable(family, qualifier, value);
 
         return this;
     }
 
-    public AnyPut addImmutable(String family, String qualifier, long ts, Object value, Tag[] tag) {
-        put.addImmutable(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), ts, toValueBytes(value), tag);
+    /**
+     * See {@link #addColumn(byte[], byte[], long, byte[])}. This version expects
+     * that the underlying arrays won't change. It's intended
+     * for usage internal HBase to and for advanced client applications.
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #add(Cell)} and {@link org.apache.hadoop.hbase.CellBuilder} instead
+     */
+    @Deprecated
+    public AnyPut addImmutable(byte[] family, byte[] qualifier, long ts, byte[] value) {
+        put.addImmutable(family, qualifier, ts, value);
 
         return this;
     }
 
-    public AnyPut add(Cell kv) throws UncheckedIOException {
-        try {
-            put.add(kv);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    /**
+     * See {@link #addColumn(byte[], byte[], long, byte[])}. This version expects
+     * that the underlying arrays won't change. It's intended
+     * for usage internal HBase to and for advanced client applications.
+     * @deprecated As of release 2.0.0, this will be removed in HBase 3.0.0.
+     *             Use {@link #add(Cell)} and {@link org.apache.hadoop.hbase.CellBuilder} instead
+     */
+    @Deprecated
+    public AnyPut addImmutable(byte[] family, ByteBuffer qualifier, long ts, ByteBuffer value) {
+        put.addImmutable(family, qualifier, ts, value);
 
         return this;
     }
 
-    public boolean has(String family, String qualifier) {
-        return put.has(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier));
-    }
-
-    public boolean has(String family, String qualifier, long ts) {
-        return put.has(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), ts);
-    }
-
-    public boolean has(String family, String qualifier, Object value) {
-        return put.has(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), toValueBytes(value));
-    }
-
-    public boolean has(String family, String qualifier, long ts, Object value) {
-        return put.has(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier), ts, toValueBytes(value));
-    }
-
-    public List<Cell> get(String family, String qualifier) {
-        return put.get(toFamilyQualifierBytes(family), toFamilyQualifierBytes(qualifier));
-    }
-
-    public int numFamilies() {
-        return put.numFamilies();
-    }
-
-    public NavigableMap<byte[], List<Cell>> getFamilyCellMap() {
-        return put.getFamilyCellMap();
-    }
-
-    public AnyPut setFamilyCellMap(NavigableMap<byte[], List<Cell>> map) {
-        put.setFamilyCellMap(map);
-
-        return this;
-    }
-
-    public Durability getDurability() {
-        return put.getDurability();
-    }
-
-    public AnyPut setDurability(Durability d) {
-        put.setDurability(d);
-
-        return this;
-    }
-
-    public List<UUID> getClusterIds() {
-        return put.getClusterIds();
-    }
-
-    public AnyPut setClusterIds(List<UUID> clusterIds) {
-        put.setClusterIds(clusterIds);
-
-        return this;
-    }
-
-    public CellVisibility getCellVisibility() throws DeserializationException {
-        return put.getCellVisibility();
-    }
-
-    public AnyPut setCellVisibility(CellVisibility expression) {
-        put.setCellVisibility(expression);
-
-        return this;
-    }
-
-    public byte[] getACL() {
-        return put.getACL();
-    }
-
-    public AnyPut setACL(String user, Permission perms) {
-        put.setACL(user, perms);
-
-        return this;
-    }
-
-    public AnyPut setACL(Map<String, Permission> perms) {
-        put.setACL(perms);
-
-        return this;
-    }
-
-    public long getTTL() {
-        return put.getTTL();
-    }
-
-    public AnyPut setTTL(long ttl) {
-        put.setTTL(ttl);
-
-        return this;
-    }
-
-    public String getId() {
-        return put.getId();
-    }
-
-    public AnyPut setId(String id) {
-        put.setId(id);
-
-        return this;
-    }
-
-    public Map<String, byte[]> getAttributesMap() {
-        return put.getAttributesMap();
-    }
-
-    public byte[] getAttribute(String name) {
-        return put.getAttribute(name);
-    }
-
-    public AnyPut setAttribute(String name, Object value) {
-        put.setAttribute(name, toValueBytes(value));
+    public AnyPut add(Cell kv) throws IOException {
+        put.add(kv);
 
         return this;
     }

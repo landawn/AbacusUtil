@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 HaiYang Li
+ * Copyright (C) 2015 HaiYang Li
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -64,6 +64,11 @@ public final class DataSourceConfiguration extends Configuration {
      * Field DBCP. (value is ""dbcp"")
      */
     public static final String DBCP = "dbcp";
+
+    /**
+     * Field DBCP2. (value is ""dbcp2"")
+     */
+    public static final String DBCP2 = "dbcp2";
 
     /**
      * Field C3P0. (value is ""c3p0"")
