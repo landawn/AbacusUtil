@@ -92,6 +92,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Id;
+import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.annotation.ReadOnlyId;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.NameUtil;
@@ -428,10 +429,27 @@ public final class ClassUtil {
 
     private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(POOL_SIZE);
+ 
+    /**
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static final Class<?> CLASS_MASK = ClassMask.class;
 
-    static final Class<?> CLASS_MASK = ClassMask.class;
-    static final Method METHOD_MASK = ClassUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
-    static final Field FIELD_MASK;
+    /**
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static final Method METHOD_MASK = ClassUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
+
+    /**
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static final Field FIELD_MASK;
 
     static {
         try {
@@ -2231,11 +2249,28 @@ public final class ClassUtil {
     private static final Map<Class<?>, List<String>> idPropNamesMap = new ConcurrentHashMap<>();
     private static final List<String> fakeIds = ImmutableList.of("not_defined_fake_id_in_abacus_" + N.uuid());
 
-    static List<String> getIdFieldNames(final Class<?> targetClass) {
+    /**
+     * 
+     * @param targetClass
+     * @return
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static List<String> getIdFieldNames(final Class<?> targetClass) {
         return getIdFieldNames(targetClass, false);
     }
 
-    static List<String> getIdFieldNames(final Class<?> targetClass, boolean fakeIdForEmpty) {
+    /**
+     * 
+     * @param targetClass
+     * @param fakeIdForEmpty
+     * @return
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static List<String> getIdFieldNames(final Class<?> targetClass, boolean fakeIdForEmpty) {
         List<String> idPropNames = idPropNamesMap.get(targetClass);
 
         if (idPropNames == null) {
@@ -2289,7 +2324,15 @@ public final class ClassUtil {
         return N.isNullOrEmpty(idPropNames) && fakeIdForEmpty ? fakeIds : idPropNames;
     }
 
-    static boolean isFakeId(List<String> idPropNames) {
+    /**
+     * 
+     * @param idPropNames
+     * @return
+     * @deprecated for internal only.
+     */
+    @Deprecated
+    @Internal
+    public static boolean isFakeId(List<String> idPropNames) {
         if (idPropNames != null && idPropNames.size() == 1 && fakeIds.get(0).equals(idPropNames.get(0))) {
             return true;
         }

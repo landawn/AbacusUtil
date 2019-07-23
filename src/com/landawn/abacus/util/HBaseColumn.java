@@ -23,8 +23,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.hadoop.hbase.HConstants;
-
 /**
  * It's immutable.
  * 
@@ -35,6 +33,7 @@ import org.apache.hadoop.hbase.HConstants;
  * @author haiyang li
  */
 public final class HBaseColumn<T> implements Comparable<HBaseColumn<T>> {
+
     public static final HBaseColumn<Boolean> EMPTY_BOOLEAN_COLUMN = HBaseColumn.valueOf(false, 0);
     public static final HBaseColumn<Character> EMPTY_CHAR_COLUMN = HBaseColumn.valueOf((char) 0, 0);
     public static final HBaseColumn<Byte> EMPTY_BYTE_COLUMN = HBaseColumn.valueOf((byte) 0, 0);
@@ -44,6 +43,8 @@ public final class HBaseColumn<T> implements Comparable<HBaseColumn<T>> {
     public static final HBaseColumn<Float> EMPTY_FLOAT_COLUMN = HBaseColumn.valueOf(0f, 0);
     public static final HBaseColumn<Double> EMPTY_DOUBLE_COLUMN = HBaseColumn.valueOf(0d, 0);
     public static final HBaseColumn<Object> EMPTY_OBJECT_COLUMN = HBaseColumn.valueOf(null, 0);
+
+    private static final long LATEST_TIMESTAMP = Long.MAX_VALUE;
 
     private static final BiMap<Class<?>, HBaseColumn<?>> emptyColumnPool = new BiMap<>();
 
@@ -77,7 +78,7 @@ public final class HBaseColumn<T> implements Comparable<HBaseColumn<T>> {
     private final long version;
 
     public HBaseColumn(T value) {
-        this(value, HConstants.LATEST_TIMESTAMP);
+        this(value, LATEST_TIMESTAMP);
     }
 
     public HBaseColumn(T value, long version) {

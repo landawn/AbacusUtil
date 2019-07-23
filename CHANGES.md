@@ -6,7 +6,7 @@
 
 * Add `OffHeapCache`.
 
-* Upgrade `HBaseExecutor/MongoCollectionExecutor/CouchbaseExecutor`.
+* Move Nosql XXXExecutor `HBaseExecutor/MongoCollectionExecutor/CouchbaseExecutor` to `abacus-da`: https://github.com/landawn/abacus-da.
 
 * Improvements and bug fix.
 
