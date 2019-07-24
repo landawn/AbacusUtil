@@ -28,7 +28,6 @@ import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.IntMatrix;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multiset;
@@ -990,11 +989,6 @@ abstract class AbstractIntStream extends IntStream {
     @Override
     public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> keyMapper, Collector<Integer, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public IntMatrix toMatrix() {
-        return IntMatrix.of(toArray());
     }
 
     @Override

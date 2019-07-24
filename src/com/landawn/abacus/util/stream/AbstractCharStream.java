@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
-import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -985,11 +984,6 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> keyMapper, Collector<Character, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public CharMatrix toMatrix() {
-        return CharMatrix.of(toArray());
     }
 
     @Override

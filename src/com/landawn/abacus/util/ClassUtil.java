@@ -326,7 +326,6 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(Multimap.class.getCanonicalName(), Multimap.class);
         BUILT_IN_TYPE.put(Multiset.class.getCanonicalName(), Multiset.class);
         BUILT_IN_TYPE.put(LongMultiset.class.getCanonicalName(), LongMultiset.class);
-        BUILT_IN_TYPE.put(Sheet.class.getCanonicalName(), Sheet.class);
         BUILT_IN_TYPE.put(HBaseColumn.class.getCanonicalName(), HBaseColumn.class);
 
         BUILT_IN_TYPE.put(Type.class.getCanonicalName(), Type.class);

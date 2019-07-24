@@ -59,7 +59,6 @@ import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.JdbcUtil;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.ListMultimap;
-import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
@@ -2292,18 +2291,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, V> ListMultimap<K, V> flattToMultimap(Function<? super T, ? extends Collection<? extends K>> flatKeyMapper,
             BiFunction<? super K, ? super T, ? extends V> valueMapper) {
         return flattToMultimap(flatKeyMapper, valueMapper, Suppliers.<K, V> ofListMultimap());
-    }
-
-    @Override
-    public Matrix<T> toMatrix(final Class<T> type) {
-        final T[] a = toArray(new IntFunction<T[]>() {
-            @Override
-            public T[] apply(int value) {
-                return (T[]) N.newArray(type, 0);
-            }
-        });
-
-        return Matrix.of(a);
     }
 
     @Override

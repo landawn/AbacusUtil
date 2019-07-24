@@ -35,7 +35,6 @@ import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.IntMatrix;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -347,8 +346,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> keyMapper, final Collector<Integer, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract IntMatrix toMatrix();
 
     public abstract int reduce(int identity, IntBinaryOperator op);
 

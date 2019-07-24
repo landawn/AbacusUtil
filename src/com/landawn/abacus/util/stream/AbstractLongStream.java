@@ -29,7 +29,6 @@ import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
-import com.landawn.abacus.util.LongMatrix;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
@@ -989,11 +988,6 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> keyMapper, Collector<Long, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public LongMatrix toMatrix() {
-        return LongMatrix.of(toArray());
     }
 
     @Override

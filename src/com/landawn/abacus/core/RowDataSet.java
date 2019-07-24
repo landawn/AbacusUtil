@@ -68,7 +68,6 @@ import com.landawn.abacus.util.NoCachingNoUpdating.DisposableObjArray;
 import com.landawn.abacus.util.Objectory;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.StringUtil;
 import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Triple;
@@ -7522,18 +7521,7 @@ public class RowDataSet implements DataSet, Cloneable {
     //        }
     //
     //        return (T) _properties.remove(propName);
-    //    }
-
-    @Override
-    public <T> Sheet<Integer, String, T> toSheet() {
-        final List<Integer> rowKeySet = new ArrayList<>(size());
-
-        for (int i = 1, size = this.size(); i <= size; i++) {
-            rowKeySet.add(i);
-        }
-
-        return (Sheet<Integer, String, T>) Sheet.columns(rowKeySet, this._columnNameList, this._columnList);
-    }
+    //    } 
 
     @Override
     public Stream<String> columnNames() {

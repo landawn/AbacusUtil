@@ -27,7 +27,6 @@ import java.util.Random;
 import com.landawn.abacus.annotation.SequentialOnly;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
-import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
@@ -301,8 +300,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> keyMapper, final Collector<Byte, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract ByteMatrix toMatrix();
 
     /**
      * 

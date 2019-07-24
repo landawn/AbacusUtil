@@ -71,7 +71,6 @@ import com.landawn.abacus.util.Keyed;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -1860,9 +1859,6 @@ public abstract class Stream<T>
     public abstract <K, V, C extends Collection<V>, M extends Multimap<K, V, C>> M flattToMultimap(
             Function<? super T, ? extends Collection<? extends K>> flatKeyMapper, BiFunction<? super K, ? super T, ? extends V> valueMapper,
             Supplier<? extends M> mapFactory);
-
-    @SequentialOnly
-    public abstract Matrix<T> toMatrix(Class<T> type);
 
     /**
      * 

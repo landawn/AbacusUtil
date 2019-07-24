@@ -26,7 +26,6 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [Multiset](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multiset_view.html), 
 [Multimap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Multimap_view.html),
 [DataSet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DataSet_view.html), 
-[Sheet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Sheet_view.html), 
 [BiMap](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/BiMap_view.html), 
 [ImmutableList](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableList_view.html), 
 [ImmutableSet](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/ImmutableSet_view.html), 
@@ -161,20 +160,10 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [KeyedObjectPool](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/KeyedObjectPool_view.html), 
 [PoolFactory](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/PoolFactory_view.html)...
 
-* Matrix: 
-[AbstractMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/AbstractMatrix_view.html), 
-[Matrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/Matrix_view.html), 
-[IntMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/IntMatrix_view.html), 
-[LongMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/LongMatrix_view.html), 
-[DoubleMatrix](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/DoubleMatrix_view.html)...
-
 * SpyMemcached/JRedis: 
 [SpyMemcached](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/SpyMemcached_view.html),
 [JRedis](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/JRedis_view.html), 
 [MemcachedLock](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/MemcachedLock_view.html).
-
-* [Deploy Once, Run Anytime](https://github.com/landawn/AbacusUtil/wiki/Deploy-Once,-Run-Anytime):
-[RemoteExecutor](https://cdn.rawgit.com/landawn/AbacusUtil/master/docs/RemoteExecutor_view.html).
 
 * More: 
 [Charsets](https://static.javadoc.io/com.landawn/abacus-util/1.8.0/com/landawn/abacus/util/Charsets.html),
@@ -221,15 +210,16 @@ compile 'com.landawn:abacus-util-jdk7:1.8.0'
 // Android (Java 1.7):
 compile 'abacus-android-jdk7:1.8.0'
 
-// Android-SE (Java 1.7) - small edition without Stream/Matrix/Sheet/...:
+// Android-SE (Java 1.7) - small edition without Stream...:
 compile 'abacus-android-se-jdk7:1.8.0'
 
 // Android (Java 1.8 or above):
 compile 'com.landawn:abacus-android:1.8.0'
 
-// Android-SE (Java 1.8 or above) - small edition without Stream/Matrix/Sheet/...:
+// Android-SE (Java 1.8 or above) - small edition without Stream...:
 compile 'com.landawn:abacus-android-se:1.8.0'
 ```
+
 ### Functional Programming:
 (It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with the APIs provided in AbacusUtil)
 

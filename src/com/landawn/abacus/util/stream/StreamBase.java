@@ -69,7 +69,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
@@ -355,17 +354,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
                 }
             } else if (t instanceof String) {
                 return (String) t + (String) u;
-            } else if (t instanceof Sheet) {
-                final Sheet a = (Sheet) t;
-                final Sheet b = (Sheet) u;
-
-                if (a.rowLength() >= b.rowLength()) {
-                    a.putAll(b);
-                    return a;
-                } else {
-                    b.putAll(a);
-                    return b;
-                }
             } else {
                 final Class<?> cls = t.getClass();
                 final Integer num = clsNum.get(cls);
@@ -513,8 +501,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, ITER, S extends StreamBase<T, 
                 ((Map) t).putAll((Map) u);
             } else if (t instanceof StringBuilder) {
                 ((StringBuilder) t).append((StringBuilder) u);
-            } else if (t instanceof Sheet) {
-                ((Sheet) t).putAll((Sheet) u);
             } else {
                 final Class<?> cls = t.getClass();
                 Integer num = clsNum.get(cls);

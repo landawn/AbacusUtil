@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
-import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -980,11 +979,6 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> keyMapper, Collector<Byte, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public ByteMatrix toMatrix() {
-        return ByteMatrix.of(toArray());
     }
 
     @Override

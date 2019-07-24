@@ -37,7 +37,6 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
-import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.u.Holder;
@@ -304,8 +303,6 @@ public abstract class ShortStream
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> keyMapper, final Collector<Short, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract ShortMatrix toMatrix();
 
     public abstract short reduce(short identity, ShortBinaryOperator op);
 

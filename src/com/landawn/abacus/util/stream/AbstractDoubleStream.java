@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
-import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -993,11 +992,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> keyMapper, Collector<Double, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public DoubleMatrix toMatrix() {
-        return DoubleMatrix.of(toArray());
     }
 
     @Override

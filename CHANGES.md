@@ -1,3 +1,10 @@
+### 1.8.1
+
+* Move Sheet/Matrix/RemoteExecutor to `abacus-da`: https://github.com/landawn/abacus-da.
+
+* Improvements and bug fix.
+
+
 ### 1.8.0
 
 * Move `...util.Traverser` to `...guava.Traverser`.

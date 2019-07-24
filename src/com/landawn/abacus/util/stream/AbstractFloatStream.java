@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.exception.DuplicatedResultException;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
-import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Fn.Suppliers;
@@ -992,11 +991,6 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> keyMapper, Collector<Float, A, D> downstream) {
         return toMap(keyMapper, downstream, Suppliers.<K, D> ofMap());
-    }
-
-    @Override
-    public FloatMatrix toMatrix() {
-        return FloatMatrix.of(toArray());
     }
 
     @Override

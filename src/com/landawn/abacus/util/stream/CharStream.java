@@ -27,7 +27,6 @@ import java.util.Random;
 import com.landawn.abacus.annotation.SequentialOnly;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
-import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
@@ -350,8 +349,6 @@ public abstract class CharStream
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> keyMapper, final Collector<Character, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract CharMatrix toMatrix();
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the

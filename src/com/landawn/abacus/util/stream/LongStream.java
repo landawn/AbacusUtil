@@ -36,7 +36,6 @@ import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
-import com.landawn.abacus.util.LongMatrix;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
@@ -329,8 +328,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> keyMapper, final Collector<Long, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract LongMatrix toMatrix();
 
     public abstract long reduce(long identity, LongBinaryOperator op);
 

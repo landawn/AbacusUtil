@@ -30,7 +30,6 @@ import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
-import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
@@ -327,8 +326,6 @@ public abstract class FloatStream
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> keyMapper, final Collector<Float, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract FloatMatrix toMatrix();
 
     public abstract float reduce(float identity, FloatBinaryOperator op);
 

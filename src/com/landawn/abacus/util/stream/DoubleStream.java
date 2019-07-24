@@ -31,7 +31,6 @@ import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ContinuableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
-import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Fn.Fnn;
 import com.landawn.abacus.util.IOUtil;
@@ -328,8 +327,6 @@ public abstract class DoubleStream
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> keyMapper, final Collector<Double, A, D> downstream,
             final Supplier<? extends M> mapFactory);
-
-    public abstract DoubleMatrix toMatrix();
 
     public abstract double reduce(double identity, DoubleBinaryOperator op);
 

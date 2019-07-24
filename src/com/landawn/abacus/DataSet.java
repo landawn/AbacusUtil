@@ -32,7 +32,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.NoCachingNoUpdating.DisposableObjArray;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Properties;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.TriIterator;
 import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
@@ -3198,9 +3197,7 @@ public interface DataSet {
      * 
      * @return key are column name, value is column - an immutable list, backed by the column in this {@code DataSet}.
      */
-    Map<String, ImmutableList<Object>> columnMap();
-
-    <T> Sheet<Integer, String, T> toSheet();
+    Map<String, ImmutableList<Object>> columnMap(); 
 
     // DataSetBuilder builder();
 
