@@ -546,6 +546,134 @@ public final class N {
         return (T) N.typeOf(cls).defaultValue();
     }
 
+    public static boolean defaultIfNull(Boolean b) {
+        if (b == null) {
+            return false;
+        }
+
+        return b.booleanValue();
+    }
+
+    public static boolean defaultIfNull(Boolean b, boolean defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.booleanValue();
+    }
+
+    public static char defaultIfNull(Character c) {
+        if (c == null) {
+            return N.CHAR_0;
+        }
+
+        return c.charValue();
+    }
+
+    public static char defaultIfNull(Character c, char defaultForNull) {
+        if (c == null) {
+            return defaultForNull;
+        }
+
+        return c.charValue();
+    }
+
+    public static byte defaultIfNull(Byte b) {
+        if (b == null) {
+            return (byte) 0;
+        }
+
+        return b.byteValue();
+    }
+
+    public static byte defaultIfNull(Byte b, byte defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.byteValue();
+    }
+
+    public static short defaultIfNull(Short b) {
+        if (b == null) {
+            return (short) 0;
+        }
+
+        return b.shortValue();
+    }
+
+    public static short defaultIfNull(Short b, short defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.shortValue();
+    }
+
+    public static int defaultIfNull(Integer b) {
+        if (b == null) {
+            return 0;
+        }
+
+        return b.intValue();
+    }
+
+    public static int defaultIfNull(Integer b, int defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.intValue();
+    }
+
+    public static long defaultIfNull(Long b) {
+        if (b == null) {
+            return 0;
+        }
+
+        return b.longValue();
+    }
+
+    public static long defaultIfNull(Long b, long defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.longValue();
+    }
+
+    public static float defaultIfNull(Float b) {
+        if (b == null) {
+            return 0;
+        }
+
+        return b.floatValue();
+    }
+
+    public static float defaultIfNull(Float b, float defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.floatValue();
+    }
+
+    public static double defaultIfNull(Double b) {
+        if (b == null) {
+            return 0;
+        }
+
+        return b.doubleValue();
+    }
+
+    public static double defaultIfNull(Double b, double defaultForNull) {
+        if (b == null) {
+            return defaultForNull;
+        }
+
+        return b.doubleValue();
+    }
+
     public static <T> T defaultIfNull(final T obj, final T defaultForNull) {
         return obj == null ? defaultForNull : obj;
     }

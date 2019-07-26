@@ -3975,7 +3975,7 @@ public final class JdbcUtil {
         }
 
         public Q setBoolean(int parameterIndex, Boolean x) throws SQLException {
-            stmt.setBoolean(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setBoolean(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -3994,7 +3994,7 @@ public final class JdbcUtil {
         }
 
         public Q setByte(int parameterIndex, Byte x) throws SQLException {
-            stmt.setByte(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setByte(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -4013,7 +4013,7 @@ public final class JdbcUtil {
         }
 
         public Q setShort(int parameterIndex, Short x) throws SQLException {
-            stmt.setShort(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setShort(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -4032,7 +4032,7 @@ public final class JdbcUtil {
         }
 
         public Q setInt(int parameterIndex, Integer x) throws SQLException {
-            stmt.setInt(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setInt(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -4051,7 +4051,7 @@ public final class JdbcUtil {
         }
 
         public Q setLong(int parameterIndex, Long x) throws SQLException {
-            stmt.setLong(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setLong(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -4070,7 +4070,7 @@ public final class JdbcUtil {
         }
 
         public Q setFloat(int parameterIndex, Float x) throws SQLException {
-            stmt.setFloat(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setFloat(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -4083,7 +4083,7 @@ public final class JdbcUtil {
          * @throws SQLException
          */
         public Q setDouble(int parameterIndex, double x) throws SQLException {
-            stmt.setDouble(parameterIndex, Primitives.unboxOrDefault(x));
+            stmt.setDouble(parameterIndex, N.defaultIfNull(x));
 
             return (Q) this;
         }
@@ -6519,7 +6519,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setBoolean(String parameterName, Boolean x) throws SQLException {
-            stmt.setBoolean(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setBoolean(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6531,7 +6531,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setByte(String parameterName, Byte x) throws SQLException {
-            stmt.setByte(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setByte(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6543,7 +6543,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setShort(String parameterName, Short x) throws SQLException {
-            stmt.setShort(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setShort(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6555,7 +6555,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setInt(String parameterName, Integer x) throws SQLException {
-            stmt.setInt(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setInt(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6567,7 +6567,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setLong(String parameterName, Long x) throws SQLException {
-            stmt.setLong(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setLong(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6579,7 +6579,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setFloat(String parameterName, Float x) throws SQLException {
-            stmt.setFloat(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setFloat(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -6591,7 +6591,7 @@ public final class JdbcUtil {
         }
 
         public PreparedCallableQuery setDouble(String parameterName, Double x) throws SQLException {
-            stmt.setDouble(parameterName, Primitives.unboxOrDefault(x));
+            stmt.setDouble(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7411,7 +7411,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setBoolean(String parameterName, Boolean x) throws SQLException {
-            setBoolean(parameterName, Primitives.unboxOrDefault(x));
+            setBoolean(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7463,7 +7463,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setByte(String parameterName, Byte x) throws SQLException {
-            setByte(parameterName, Primitives.unboxOrDefault(x));
+            setByte(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7515,7 +7515,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setShort(String parameterName, Short x) throws SQLException {
-            setShort(parameterName, Primitives.unboxOrDefault(x));
+            setShort(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7567,7 +7567,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setInt(String parameterName, Integer x) throws SQLException {
-            setInt(parameterName, Primitives.unboxOrDefault(x));
+            setInt(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7619,7 +7619,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setLong(String parameterName, Long x) throws SQLException {
-            setLong(parameterName, Primitives.unboxOrDefault(x));
+            setLong(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7671,7 +7671,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setFloat(String parameterName, Float x) throws SQLException {
-            setFloat(parameterName, Primitives.unboxOrDefault(x));
+            setFloat(parameterName, N.defaultIfNull(x));
 
             return this;
         }
@@ -7723,7 +7723,7 @@ public final class JdbcUtil {
         }
 
         public NamedQuery setDouble(String parameterName, Double x) throws SQLException {
-            setDouble(parameterName, Primitives.unboxOrDefault(x));
+            setDouble(parameterName, N.defaultIfNull(x));
 
             return this;
         }

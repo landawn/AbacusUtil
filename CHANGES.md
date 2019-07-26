@@ -1,3 +1,10 @@
+### 1.8.2
+
+* Remove `Primitives.unboxOrDefault`, replaced by `N.defaultIfNull`.
+
+* Improvements and bug fix.
+
+
 ### 1.8.1
 
 * Move Sheet/Matrix/RemoteExecutor to `abacus-da`: https://github.com/landawn/abacus-da.
