@@ -5,35 +5,7 @@
 
 A general programming library in Java/Android. It's easy to learn and simple to use with concise and powerful APIs.
 
-## Splitted into four projects: [abacus-util](https://github.com/landawn/abacus-util), [abacus-jdbc](https://github.com/landawn/abacus-jdbc), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. Please refer to below links:
-* https://github.com/landawn/abacus-util 
-* https://github.com/landawn/abacus-da 
-* https://github.com/landawn/abacus-android 
-
-## ~~Download/Installation & [Changes](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md)~~
-
-* [Maven](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.landawn%22)
-
-* Gradle:
-```gradle
-// JDK 1.8 or above:
-compile 'com.landawn:abacus-util:1.8.1'
-
-// JDK 1.7:
-compile 'com.landawn:abacus-util-jdk7:1.8.1'
-
-// Android (Java 1.7):
-compile 'abacus-android-jdk7:1.8.1'
-
-// Android-SE (Java 1.7) - small edition without Stream...:
-compile 'abacus-android-se-jdk7:1.8.1'
-
-// Android (Java 1.8 or above):
-compile 'com.landawn:abacus-android:1.8.1'
-
-// Android-SE (Java 1.8 or above) - small edition without Stream...:
-compile 'com.landawn:abacus-android-se:1.8.1'
-```
+## Splitted into four projects: [abacus-util](https://github.com/landawn/abacus-util), [abacus-jdbc](https://github.com/landawn/abacus-jdbc), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. 
 
 ### Functional Programming:
 (It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with the APIs provided in AbacusUtil)
