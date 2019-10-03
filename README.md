@@ -5,7 +5,7 @@
 
 A general programming library in Java/Android. It's easy to learn and simple to use with concise and powerful APIs.
 
-## Splitted into three projects: [abacus-util](https://github.com/landawn/abacus-util), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. Please refer to below links:
+## Splitted into four projects: [abacus-util](https://github.com/landawn/abacus-util), [abacus-jdbc](https://github.com/landawn/abacus-jdbc), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. Please refer to below links:
 * https://github.com/landawn/abacus-util 
 * https://github.com/landawn/abacus-da 
 * https://github.com/landawn/abacus-android 
