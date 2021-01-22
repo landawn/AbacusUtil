@@ -1,11 +1,11 @@
 # ~~Abacus-Util~~
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.landawn/abacus-util.svg)](https://maven-badges.herokuapp.com/maven-central/com.landawn/abacus-util/)
-[![Javadocs](https://www.javadoc.io/badge/com.landawn/abacus-util.svg)](https://www.javadoc.io/doc/com.landawn/abacus-util)
+[![Maven Central](https://img.shields.io/maven-central/v/com.landawn/abacus-common.svg)](https://maven-badges.herokuapp.com/maven-central/com.landawn/abacus-common/)
+[![Javadocs](https://www.javadoc.io/badge/com.landawn/abacus-common.svg)](https://www.javadoc.io/doc/com.landawn/labacus-common)
 
 A general programming library in Java/Android. It's easy to learn and simple to use with concise and powerful APIs.
 
-## Splitted into four projects: [abacus-util](https://github.com/landawn/abacus-util), [abacus-jdbc](https://github.com/landawn/abacus-jdbc), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. 
+## Splitted into four projects: [abacus-common](https://github.com/landawn/abacus-common), [abacus-jdbc](https://github.com/landawn/abacus-jdbc), [abacus-da](https://github.com/landawn/abacus-da), [abacus-android](https://github.com/landawn/abacus-android) since 1.8.2. 
 
 ### Functional Programming:
 (It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with the APIs provided in AbacusUtil)
